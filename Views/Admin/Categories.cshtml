@@ -1,0 +1,135 @@
+﻿@{
+    ViewData["Title"] = "Danh sách danh mục";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+@model IEnumerable<BachHoaXanh.ViewModels.CategoryViewModel>
+<style>
+    #subcategoryContainer .subc th{
+    color: #fff !important;
+    font-weight: bold;
+    }
+
+    .t-container {
+        padding: 20px;
+        width: 90%;
+    }
+</style>
+<div class="main-panel">
+    <nav class="navbar navbar-default navbar-fixed">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">Quản lý danh mục</a>
+            </div>
+        </div>
+    </nav>
+    <div class="t-container">
+        <a href="@Url.Action("CategoryAdd", "Admin")" type="submit" class="btn btn-info btn-fill pull-left" style="margin-bottom: 10px; margin-top: 20px;; margin-right: 15px; margin-left: 15px;">Thêm danh mục mới</a>
+        <a href="@Url.Action("SubCategoryAdd", "Admin")" type="submit" class="btn btn-info btn-fill pull-left" style="margin-bottom: 10px; margin-top: 20px;; margin-right: 15px;">Thêm danh mục con mới</a>
+
+    </div>
+    <div class="table-container">
+        
+        <h3>Danh sách danh mục</h3>
+        <table class="table" id="categoryTable">
+            <thead>
+                <tr>
+                    <th>#ID</th>
+                    <th>Tên danh mục</th>
+                    <th>Tổng danh mục con</th>
+                    <th>Tổng sản phẩm</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cat in Model)
+                {
+                    <tr>
+                        <td>@cat.CategoryID</td>
+                        <td>@cat.CategoryName</td>
+                        <td>@cat.TotalSubCat</td>
+                        <td>@cat.TotalProducts</td>
+                        <td>
+                            <a href="@Url.Action("CategoryEdit", "Admin", new { id = cat.CategoryID })" class="btn btn-success btn-xs">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </a>
+                            <button class="btn btn-primary btn-xs view-subcategories" data-category-id="@cat.CategoryID">
+                                Xem chi tiết
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div id="subcategoryContainer" class="mt-4" style="display: none;">
+            <h3>Danh mục con</h3>
+            <table class="table">
+                <thead>
+                    <tr class="subc">
+                        <th>#ID</th>
+                        <th>Tên danh mục con</th>
+                        <th>Tổng sản phẩm</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="subcategoryTable">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+    $(document).ready(function () {
+        $('#categoryTable').DataTable({
+            language: {
+                emptyTable: "Không có dữ liệu nào trong bảng",
+                search: "Tìm kiếm:",
+                lengthMenu: "Hiển thị _MENU_ mục",
+                info: "Hiển thị _START_ đến _END_ của _TOTAL_ danh mục",
+                infoEmpty: "Không có danh mục nào",
+                paginate: {
+                    first: "Đầu",
+                    last: "Cuối",
+                    next: "Tiếp",
+                    previous: "Trước"
+                }
+            },
+            paging: true,
+            pageLength: 10
+        });
+
+        $('.view-subcategories').on('click', function () {
+            var categoryId = $(this).data('category-id');
+            $.ajax({
+                url: '/Admin/GetSubCategories/' + categoryId,
+                type: 'GET',
+                success: function (subcategories) {
+                    $('#subcategoryContainer').show();
+                    var tableBody = $('#subcategoryTable');
+                    tableBody.empty();
+                    subcategories.forEach(function (sub) {
+                        tableBody.append(`
+                            <tr>
+                                <td>${sub.subCategoryID}</td>
+                                <td>${sub.subCategoryName}</td>
+                                <td>${sub.totalProducts}</td>
+                                <td>
+                                    <a href="/Admin/subcategoryedit/${sub.subCategoryID}" class="btn btn-success btn-xs">
+                                        <i class="fa-regular fa-pen-to-square"></i> Sửa
+                                    </a>
+                                </td>
+                            </tr>
+                        `);
+                    });
+
+                },
+                error: function () {
+                    alert('Không thể tải danh mục con. Vui lòng thử lại.');
+                }
+            });
+        });
+    });
+</script>
+
+}

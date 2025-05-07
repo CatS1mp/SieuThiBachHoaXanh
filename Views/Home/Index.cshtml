@@ -1,0 +1,82 @@
+﻿@model BachHoaXanh.ViewModels.ProductViewModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, ViewComponentInMVC
+@addTagHelper *, ViewComponentInMVC.TagHelpers
+
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="container-wrapper">
+    @await Html.PartialAsync("_Sidebar")
+
+    <div class="content flex-1 pl-[280px]">
+        <!-- Search Form -->
+        <div class="breadcrumb-container">
+            <div class="breadcrumb-icon d-inline-block">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <p>Danh sách sản phẩm</p>
+        </div>
+
+        <div class="result-message">
+            @if (Model.TotalProducts > 0) 
+            {
+                <span>@Model.TotalProducts sản phẩm tìm thấy.</span> 
+            }
+            else
+            {
+                <span>Không tìm thấy sản phẩm phù hợp.</span> 
+            }
+        </div>
+
+        <!-- Product List -->
+        <div id="product-list-container" class="product-list-container">
+            @foreach (var product in Model.Products)
+            {
+                <div class="product-item">
+                    @if (product.Images != null && product.Images.Any())
+                    {
+                        <img class="product-image" src="~/images/@product.Images.FirstOrDefault(img => img.IsMainImage)?.ImagePath" alt="@product.ProductName">
+                    }
+                    else
+                    {
+                        <img class="product-image" src="~/images/default-image.png" alt="@product.ProductName">
+                    }
+                    <h3 class="product-name">@product.ProductName</h3>
+                    <div class="product-info">
+                        <p class="product-price">Giá: <b>@product.Price.ToString("") VNĐ</b></p>
+                    </div>
+                    <div class="product-btn"><a href="@Url.Action("Detail", "Home", new { id = product.ProductID })" class="btn">Chi tiết</a></div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            @if (Model.CurrentPage > 1)
+            {
+                <a href="@Url.Action("Index", "Home", new { page = Model.CurrentPage - 1, search = Model.SearchQuery, danhmuc = Model.SubCategoryId })" class="page-btn">
+                    <i class="fas fa-chevron-left"></i> Quay lại
+                </a>
+            }
+
+            <span class="page-info">Trang @Model.CurrentPage/@Model.TotalPages</span>
+
+            @if (Model.CurrentPage < Model.TotalPages)
+            {
+                <a href="@Url.Action("Index", "Home", new { page = Model.CurrentPage + 1, search = Model.SearchQuery, danhmuc = Model.SubCategoryId })" class="page-btn">
+                    Tiếp tục <i class="fas fa-chevron-right"></i>
+                </a>
+            }
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function toggleCategorySub(categoryMain) {
+        var categorySub = categoryMain.nextElementSibling;
+        categorySub.style.display = (categorySub.style.display === "none" || categorySub.style.display === "") ? "block" : "none";
+    }
+</script>

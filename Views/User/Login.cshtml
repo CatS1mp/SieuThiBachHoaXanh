@@ -1,0 +1,217 @@
+﻿@model BachHoaXanh.ViewModels.LoginView
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container-wrapper">
+    @await Html.PartialAsync("_SidebarOverplay")
+</div>
+
+<div class="container-small-wrapper">
+
+    <!-- Sidebar -->
+    <div class="breadcrumb-container">
+        <div class="breadcrumb-icon d-inline-block">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        <p>Bạn có thể đăng nhập tài khoản ở đây</p>
+    </div>
+
+    <div class="auth-container">
+        <h2>Đăng Nhập</h2>
+        <form asp-action="Login" method="post">
+            <div class="form-group">
+                <label for="UserName">Tên đăng nhập</label>
+                <input type="text" id="UserName" asp-for="UserName" placeholder="Nhập tên đăng nhập" required class="form-control" />
+                @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
+            </div>
+            <div class="form-group">
+                <label for="Password">Mật khẩu</label>
+                <div class="password-wrapper">
+                    <input type="password" id="Password" asp-for="Password" placeholder="Nhập mật khẩu" required class="form-control" />
+                    <span class="toggle-password" onclick="togglePassword('Password', this)">👁️</span>
+                </div>
+                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+            </div>
+            <button type="submit" class="auth-btn">Đăng Nhập</button>
+        </form>
+        <a href="@Url.Action("Register", "User")" class="forget-pass-btn">Bạn chưa có tài khoản? Đăng kí ở đây.</a>
+            
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade otp-modal" id="otpModal" tabindex="-1" aria-labelledby="otpModalLabel" aria-hidden="true"
+     role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <br>
+                <p class="text">
+                    Nhập 6 số được gửi vào mục <strong>Thông báo</strong> trong <strong>Tin nhắn SMS</strong>
+                    của số
+                    <strong>0972741654</strong>.
+                </p>
+                <form>
+                    <div class="otp-container">
+                        <input type="text" maxlength="1" class="otp-box" />
+                        <input type="text" maxlength="1" class="otp-box" />
+                        <input type="text" maxlength="1" class="otp-box" />
+                        <input type="text" maxlength="1" class="otp-box" />
+                        <input type="text" maxlength="1" class="otp-box" />
+                        <input type="text" maxlength="1" class="otp-box" />
+                    </div>
+                    <button type="button" class="btn btn-success w-100 mt-4" id="btn-continue">Tiếp tục</button>
+                </form>
+                <p class="text-muted small mt-3">
+                    Nếu không nhận được thông báo của <strong>Tin nhắn SMS</strong>, chọn
+                    <a href="#" id="resend-link" class="resend-link">Gửi lại mã xác thực qua SMS</a> sau
+                    <span id="countdown">00:48</span>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade resetpass-modal" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <br>
+            <div class="modal-body">
+                <p>Vui lòng nhập địa chỉ email của bạn. Chúng tôi sẽ gửi mã <b><u>CODE</u></b> để đặt lại mật khẩu.</p>
+                <form id="resetPasswordForm">
+                    <div class="form-group mb-3">
+                        <label for="resetEmail" class="form-label">Địa chỉ email</label>
+                        <input type="email" class="form-control" id="resetEmail" placeholder="Nhập email" required />
+                        <div class="invalid-feedback">Vui lòng nhập địa chỉ email hợp lệ.</div>
+                    </div>
+                    <button type="button" class="btn btn-success w-100" id="btn-continue">Gửi</button>
+                </form>
+
+                <p class="text-muted small mt-3" id="countdownMessage" style="display: none;">
+                    Nếu bạn không nhận được email, vui lòng kiểm tra mục thư rác hoặc
+                    <span id="countdown">00:30</span> để gửi lại.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <small class="text-muted">
+                    Nếu bạn không nhận được email, vui lòng kiểm tra mục thư rác hoặc liên hệ với
+                    chúng tôi để được hỗ trợ.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    const categoryButton = document.querySelector('.category-button');
+    const overlay = document.getElementById('overlay');
+    const containerWrapper = document.querySelector('.container-wrapper');
+    const sidebar = document.querySelector('.sidebar'); // Thêm selector cho sidebar
+
+    categoryButton.addEventListener('click', () => {
+        overlay.classList.add('d-block');
+        sidebar.classList.remove('d-none');
+        containerWrapper.classList.add('blur');
+    });
+
+    overlay.addEventListener('click', () => {
+        overlay.classList.remove('d-block');
+        sidebar.classList.add('d-none');
+        containerWrapper.classList.remove('blur');
+    });
+
+    overlay.addEventListener('mousemove', (event) => {
+        if (!sidebar.contains(event.target)) {
+            overlay.classList.remove('d-block');
+            sidebar.classList.add('d-none');
+            containerWrapper.classList.remove('blur');
+        }
+    });
+
+    function toggleCategorySub(categoryMain) {
+        var categorySubs = document.querySelectorAll('.category-sub');
+
+        categorySubs.forEach(function (sub) {
+            if (sub !== categoryMain.nextElementSibling) {
+                sub.style.display = "none";
+            }
+        });
+
+        var categorySub = categoryMain.nextElementSibling;
+
+        if (categorySub.style.display === "none" || categorySub.style.display === "") {
+            categorySub.style.display = "block";
+        } else {
+            categorySub.style.display = "none";
+        }
+    }
+    function togglePassword(inputId, iconElement) {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            iconElement.textContent = "🙈"; // Icon đổi thành 'ẩn'
+        } else {
+            input.type = "password";
+            iconElement.textContent = "👁️"; // Icon đổi thành 'hiện'
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const otpInputs = document.querySelectorAll(".otp-box");
+
+        otpInputs.forEach((input, index) => {
+            input.addEventListener("input", (e) => {
+                const value = e.target.value;
+
+                if (!/^\d$/.test(value)) {
+                    e.target.value = "";
+                    return;
+                }
+                if (value && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+
+                checkComplete();
+            });
+
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Backspace") {
+                    if (!e.target.value && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                }
+            });
+
+            input.addEventListener("paste", (e) => {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData("text").trim();
+
+                if (/^\d+$/.test(pastedData) && pastedData.length === otpInputs.length) {
+                    otpInputs.forEach((input, i) => {
+                        input.value = pastedData[i] || "";
+                    });
+                    checkComplete();
+                }
+            });
+        });
+
+        function checkComplete() {
+            const otp = Array.from(otpInputs).map((input) => input.value).join("");
+
+            if (otp.length === otpInputs.length) {
+                console.log("OTP hoàn thành:", otp);
+            }
+        }
+    });
+
+</script>

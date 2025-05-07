@@ -1,0 +1,20 @@
+﻿@model List<BachHoaXanh.Models.Product>
+
+@foreach (var product in Model)
+{
+    <div class="product-item">
+        @if (product.Images != null && product.Images.Any())
+        {
+            <img class="product-image" src="~/images/@product.Images.FirstOrDefault(img => img.IsMainImage)?.ImagePath" alt="@product.ProductName">
+        }
+        else
+        {
+            <img class="product-image" src="~/images/default-image.png" alt="@product.ProductName">
+        }
+        <h3 class="product-name">@product.ProductName</h3>
+        <div class="product-info">
+            <p class="product-price">Giá: <b>@product.Price.ToString("C")</b></p>
+        </div>
+        <div class="product-btn"><a href="@Url.Action("Detail", "Home", new { id = product.ProductID })" class="btn">Chi tiết</a></div>
+    </div>
+}

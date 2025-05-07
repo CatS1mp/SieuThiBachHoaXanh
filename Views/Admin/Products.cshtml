@@ -1,0 +1,246 @@
+﻿@model IEnumerable<BachHoaXanh.Models.Product>
+@{
+    ViewData["Title"] = "Danh sách người dùng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .table-container {
+        padding: 20px;
+        width: 90%;
+        margin: 20px auto;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 200px;
+    }
+
+    /* Bảng chung */
+    #productTable {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #c3c3c3;
+    }
+
+        #productTable th {
+            color: #fff;
+            font-weight: bold;
+            background-color: #51835f;
+        }
+
+        #productTable th,
+        #productTable td {
+            padding: 10px;
+            text-align: left;
+            vertical-align: middle;
+            border: none;
+        }
+
+        #productTable .product-name {
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 300px;
+        }
+
+        /* Tùy chỉnh cột sản phẩm */
+        #productTable td:first-child {
+            display: flex;
+            align-items: center;
+        }
+
+        #productTable .product-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        #productTable .info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #productTable .product-category {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+    /* Trạng thái sản phẩm */
+    .text-success {
+        color: green;
+    }
+
+    .text-danger {
+        color: red;
+    }
+
+    .text-warning {
+        color: orange;
+    }
+
+    #productTable .btn {
+        margin: 0;
+    }
+
+    #productTable .btn {
+        transition: all 0.2s ease-in-out;
+    }
+
+    #productTable .btn-success:hover {
+        background-color: #28a745;
+        color: #fff;
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    #productTable .btn-danger:hover {
+        background-color: #dc3545;
+        color: #fff;
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+</style>
+<div class="main-panel">
+    <nav class="navbar navbar-default navbar-fixed">
+        <div class="container-fluid">
+            <div class="navbar-header">
+
+                <a class="navbar-brand" href="#">Quản lý sản phẩm</a>
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="@Url.Action("Logout","User")">
+                            <p>Đăng xuất tài khoản</p>
+                        </a>
+                    </li>
+                    <li class=" separator hidden-lg"></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="table-container">
+        <a href="@Url.Action("ProductCreate","Admin")"  type="submit" class="btn btn-info btn-fill pull-left" style="margin-bottom: 10px;">Thêm sản phẩm</a>
+
+        <table id="productTable" class="table mt-3" style="width:100%">
+            <thead>
+                <tr class="">
+                    <th>Sản phẩm</th>
+                    <th>Trạng thái</th>
+                    <th>Số lượng SP</th>
+                    <th>Giá</th>
+                    <th>Hoạt động</th>
+                    <th></th>
+                </tr>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+
+@section scripts{
+    <script>
+
+            $(document).ready(function () {
+                $('#productTable').DataTable({
+                    ajax: {
+                        url: '/api/products',
+                        dataSrc: 'data'
+                    },
+                    columns: [
+                        {
+                            data: 'productImageUrl',
+                            render: function (data, type, row) {
+                                let imageUrl = data;
+                                return `<img src="${imageUrl}" alt="${row.productName}" class="product-img">
+                                                <div class="info">
+                                                    <div class="product-name">${row.productName}</div>
+                                                    <div class="product-category">${row.subCategoryName}</div>
+                                                </div>`;
+                            }
+                        },
+                        {
+                            data: 'status',
+                            render: function (data) {
+                                let badgeClass = data == 1 ? "bg-success" : "bg-danger";
+                                let statusText = data == 1 ? "Còn hàng" : "Hết hàng";
+                                return `<span class="badge badge-sm ${badgeClass}">${statusText}</span>`;
+                            }
+                        },
+                        { data: 'stock' },
+                        { data: 'price' },
+                        {
+                            data: 'active',
+                            render: function (data) {
+                                let badgeClass = data === "Kinh doanh" ? "bg-success" : "bg-danger";
+                                return `<span class="badge badge-sm ${badgeClass}">${data}</span>`;
+                            }
+                        },
+                        {
+                            data: 'productID',
+                            render: function (data) {
+                                return `<a href="/admin/ProductEdit/${data}" class="btn btn-success btn-xs dt-edit" style="margin-right:16px;">
+                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-danger btn-xs dt-delete" onclick="deleteProduct('${data}')">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>`;
+                            }
+                        }
+                    ],
+                    language: {
+                        emptyTable: "Không có dữ liệu nào trong bảng",
+                        search: "Tìm kiếm:",
+                        lengthMenu: "Hiển thị <b>_MENU_</b> mục",
+                        info: "Hiển thị <b>_START_</b> đến <b>_END_</b> của <b>_TOTAL_ sản phẩm</b>",
+                        infoEmpty: "Hiển thị <b>0</b> đến <b>0</b> của <b>0</b> sản phẩm",
+                        infoFiltered: "(được lọc từ <b>_MAX_</b> sản phẩm)",
+                        zeroRecords: "Không tìm thấy kết quả nào phù hợp",
+                        paginate: {
+                            first: "Đầu",
+                            last: "Cuối",
+                            next: "Tiếp",
+                            previous: "Trước"
+                        }
+                    }
+                });
+            });
+
+         function deleteUser(username) {
+            if (confirm("Bạn có chắc chắn muốn xóa tài khoản này?")) {
+                $.ajax({
+                    url: `/api/user/${username}`,
+                    type: 'DELETE',
+                    success: function () {
+                            location.reload();
+                    },
+                    error: function () {
+                        alert("Có lỗi xảy ra, vui lòng thử lại.");
+                    }
+                });
+            }
+            }
+
+            function deleteProduct(productID) {
+                if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
+                    $.ajax({
+                        url: `/api/products/${productID}`,
+                        type: 'DELETE',
+                        success: function () {
+                            $('#productTable').DataTable().ajax.reload();
+                        },
+                        error: function () {
+                            alert("Có lỗi xảy ra, vui lòng thử lại.");
+                        }
+                    });
+                }
+            }
+
+
+    </script>
+    }

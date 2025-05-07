@@ -1,0 +1,132 @@
+﻿@model BachHoaXanh.Models.Order
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng " + Model.OrderID;
+}
+
+<div class="container-wrapper">
+    @await Html.PartialAsync("_SidebarOverplay")
+</div>
+<div class="container-wrapper">
+    @await Html.PartialAsync("_SidebarOverplay")
+</div>
+<div class="container-small-wrapper">
+    <div class="breadcrumb-container">
+        <div class="breadcrumb-icon d-inline-block">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        <p>Chi tiết đơn hàng #@Model.OrderID</p>
+    </div>
+
+    <div class="order-detail-container mt-4 mb-4">
+        <div class="order-header">
+            <div class="order-title">
+                <h4>Chi tiết đơn hàng</h4>
+                <div class="order-detail">
+                    <div class="order-date">
+                        <strong><i class="fas fa-calendar-alt"></i> Ngày đặt hàng</strong>
+                        <p class="value mb-0">@Model.CreatedAt.ToString("dd/MM/yyyy - HH:mm")</p>
+                    </div>
+                    <div class="order-status">
+                        <strong><i class="fas fa-truck"></i> Trạng thái</strong>
+                        <p class="value mb-0">@Model.OrderStatus</p>
+                    </div>
+                </div>
+            </div>
+            <div class="order-info">
+                <div class="order-recipient">
+                    <strong>Người nhận:</strong>
+                    <p class="name">@Model.User.FullName, <span class="phone">@Model.User.Phone</span></p>
+                </div>
+                <div class="order-address">
+                    <strong>Địa chỉ giao hàng:</strong>
+                    <p class="value">@Model.ShippingAddress</p>
+                </div>
+                <div class="order-note">
+                    <strong>Ghi chú:</strong>
+                    <p class="value">@Model.Note</p>
+                </div>
+                <div class="order-payment">
+                    <strong>Thanh toán:</strong>
+                    <p class="value">@Model.PaymentMethod.MethodName</p>
+                </div>
+                <div class="order-total">
+                    <strong>Tổng đơn hàng:</strong>
+                    <p class="value">@Model.TotalAmount.ToString("N0")₫</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-items mt-4">
+            <h5>Sản phẩm (@Model.OrderDetails.Count)</h5>
+            @foreach (var item in Model.OrderDetails)
+            {
+                var product = item.Product;
+                var productImages = product.Images;
+
+                <div class="cart-box">
+                    <div class="cart-item">
+                        <!-- Displaying Product Image -->
+                        <img class="cart-img" src="@(Url.Content("~/images/" + (productImages.FirstOrDefault(img => img.IsMainImage)?.ImagePath ?? "default-image.png")))" alt="@product.ProductName">
+                        <p class="cart-name mb-0">@product.ProductName</p>
+
+                        <div class="cart-pqty-controls">
+                            <p class="cart-price mb-0">@item.UnitPrice.ToString("N0")₫</p>
+                            <p class="cart-qty mb-0">Số lượng: @item.Quantity</p>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+    <br>
+</div>
+
+@section scripts{
+
+    <script>
+        const categoryButton = document.querySelector('.category-button');
+        const overlay = document.getElementById('overlay');
+        const containerWrapper = document.querySelector('.container-wrapper');
+        const sidebar = document.querySelector('.sidebar'); // Thêm selector cho sidebar
+
+        categoryButton.addEventListener('click', () => {
+            overlay.classList.add('d-block');
+            sidebar.classList.remove('d-none');
+            containerWrapper.classList.add('blur');
+        });
+
+        overlay.addEventListener('click', () => {
+            overlay.classList.remove('d-block');
+            sidebar.classList.add('d-none');
+            containerWrapper.classList.remove('blur');
+        });
+
+        overlay.addEventListener('mousemove', (event) => {
+            if (!sidebar.contains(event.target)) {
+                overlay.classList.remove('d-block');
+                sidebar.classList.add('d-none');
+                containerWrapper.classList.remove('blur');
+            }
+        });
+
+        function toggleCategorySub(categoryMain) {
+            var categorySubs = document.querySelectorAll('.category-sub');
+
+            categorySubs.forEach(function (sub) {
+                if (sub !== categoryMain.nextElementSibling) {
+                    sub.style.display = "none";
+                }
+            });
+
+            var categorySub = categoryMain.nextElementSibling;
+
+            if (categorySub.style.display === "none" || categorySub.style.display === "") {
+                categorySub.style.display = "block";
+            } else {
+                categorySub.style.display = "none";
+            }
+        }
+    </script>
+}

@@ -1,0 +1,602 @@
+﻿using BachHoaXanh.Data;
+using BachHoaXanh.Helpers;
+using BachHoaXanh.Models;
+using BachHoaXanh.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+
+namespace BachHoaXanh.Controllers
+{
+    [Authorize(Roles = "Admin")]
+
+    public class AdminController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _environment;
+
+        public AdminController(ApplicationDbContext context, IWebHostEnvironment environment)
+        {
+            _context = context;
+            _environment = environment;
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Index()
+        {
+            var users = await _context.UserList.ToListAsync();
+            var products = await _context.ProductList.ToListAsync();
+            var orders = await _context.OrderList.ToListAsync();
+            var cat = await _context.CategoryList.ToListAsync();
+            var subcat = await _context.SubCategoryList.ToListAsync();
+            var payment = await _context.PaymentMethodList.ToListAsync();
+
+            var model = new AdminViewModel
+            {
+                Users = users,
+                Products = products,
+                Orders = orders,
+                Categories = cat,
+                SubCategories = subcat,
+                PaymentMethods = payment
+            };
+            return View(model);
+        }
+        [Authorize]
+        public async Task<IActionResult> Users()
+        {
+            var users = await _context.UserList.ToListAsync();
+            return View(users);
+        }
+        [Authorize]
+        [Route("api/user/{username}")]
+        [HttpDelete]
+        public IActionResult DeleteUser(string username)
+        {
+            var data = _context.UserList.FirstOrDefault(u => u.UserName == username);
+            Console.WriteLine("ID to delete " + username);
+            if (data == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            try
+            {
+                _context.UserList.Remove(data);
+                _context.SaveChanges();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while deleting the user.", error = ex.Message });
+            }
+        }
+        [Authorize]
+        public IActionResult UserAdd()
+        {
+            var userModel = new User();
+            return View(userModel);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UserAdd(User model)
+        {
+            if (ModelState.IsValid)
+            {
+                if (await _context.UserList.AnyAsync(u => u.UserName == model.UserName))
+                {
+                    ModelState.AddModelError("UserName", "Username already exists.");
+                    return View(model);
+                }
+
+                if (await _context.UserList.AnyAsync(u => u.Email == model.Email))
+                {
+                    ModelState.AddModelError("Email", "Email already exists.");
+                    return View(model);
+                }
+                model.Password = MD5Hasher.HashPassword(model.Password);
+
+                _context.UserList.Add(model);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Users));
+            }
+
+            return View(model);
+        }
+        [Authorize]
+        public IActionResult UserEdit(string userName)
+        {
+            var userModel = _context.UserList.FirstOrDefault(u => u.UserName == userName);
+            if (userModel == null)
+            {
+                return NotFound();
+            }
+
+            return View(userModel);
+        }
+
+
+        [Authorize]
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UserEdit(User model)
+        {
+            if (ModelState.IsValid)
+            {
+                var userModel = await _context.UserList.FirstOrDefaultAsync(u => u.UserName == model.UserName);
+                if (userModel == null)
+                {
+                    return NotFound();
+                }
+
+                if (await _context.UserList.AnyAsync(u => u.UserName == model.UserName && u.UserID != userModel.UserID))
+                {
+                    ModelState.AddModelError("UserName", "Username already exists.");
+                    return View(model);
+                }
+
+                if (await _context.UserList.AnyAsync(u => u.Email == model.Email && u.UserID != userModel.UserID))
+                {
+                    ModelState.AddModelError("Email", "Email already exists.");
+                    return View(model);
+                }
+
+                userModel.UserName = model.UserName;
+                userModel.Email = model.Email;
+                userModel.FullName = model.FullName;
+                userModel.Phone = model.Phone;
+                userModel.Address = model.Address;
+                userModel.Role = model.Role;
+
+                if (!string.IsNullOrEmpty(model.Password))
+                {
+                    userModel.Password = MD5Hasher.HashPassword(model.Password);
+                }
+
+                _context.UserList.Update(userModel);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Users));
+            }
+
+            return View(model);
+        }
+        [Authorize]
+        public IActionResult Orders()
+        {
+            var orders = _context.OrderList.Include(o => o.User)
+                                        .Include(o => o.PaymentMethod)
+                                        .ToList();
+            return View(orders);
+        }
+
+
+        [Authorize]
+        public IActionResult OrderDetail(int id)
+        {
+            var order = _context.OrderList
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                        .ThenInclude(p => p.Images)
+                .Include(o => o.User)
+                .Include(o => o.PaymentMethod)
+                .FirstOrDefault(o => o.OrderID == id);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return View(order);
+        }
+
+        [Authorize]
+
+        [HttpPost]
+        public IActionResult UpdateOrderStatus(int orderId, string status)
+        {
+            var order = _context.OrderList.FirstOrDefault(o => o.OrderID == orderId);
+            if (order != null)
+            {
+                order.OrderStatus = status;
+                _context.SaveChanges();
+                return Json(new { success = true });
+            }
+            return Json(new { success = false });
+        }
+
+        [Authorize]
+        public IActionResult Categories()
+        {
+            var categories = _context.CategoryList
+                .Select(c => new CategoryViewModel
+                {
+                    CategoryID = c.CategoryID,
+                    CategoryName = c.CategoryName,
+                    TotalProducts = c.SubCategories.Sum(sc => sc.Products.Count),
+                    TotalSubCat = c.SubCategories.Count(),
+                    SubCategories = c.SubCategories.Select(sc => new SubCategoryViewModel
+                    {
+                        SubCategoryID = sc.SubCategoryID,
+                        SubCategoryName = sc.SubCategoryName,
+                        TotalProducts = sc.Products.Count
+                    }).ToList()
+                }).ToList();
+
+            return View(categories);
+        }
+
+
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult GetSubCategories(int id)
+        {
+            var subcategories = _context.SubCategoryList
+                .Where(sc => sc.Category.CategoryID == id)
+                .Select(sc => new SubCategoryViewModel
+                {
+                    SubCategoryID = sc.SubCategoryID,
+                    SubCategoryName = sc.SubCategoryName,
+                    TotalProducts = sc.Products.Count
+                }).ToList();
+
+            return Json(subcategories);
+        }
+        [Authorize]
+        [HttpGet]
+        public IActionResult CategoryAdd()
+        {
+            return View();
+        }
+
+        [Authorize]
+        [HttpPost]
+        public IActionResult CategoryAdd(CategoryCreateViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var category = new Category
+                {
+                    CategoryName = model.CategoryName
+                };
+
+                _context.CategoryList.Add(category);
+                _context.SaveChanges();
+                return RedirectToAction("Categories");
+            }
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult CategoryEdit(int id)
+        {
+            var category = _context.CategoryList.FirstOrDefault(c => c.CategoryID == id);
+            if (category == null) return NotFound();
+
+            return View(category);
+        }
+        [Authorize]
+        [HttpPost]
+        public IActionResult CategoryEdit(Category model)
+        {
+            if (ModelState.IsValid)
+            {
+                Console.WriteLine("smfsajndnj");
+                var category = _context.CategoryList.FirstOrDefault(c => c.CategoryID == model.CategoryID);
+                if (category != null)
+                {
+                    category.CategoryName = model.CategoryName;
+                    _context.SaveChanges();
+                    return RedirectToAction("Categories");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Không tìm thấy danh mục cần sửa.");
+                }
+            }
+
+            return View(model);
+        }
+        [Authorize]
+        [HttpGet]
+        public IActionResult SubCategoryAdd()
+        {
+            ViewBag.CategoryList = new SelectList(_context.CategoryList, "CategoryID", "CategoryName");
+            return View(new SubCategory());
+        }
+
+        [Authorize]
+        [HttpPost]
+        public IActionResult SubCategoryAdd(SubCategory model)
+        {
+            Console.WriteLine("2");
+            _context.SubCategoryList.Add(model);
+            _context.SaveChanges();
+            return RedirectToAction("Categories");
+        }
+        [Authorize]
+        [HttpGet]
+        public IActionResult SubCategoryEdit(int id)
+        {
+            var subCategory = _context.SubCategoryList
+                .FirstOrDefault(sc => sc.SubCategoryID == id);
+
+            if (subCategory == null)
+            {
+                return NotFound();
+            }
+
+            var categories = _context.CategoryList.ToList();
+            ViewBag.CategoryList = new SelectList(categories, "CategoryID", "CategoryName", subCategory.CategoryID);
+
+            return View(subCategory);
+        }
+        [Authorize]
+        [HttpPost]
+        public IActionResult SubCategoryEdit(SubCategory model)
+        {
+            var existingSubCategory = _context.SubCategoryList
+                .FirstOrDefault(sc => sc.SubCategoryID == model.SubCategoryID);
+
+            if (existingSubCategory != null)
+            {
+                existingSubCategory.SubCategoryName = model.SubCategoryName;
+                existingSubCategory.CategoryID = model.CategoryID;
+
+                _context.SaveChanges();
+
+                return RedirectToAction("Categories");
+            }
+            else
+            {
+                return NotFound("Danh mục con không tồn tại.");
+            }
+
+        }
+        [Authorize]
+        [HttpGet]
+        public IActionResult Products()
+        {
+            return View();
+        }
+
+        [Authorize]
+        [Route("api/products")]
+        [HttpGet]
+        public IActionResult GetProducts()
+        {
+            var products = _context.ProductList
+                .Include(p => p.SubCategory)
+                .Select(p => new
+                {
+                    ProductImageUrl = p.Images.FirstOrDefault(img => img.IsMainImage) != null
+                        ? $"/images/{p.Images.FirstOrDefault(img => img.IsMainImage).ImagePath}"
+                        : "/images/default/default-image.jpg",
+                    ProductName = p.ProductName,
+                    SubCategoryName = p.SubCategory != null ? p.SubCategory.SubCategoryName : "Không xác định",
+                    Stock = p.StockQuantity,
+                    Price = p.Price.ToString("N0") + " VNĐ",
+                    Status = p.StockQuantity > 0 ? 1 : 0,
+                    Active = p.IsActive ? "Kinh doanh" : "Ngừng kinh doanh",
+                    ProductID = p.ProductID
+                })
+                .ToList();
+
+            return Json(new { data = products });
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> ProductCreate()
+        {
+            var subCategories = await _context.SubCategoryList
+                .Select(s => new { s.SubCategoryID, s.SubCategoryName })
+                .ToListAsync();
+
+            // Nếu có danh sách SubCategories, đặt giá trị mặc định là mục đầu tiên
+            var defaultSubCategoryId = subCategories.FirstOrDefault()?.SubCategoryID;
+
+            ViewBag.SubCategoryList = new SelectList(subCategories, "SubCategoryID", "SubCategoryName", defaultSubCategoryId);
+
+            // Khởi tạo sản phẩm với giá trị SubCategoryID mặc định (nếu có)
+            var product = new Product
+            {
+                SubCategoryID = defaultSubCategoryId
+            };
+
+            return View(product);
+        }
+
+        [Route("api/products/{id}")]
+        [HttpDelete]
+        public IActionResult DeleteProduct(int id)
+        {
+            var product = _context.ProductList.FirstOrDefault(u => u.ProductID == id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            _context.ProductList.Remove(product);
+            _context.SaveChanges();
+
+            return Ok();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProductCreate(Product product, List<IFormFile> imageFiles)
+        {
+            product.CreatedAt = DateTime.Now;
+            _context.Add(product);
+            await _context.SaveChangesAsync();
+
+            if (product.ProductID == 0)
+            {
+                ModelState.AddModelError("", "Failed to save the product.");
+                return View(product);
+            }
+
+            string imagePath = Path.Combine(_environment.WebRootPath, "images");
+
+            if (!Directory.Exists(imagePath))
+            {
+                Directory.CreateDirectory(imagePath);
+            }
+
+            // Handle image files
+            foreach (var imageFile in imageFiles)
+            {
+                string fileName = Path.GetFileName(imageFile.FileName);
+                var filePath = Path.Combine(imagePath, fileName);
+
+                // Handle duplicate file names
+                if (System.IO.File.Exists(filePath))
+                {
+                    fileName = $"{Path.GetFileNameWithoutExtension(fileName)}_{Guid.NewGuid()}{Path.GetExtension(fileName)}";
+                    filePath = Path.Combine(imagePath, fileName);
+                }
+
+                // Save the image file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(fileStream);
+                }
+
+                // Add ProductImage record
+                var productImage = new ProductImage
+                {
+                    ProductID = product.ProductID,
+                    ImagePath = fileName,
+                    IsMainImage = imageFiles.IndexOf(imageFile) == 0  // First image is the main image
+                };
+
+                _context.Add(productImage);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Products");
+        }
+
+        // Sửa sản phẩm - GET
+        [HttpGet]
+        public async Task<IActionResult> ProductEdit(int? id)
+        {
+            // Lấy sản phẩm và ảnh liên quan từ cơ sở dữ liệu
+            var product = await _context.ProductList
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.ProductID == id);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            // Lấy danh sách SubCategories
+            var subCategories = await _context.SubCategoryList
+                .Select(s => new { s.SubCategoryID, s.SubCategoryName })
+                .ToListAsync();
+
+            // Truyền dữ liệu qua ViewBag
+            ViewBag.SubCategoryList = new SelectList(subCategories, "SubCategoryID", "SubCategoryName", product.SubCategoryID);
+
+            return View(product);
+        }
+
+        // Sửa sản phẩm - POST
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProductEdit(int id, Product product, IFormFile? imageFile)
+        {
+            if (id != product.ProductID)
+            {
+                return NotFound();
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var existingProduct = await _context.ProductList.FindAsync(id);
+                if (existingProduct == null)
+                {
+                    return NotFound();
+                }
+
+                var productImage = await _context.ProductImageList.FirstOrDefaultAsync(img => img.ProductID == id);
+
+                // Cập nhật các thuộc tính của sản phẩm (trừ hình ảnh)
+                existingProduct.ProductName = product.ProductName;
+                existingProduct.Description = product.Description;
+                existingProduct.Price = product.Price;
+                existingProduct.SubCategoryID = product.SubCategoryID;
+                existingProduct.StockQuantity = product.StockQuantity;
+                existingProduct.IsActive = product.IsActive;
+                existingProduct.UpdatedAt = DateTime.Now;
+
+                // Cập nhật sản phẩm trong DbContext
+                _context.Update(existingProduct);
+
+                // Nếu có ảnh mới thì xử lý
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var fileName = Path.GetFileName(imageFile.FileName);
+                    var imagePath = Path.Combine(_environment.WebRootPath, "images");
+
+                    if (!Directory.Exists(imagePath))
+                    {
+                        Directory.CreateDirectory(imagePath);
+                    }
+
+                    var filePath = Path.Combine(imagePath, fileName);
+
+                    // Đổi tên nếu trùng
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        fileName = $"{Path.GetFileNameWithoutExtension(fileName)}_{Guid.NewGuid()}{Path.GetExtension(fileName)}";
+                        filePath = Path.Combine(imagePath, fileName);
+                    }
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(fileStream);
+                    }
+
+                    // Cập nhật đường dẫn ảnh
+                    if (productImage != null)
+                    {
+                        productImage.ImagePath = fileName;
+                    }
+                    else
+                    {
+                        _context.ProductImageList.Add(new ProductImage
+                        {
+                            ProductID = product.ProductID,
+                            ImagePath = fileName,
+                            IsMainImage = true
+                        });
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return RedirectToAction("Products");
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                ModelState.AddModelError("", "Failed to update the product.");
+                return View(product);
+            }
+
+        }
+    }
+
+
+}

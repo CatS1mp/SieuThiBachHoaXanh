@@ -1,0 +1,78 @@
+﻿@model BachHoaXanh.Models.Order
+
+<link href="~/css/main.css" rel="stylesheet" />
+
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="card center-block" style="max-width: 60%;">
+            <div class="content">
+                <div class="order-detail-container">
+                    <div class="order-header">
+                        <div class="order-title">
+                            <h4>Chi tiết đơn hàng <b>#...</b></h4>
+                            <div class="order-detail">
+                                <div class="order-date">
+                                    <strong><i class="fas fa-calendar-alt"></i> Ngày đặt hàng</strong>
+                                    <p class="value mb-0">sadfsfd</p>
+                                </div>
+                                <div class="order-status">
+                                    <strong><i class="fas fa-truck"></i> Trạng thái</strong>
+                                    <p class="value mb-0">sdfasdf</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="order-info">
+                            <div class="order-recipient">
+                                <strong>Người nhận:</strong>
+                                <p class="name">@Model.User.FullName, <span class="phone">@Model.User.Phone</span></p>
+                            </div>
+                            <div class="order-address">
+                                <strong>Địa chỉ giao hàng:</strong>
+                                <p class="value">@Model.ShippingAddress</p>
+                            </div>
+                            <div class="order-note">
+                                <strong>Ghi chú:</strong>
+                                <p class="value">@Model.Note</p>
+                            </div>
+                            <div class="order-payment">
+                                <strong>Thanh toán:</strong>
+                                <p class="value">@Model.PaymentMethod.MethodName</p>
+                            </div>
+                            <div class="order-total">
+                                <strong>Tổng đơn hàng:</strong>
+                                <p class="value">@Model.TotalAmount.ToString("N0")₫</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="order-items mt-4">
+                        <h5>Sản phẩm (@Model.OrderDetails.Count)</h5>
+                        @foreach (var item in Model.OrderDetails)
+                        {
+                            var product = item.Product;
+                            var productImages = product.Images;
+
+                            <div class="cart-box">
+                                <div class="cart-item">
+                                    <!-- Displaying Product Image -->
+                                    <img class="cart-img" src="~/images/@productImages.FirstOrDefault(img => img.IsMainImage)?.ImagePath ?? " default-image.png"" alt="@product.ProductName">
+
+                                    <p class="cart-name mb-0">@product.ProductName</p>
+
+                                    <div class="cart-pqty-controls">
+                                        <p class="cart-price mb-0">@item.UnitPrice.ToString("N0")₫</p>
+                                        <p class="cart-qty mb-0">Số lượng: @item.Quantity</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+</div>

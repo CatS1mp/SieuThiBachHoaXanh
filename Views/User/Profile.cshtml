@@ -1,0 +1,121 @@
+﻿@using System.Security.Claims
+@model BachHoaXanh.ViewModels.UpdateProfileView
+
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container-wrapper">
+
+    @await Html.PartialAsync("_SidebarOverplay")
+</div>
+<div class="container-small-wrapper">
+
+
+    
+    <div class="breadcrumb-container">
+        <div class="breadcrumb-icon d-inline-block">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        <p>Bạn có chỉnh sửa thông tin tài khoản ở đây</p>
+    </div>
+
+    <div class="profile-container">
+        <h2>Thông tin tài khoản</h2>
+        <form asp-action="UpdateProfile" method="post">
+        
+            @Html.AntiForgeryToken()    
+
+            <div class="form-group">
+                <label for="username">Tên đăng nhập</label>
+                <input type="text" id="username" name="UserName" value="@Model.UserName" readonly />
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" asp-for="Email" name="email" placeholder="Nhập email" value="@Model.Email">
+            </div>
+            <div class="form-group">
+                <label for="phone">Số điện thoại</label>
+                <input type="tel" id="phone" asp-for="Phone" name="phone" placeholder="Nhập số điện thoại" value="@Model.Phone">
+            </div>
+            
+            <div class="form-group">
+                  <label for="address">Địa chỉ</label>
+                  <textarea id="address" asp-for="Address" placeholder="Địa chỉ giao hàng"></textarea>
+               </div>
+            <button type="submit" class="auth-btn">Lưu thay đổi</button>
+        </form>
+        @{
+            var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            Console.WriteLine(role);
+
+            if (role == "Admin")
+            {
+                <a href="@Url.Action("Index", "Admin")" type="submit" class="logout-btn">Đăng nhập vào trang quản lý</a>
+            }
+        }
+
+        <a href="@Url.Action("Logout","User")" type="submit" class="logout-btn">Đăng xuất tài khoản</a>
+
+
+    </div>
+</div>
+
+<script>
+
+      const categoryButton = document.querySelector('.category-button');
+      const overlay = document.getElementById('overlay');
+      const containerWrapper = document.querySelector('.container-wrapper');
+      const sidebar = document.querySelector('.sidebar'); // Thêm selector cho sidebar
+
+      categoryButton.addEventListener('click', () => {
+         overlay.classList.add('d-block');
+         sidebar.classList.remove('d-none');
+         containerWrapper.classList.add('blur');
+      });
+
+      overlay.addEventListener('click', () => {
+         overlay.classList.remove('d-block');
+         sidebar.classList.add('d-none');
+         containerWrapper.classList.remove('blur');
+      });
+
+      overlay.addEventListener('mousemove', (event) => {
+         if (!sidebar.contains(event.target)) {
+            overlay.classList.remove('d-block');
+            sidebar.classList.add('d-none');
+            containerWrapper.classList.remove('blur');
+         }
+      });
+
+      function toggleCategorySub(categoryMain) {
+         var categorySubs = document.querySelectorAll('.category-sub');
+
+         categorySubs.forEach(function (sub) {
+            if (sub !== categoryMain.nextElementSibling) {
+               sub.style.display = "none";
+            }
+         });
+
+         var categorySub = categoryMain.nextElementSibling;
+
+         if (categorySub.style.display === "none" || categorySub.style.display === "") {
+            categorySub.style.display = "block";
+         } else {
+            categorySub.style.display = "none";
+         }
+      }
+      function togglePassword(inputId, iconElement) {
+         const input = document.getElementById(inputId);
+         if (input.type === "password") {
+            input.type = "text";
+            iconElement.textContent = "🙈"; 
+         } else {
+            input.type = "password";
+            iconElement.textContent = "👁️";
+         }
+      }
+
+   </script>

@@ -1,0 +1,137 @@
+﻿@model BachHoaXanh.ViewModels.CartView
+
+@{
+
+}
+
+@if (Model.CartItems == null || !Model.CartItems.Any())
+{
+    <div class="cart-controls-container" style="text-align: center; margin: 20px auto; justify-content: center;">
+        <div class="empty-cart-message">
+            <p>Giỏ hàng của bạn hiện đang trống.</p>
+            <a href="@Url.Action("Index","Home")" class="btn btn-success">Tiếp tục mua sắm</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="cart-controls-container">
+        <div class="pdetail-left">
+            <div class="cart-box">
+                @foreach (var item in Model.CartItems)
+                {
+                    <div class="cart-item" data-product-id="@item.ProductID">
+                        <button class="cart-remove" onclick="removeFromCart('@item.ProductID')">&times;</button>
+
+                        @if (item.Product != null && item.Product.Images != null)
+                        {
+                            var mainImage = item.Product.Images.FirstOrDefault(img => img.IsMainImage);
+                            <img class="cart-img" src="~/images/@(mainImage?.ImagePath ?? "default.jpg")" alt="@item.Product.ProductName" />
+                        }
+                        else
+                        {
+                            <img class="cart-img" src="~/images/default.jpg" alt="Hình ảnh mặc định" />
+                        }
+
+                        <input type="hidden" class="product-price" value="@item.Product.Price" />
+
+                        <p class="cart-name">@item.Product.ProductName</p>
+                        <div class="cart-pqty-controls">
+                            <p class="cart-price price-@item.ProductID" id="">@item.Product.Price.ToString("C")</p>
+                            <div>
+                                <button class="qtyminus" onclick="decreaseQuantity('@item.ProductID')">&minus;</button>
+                                <input type="number" name="qty" class = "qty" id="quantity-@item.ProductID" value="@item.Quantity" min="1" max="@(item.Product.StockQuantity)" />
+                                <button class="qtyplus" onclick="increaseQuantity('@item.ProductID')">&plus;</button>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            </div>
+            <div class="remove-all-cart">
+                <button id="clearCartButton"><i class="fa-solid fa-trash mr-2"></i>Xóa hết giỏ hàng</button>
+            </div>
+        </div>
+        <div class="pdetail-right">
+            <div class="order-summary">
+                <div class="delivery-info">
+                    <h4>Giao đến</h4>
+                    <p class="address">@(Model.User.Address ?? "Chưa có địa chỉ - Vui lòng quay lại trang thông tin cá nhân để cập nhật địa chỉ")</p>
+                    <p class="name-phone">@(Model.User.FullName) - @(Model.User.Phone)</p>
+                </div>
+
+                <div class="cost-breakdown">
+                    <p class="total-cost">Tổng đơn hàng: <strong class="grand-total">830.000</strong></p>
+                </div>
+
+                <div class="note-section">
+                    <label for="note">Yêu cầu khác (nếu có):</label>
+                    <textarea id="orderNote" name="note" class="form-control" rows="3">@Model.CartItems.FirstOrDefault()?.Note</textarea>
+                </div>
+
+                <div class="payment-method">
+                    <label for="paymentMethod">Chọn phương thức thanh toán:</label>
+                        <select id="paymentMethod" name="paymentMethod" class="form-select">
+                            @if (Model.CartItems != null && Model.CartItems.Any())
+                            {
+
+                                var paymentMethodID = Model.CartItems.FirstOrDefault()?.PaymentMethodID;
+                            Console.WriteLine("Requets 2" + paymentMethodID);
+                            @if (paymentMethodID == 1)
+                                {
+                                    <option value="1" selected>Tiền mặt khi nhận hàng</option>
+                                    <option value="2">Chuyển khoản</option>
+                                    <option value="3">Thẻ ATM</option>
+                                    <option value="4">Thẻ Visa, Master, JCB</option>
+                                    <option value="5">Ví Momo</option>
+                                }
+                                else if (paymentMethodID == 2)
+                                {
+                                    <option value="1">Tiền mặt khi nhận hàng</option>
+                                    <option value="2" selected>Chuyển khoản</option>
+                                    <option value="3">Thẻ ATM</option>
+                                    <option value="4">Thẻ Visa, Master, JCB</option>
+                                    <option value="5">Ví Momo</option>
+                                }
+                                else if (paymentMethodID == 3)
+                                {
+                                    <option value="1">Tiền mặt khi nhận hàng</option>
+                                    <option value="2">Chuyển khoản</option>
+                                    <option value="3" selected>Thẻ ATM</option>
+                                    <option value="4">Thẻ Visa, Master, JCB</option>
+                                    <option value="5">Ví Momo</option>
+                                }
+                                else if (paymentMethodID == 4)
+                                {
+                                    <option value="1">Tiền mặt khi nhận hàng</option>
+                                    <option value="2">Chuyển khoản</option>
+                                    <option value="3">Thẻ ATM</option>
+                                    <option value="4" selected>Thẻ Visa, Master, JCB</option>
+                                    <option value="5">Ví Momo</option>
+                                }
+                                else if (paymentMethodID == 5)
+                                {
+                                    <option value="1">Tiền mặt khi nhận hàng</option>
+                                    <option value="2">Chuyển khoản</option>
+                                    <option value="3">Thẻ ATM</option>
+                                    <option value="4">Thẻ Visa, Master, JCB</option>
+                                    <option value="5" selected>Ví Momo</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="1">Tiền mặt khi nhận hàng</option>
+                                <option value="2">Chuyển khoản</option>
+                                <option value="3">Thẻ ATM</option>
+                                <option value="4">Thẻ Visa, Master, JCB</option>
+                                <option value="5">Ví Momo</option>
+                            }
+                        </select>
+                </div>
+
+                <div class="order-btn"><i class="fa-solid fa-cart-shopping pr-2"></i>Đặt hàng <span class="grand-total">830.000đ</span></div>
+            </div>
+        </div>
+
+    </div>
+}

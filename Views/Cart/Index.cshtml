@@ -1,0 +1,256 @@
+﻿@model BachHoaXanh.ViewModels.CartView
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+<style>
+    .payment-method {
+        margin: 20px 0;
+    }
+
+    .payment-method label {
+        font-size: 16px;
+        margin-bottom: 10px;
+        display: block;
+        font-weight: bold;
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fff;
+        cursor: pointer;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-select:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    .form-select option {
+        padding: 10px;
+        font-size: 16px;
+    }
+
+</style>
+<div class="container-wrapper">
+
+    @await Html.PartialAsync("_SidebarOverplay")
+
+    <div class="breadcrumb-container">
+        <div class="breadcrumb-icon d-inline-block">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        <p>Danh sách sản phẩm trong giỏ hàng của bạn</p>
+    </div>
+    @await Html.PartialAsync("_CartPartial", Model)
+
+</div>
+<script>
+
+  document.getElementById("paymentMethod").addEventListener("change", function () {
+    const selectedPaymentMethod = parseInt(this.value, 10);
+    console.log(selectedPaymentMethod);
+        $.ajax({
+            url: '@Url.Action("UpdatePaymentMethod", "Cart")',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(selectedPaymentMethod),
+            type: 'POST',
+            success: function (response) {
+                console.log(response.message);
+            },
+            error: function (err) {
+                console.error('Error updating payment method:', err);
+            }
+        });
+    });
+    document.getElementById("clearCartButton").addEventListener("click", function () {
+        if (confirm("Bạn có chắc chắn muốn xoá hết giỏ hàng?")) {
+            $.ajax({
+                url: '@Url.Action("ClearAllCart", "Cart")',
+                type: 'POST',
+                success: function (response) {
+                    window.location.reload(); 
+                },
+                error: function (err) {
+                    console.error('Error clearing cart:', err); 
+                }
+            });
+        }
+    });
+    document.querySelector('.order-btn').addEventListener('click', function() {
+        document.getElementById('orderForm').submit();
+    });
+
+    document.querySelector(".order-btn").addEventListener("click", function (event) {
+        const userAddress = '@Model.User.Address'.trim();
+        const note = document.getElementById('orderNote').value.trim();  // Assuming there's an input field with ID 'orderNote'
+
+        // Check if user address is provided
+        if (!userAddress) {
+            alert("Vui lòng cập nhật địa chỉ giao hàng!");
+            event.preventDefault(); // Prevent form submission
+            return;
+        }
+
+        // Check if user confirmed the order
+        if (confirm("Bạn có chắc??")) {
+            $.ajax({
+                url: '@Url.Action("CreateOrder", "Cart")',
+                type: 'POST',
+                data: {
+                    note: note  // Add the note data to the request
+                },
+                success: function (response) {
+                    window.location.reload();  // Reload the page after successful order creation
+                },
+                error: function (err) {
+                    console.error('Error creating order:', err);  // Log any error
+                }
+            });
+        }
+    });
+
+
+    const categoryButton = document.querySelector('.category-button');
+    const overlay = document.getElementById('overlay');
+    const containerWrapper = document.querySelector('.container-wrapper');
+    const sidebar = document.querySelector('.sidebar'); 
+
+    categoryButton.addEventListener('click', () => {
+        overlay.classList.add('d-block');
+        sidebar.classList.remove('d-none');
+        containerWrapper.classList.add('blur');
+    });
+
+    overlay.addEventListener('click', () => {
+        overlay.classList.remove('d-block');
+        sidebar.classList.add('d-none');
+        containerWrapper.classList.remove('blur');
+    });
+
+    overlay.addEventListener('mousemove', (event) => {
+        if (!sidebar.contains(event.target)) {
+            overlay.classList.remove('d-block');
+            sidebar.classList.add('d-none');
+            containerWrapper.classList.remove('blur');
+        }
+    });
+
+    function toggleCategorySub(categoryMain) {
+        var categorySubs = document.querySelectorAll('.category-sub');
+
+        categorySubs.forEach(function (sub) {
+            if (sub !== categoryMain.nextElementSibling) {
+                sub.style.display = "none";
+            }
+        });
+
+        var categorySub = categoryMain.nextElementSibling;
+
+        if (categorySub.style.display === "none" || categorySub.style.display === "") {
+            categorySub.style.display = "block";
+        } else {
+            categorySub.style.display = "none";
+        }
+    }
+        function formatCurrency(value) {
+        return new Intl.NumberFormat('vi-VN').format(value) + 'đ';
+    }
+
+    function updateCartItems() {
+        let grandTotal = 0;
+        const cartItemsData = Array.from(document.querySelectorAll('.cart-item')).map(item => {
+            const productId = item.dataset.productId;
+            const quantity = parseInt(item.querySelector('.qty').value, 10);
+            const price = parseFloat(item.querySelector('.product-price').value);
+
+            const totalPrice = price * quantity;
+            grandTotal += totalPrice;
+            item.querySelector('.cart-price').textContent = formatCurrency(totalPrice);
+
+            return { productId, quantity }; 
+        });
+
+        document.querySelector('.grand-total').textContent = formatCurrency(grandTotal);
+
+        const orderBtnGrandTotal = document.querySelector('.order-btn .grand-total');
+        if (orderBtnGrandTotal) {
+            orderBtnGrandTotal.textContent = formatCurrency(grandTotal);
+        }
+        console.log("Debug", cartItemsData);
+
+        $.ajax({
+            url: '@Url.Action("updatecart")',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(cartItemsData),
+            type: 'POST',
+            success: function (data) {
+                console.log('Cart updated successfully.');
+            },
+            error: function (err) {
+                console.log('Error updating cart:', err);
+            }
+        });
+    }
+
+
+    function removeFromCart(productId) {
+        console.log('Remove productId: ' + productId);
+
+        $.ajax({
+            url: '@Url.Action("RemoveCart", "Cart")',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(productId),
+            success: function (data) {
+                updateCartCount();
+                updateCartItems();
+                location.reload();
+            },
+            error: function (err) {
+                console.log('Error removing product:', err);
+            }
+        });
+    }
+
+    function updateCartCount() {
+        $.ajax({
+            url: '/cart/count',
+            type: 'GET',
+            success: function (data) {
+                console.log("Debug cart count: " + data);
+                    $('.cart-amount').text(data);
+            },
+            error: function (err) {
+                console.log('Error fetching cart count:', err);
+            }
+        });
+    }
+    function decreaseQuantity(productId) {
+        const quantityInput = document.getElementById(`quantity-${productId}`);
+        const currentValue = parseInt(quantityInput.value, 10);
+        if (currentValue > parseInt(quantityInput.min, 10)) {
+            quantityInput.value = currentValue - 1;
+            updateCartItems();
+        }
+    }
+
+    function increaseQuantity(productId) {
+        const quantityInput = document.getElementById(`quantity-${productId}`);
+        const currentValue = parseInt(quantityInput.value, 10);
+        if (currentValue < parseInt(quantityInput.max, 10)) {
+            quantityInput.value = currentValue + 1;
+            updateCartItems();
+        }
+    }
+    document.addEventListener('DOMContentLoaded', updateCartItems());
+
+    function openPaymentMethodModal() {
+        $('#paymentMethodModal').modal('show');
+    }
+</script>

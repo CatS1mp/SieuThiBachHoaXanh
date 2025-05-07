@@ -1,0 +1,29 @@
+﻿@model List<BachHoaXanh.ViewModels.CategoryViewModel>
+
+<div class="sidebar" style="scrollbar-gutter: stable;">
+    <div class="category-container">
+        @foreach (var category in Model)
+        {
+            <div class="category">
+                <div class="category-main" onclick="toggleCategorySub(this)">
+                    <strong>@category.CategoryName</strong>
+                </div>
+                <div class="category-sub" style="display: none;">
+                    @foreach (var subCategory in category.SubCategories)
+                    {
+                        <div class="category-sub-item">
+                            <a href="@Url.Action("Index", "Home", new { categoryId = category.CategoryID })">@subCategory.SubCategoryName</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function toggleCategorySub(categoryMain) {
+        var sub = categoryMain.nextElementSibling;
+        sub.style.display = (sub.style.display === "none" || sub.style.display === "") ? "block" : "none";
+    }
+</script>

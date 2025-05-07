@@ -1,0 +1,41 @@
+﻿@model BachHoaXanh.ViewModels.CategoryViewModel
+
+@{
+    ViewData["Title"] = "Thêm danh mục chính";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="main-panel">
+    <nav class="navbar navbar-default navbar-fixed">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">Quản lý danh mục</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div class="container-fluid">
+            <div class="card center-block" style="max-width: 60%;">
+                <div class="header">
+                    <h4 class="title">Thêm danh mục mới</h4>
+                </div>
+                <div class="content">
+                    <form asp-action="CategoryAdd" method="post">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Tên danh mục:</label>
+                                    <input asp-for="CategoryName" class="form-control" />
+                                    <span asp-validation-for="CategoryName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-info btn-fill pull-right">Thêm danh mục</button>
+                        <div class="clearfix"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

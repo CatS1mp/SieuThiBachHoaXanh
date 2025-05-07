@@ -1,0 +1,165 @@
+﻿@model IEnumerable<BachHoaXanh.Models.Order>
+@{
+    ViewData["Title"] = "Lịch sử mua hàng";
+}
+
+<style>
+</style>
+
+<div class="container-wrapper">
+
+    @await Html.PartialAsync("_SidebarOverplay")
+</div>
+
+<div class="container-small-wrapper">
+
+    <div class="breadcrumb-container">
+        <div class="breadcrumb-icon d-inline-block">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        <p>Lịch sử mua hàng của bạn</p>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="order-container" style="height: 500px; background-color: #fff;">
+            <div class="order-empty">
+                <i class="icon fa-sharp fa-solid fa-plus"></i>
+                <p>Có vẻ bạn chưa có đơn hàng nào, tiếp tục mua sắm cùng <a href="@Url.Action("Index","Home")" style="">Bách Hoá Xanh</a> nhé!</p>
+            </div>
+        </div>
+    }
+
+    <div class="order-container">
+        @foreach (var order in Model)
+        {
+            <div class="order-card">
+                <div class="order-card-header">
+                    <div class="order-info">
+                        <p class="order-date mb-0">Ngày đặt: <b>@order.CreatedAt.ToString("dd/MM/yyyy - HH:mm")</b></p>
+                        <p class="order-id mb-0">Đơn hàng: #@order.OrderID</p>
+                    </div>
+                    <div class="order-summary">
+                        <p class="order-status mb-0">Trạng thái: <b>@order.OrderStatus</b></p>
+                        <p class="order-total mb-0">@order.TotalAmount.ToString("N0")đ</p>
+                    </div>
+                </div>
+
+                <div class="order-card-body">
+                    @foreach (var item in order.OrderDetails.Take(5)) 
+                    {
+                        var productImages = item.Product.Images;
+
+                        if (productImages != null && productImages.Any())
+                        {
+                            var mainImagePath = productImages.FirstOrDefault(img => img.IsMainImage)?.ImagePath;
+
+                            if (mainImagePath != null)
+                            {
+                                <img src="~/images/@mainImagePath" alt="@item.Product.ProductName">
+                            }
+                            else
+                            {
+                                <img src="~/images/default-image.png" alt="@item.Product.ProductName">
+                            }
+                        }
+                        else
+                        {
+                            // If there are no images at all, display a default image
+                            <img src="~/images/default-image.png" alt="@item.Product.ProductName">
+                        }
+                    }
+
+                    @if (order.OrderDetails.Count() > 5)
+                    {
+                        <div class="extra-products">
+                            <span>+@(order.OrderDetails.Count() - 5)</span>
+                        </div>
+                    }
+                </div>
+
+
+                <div class="order-card-footer">
+                    <a href="@Url.Action("Detail", "Order", new { id = order.OrderID })" class="btn btn-details">Chi tiết</a>
+
+                    @if (order.OrderStatus == "Cancelled")
+                    {
+                        <button class="btn btn-cancel" disabled>Đã huỷ</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-reorder" onclick="cancelOrder(@order.OrderID)">Huỷ đơn</button>
+                    }
+                </div>
+
+            </div>
+        }
+
+    </div>
+</div>
+
+<script>
+    const categoryButton = document.querySelector('.category-button');
+    const overlay = document.getElementById('overlay');
+    const containerWrapper = document.querySelector('.container-wrapper');
+    const sidebar = document.querySelector('.sidebar'); // Thêm selector cho sidebar
+
+    categoryButton.addEventListener('click', () => {
+        overlay.classList.add('d-block');
+        sidebar.classList.remove('d-none');
+        containerWrapper.classList.add('blur');
+    });
+
+    overlay.addEventListener('click', () => {
+        overlay.classList.remove('d-block');
+        sidebar.classList.add('d-none');
+        containerWrapper.classList.remove('blur');
+    });
+
+    overlay.addEventListener('mousemove', (event) => {
+        if (!sidebar.contains(event.target)) {
+            overlay.classList.remove('d-block');
+            sidebar.classList.add('d-none');
+            containerWrapper.classList.remove('blur');
+        }
+    });
+
+    function toggleCategorySub(categoryMain) {
+        var categorySubs = document.querySelectorAll('.category-sub');
+
+        categorySubs.forEach(function (sub) {
+            if (sub !== categoryMain.nextElementSibling) {
+                sub.style.display = "none";
+            }
+        });
+
+        var categorySub = categoryMain.nextElementSibling;
+
+        if (categorySub.style.display === "none" || categorySub.style.display === "") {
+            categorySub.style.display = "block";
+        } else {
+            categorySub.style.display = "none";
+        }
+    }
+    function cancelOrder(orderId) {
+        if (confirm("Bạn chắc chắn muốn huỷ đơn này?")) {
+            $.ajax({
+                url: '@Url.Action("CancelOrder", "Order")',
+                type: 'POST',
+                data: { id: orderId },
+                success: function (response) {
+                    if (response.success) {
+                        alert("Đơn hàng đã được huỷ!");
+                        location.reload();
+                    } else {
+                        alert("Không thể huỷ đơn hàng.");
+                    }
+                },
+                error: function () {
+                    alert("Có lỗi xảy ra. Vui lòng thử lại sau.");
+                }
+            });
+        }
+    }
+
+</script>

@@ -1,0 +1,74 @@
+﻿@model BachHoaXanh.Models.User
+
+@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+}
+
+
+<div class="container-wrapper">
+    @await Html.PartialAsync("_SidebarOverplay")
+</div>
+
+<div class="container-small-wrapper">
+    <!-- Sidebar -->
+
+    <div class="breadcrumb-container">
+        <div class="breadcrumb-icon d-inline-block">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        <p>Đây là nơi bạn có thể đăng ký tài khoản mới</p>
+    </div>
+
+    <div class="auth-container">
+        <h2>Đăng Ký</h2>
+        <form asp-action="Register" method="post">
+            <div class="form-group">
+                <label for="UserName">Tên đăng nhập</label>
+                <input type="text" id="UserName" asp-for="UserName" placeholder="Nhập tên đăng nhập" required class="form-control" />
+                @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                <label for="FullName">Họ và Tên</label>
+                <input type="text" id="FullName" asp-for="FullName" placeholder="Nhập họ và tên" required class="form-control" />
+                @Html.ValidationMessageFor(model => model.FullName, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                <label for="Email">Email</label>
+                <input type="email" id="Email" asp-for="Email" placeholder="Nhập email" required class="form-control" />
+                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                <label for="Phone">Số điện thoại</label>
+                <input type="number" id="Phone" asp-for="Phone" placeholder="Nhập số điện thoại" required class="form-control" />
+                @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                <label for="Password">Mật khẩu</label>
+                <div class="password-wrapper">
+                    <input type="password" id="Password" asp-for="Password" placeholder="Nhập mật khẩu" required class="form-control" />
+                    <span class="toggle-password" onclick="togglePassword('Password', this)">👁️</span>
+                </div>
+                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+            </div>
+
+            <button type="submit" class="auth-btn">Đăng Ký</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function togglePassword(inputId, iconElement) {
+    const input = document.getElementById(inputId);
+    if (input.type === "password") {
+        input.type = "text";
+        iconElement.textContent = "🙈";
+        } else {
+        input.type = "password";
+        iconElement.textContent = "👁️";
+    }
+    }
+</script>

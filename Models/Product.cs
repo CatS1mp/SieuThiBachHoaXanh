@@ -1,0 +1,38 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace BachHoaXanh.Models
+{
+    [Table("Products")]
+
+    public class Product
+    {
+        [Key]
+        public int ProductID { get; set; }
+
+        [Required]
+        [StringLength(250)]
+        public string ProductName { get; set; }
+
+        public string Description { get; set; }
+
+        [Required]
+        [Range(0, double.MaxValue)]
+        public decimal Price { get; set; }
+
+        public int StockQuantity { get; set; } = 0;
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public DateTime? UpdatedAt { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        [ForeignKey("SubCategoryID")]
+        public SubCategory SubCategory { get; set; }
+        public int? SubCategoryID { get; set; }
+
+        public List<ProductImage> Images { get; set; }
+    }
+
+}

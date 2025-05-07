@@ -1,0 +1,24 @@
+﻿<!-- Sidebar -->
+<div class="overlay" id="overlay"></div>
+<div class="sidebar popup-sidebar d-none" style="scrollbar-gutter: stable;">
+    <div class="category-container">
+        @foreach (var category in (List<Category>)Context.Items["Categories"])
+        {
+            <div class="category">
+                <div class="category-main" onclick="toggleCategorySub(this)">
+                    <strong>@category.CategoryName</strong>
+                </div>
+                <div class="category-sub" style="display: none;">
+                    @foreach (var subCategory in category.SubCategories)
+                    {
+                        <div class="category-sub-item">
+                            <a href="@Url.Action("Index", "Home", new { danhmuc = subCategory.SubCategoryID })">
+                            @subCategory.SubCategoryName
+                                    </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

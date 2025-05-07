@@ -1,0 +1,110 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<div class="container-wrapper">
+    @await Html.PartialAsync("_SidebarOverplay")
+</div>
+
+<div class="container-small-wrapper">
+
+    <div class="breadcrumb-container">
+        <div class="breadcrumb-icon d-inline-block">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        <p>Đây là sdjnakjsfjknnj a</p>
+    </div>
+
+    <div class="profile-container">
+        <h2>Thông tin tài khoản</h2>
+        <form action="#" method="POST">
+            <div class="form-group">
+                <label for="username">Tên đăng nhập</label>
+                <input type="text" id="username" name="username" disabled value="username">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Nhập email">
+            </div>
+            <div class="form-group">
+                <label for="phone">Số điện thoại</label>
+                <input type="tel" id="phone" name="phone" placeholder="Nhập số điện thoại">
+            </div>
+            <div class="form-group">
+                <label>Giới tính</label>
+                <div class="gender-options">
+                    <input type="radio" id="male" name="gender" value="male">
+                    <label for="male">Nam</label>
+                    <input type="radio" id="female" name="gender" value="female">
+                    <label for="female">Nữ</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="password">Mật khẩu</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Nhập mật khẩu">
+                    <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
+                </div>
+            </div>
+            <button type="submit" class="auth-btn">Lưu thay đổi</button>
+        </form>
+
+    </div>
+</div>
+<script>
+
+    const categoryButton = document.querySelector('.category-button');
+    const overlay = document.getElementById('overlay');
+    const containerWrapper = document.querySelector('.container-wrapper');
+    const sidebar = document.querySelector('.sidebar'); // Thêm selector cho sidebar
+
+    categoryButton.addEventListener('click', () => {
+       overlay.classList.add('d-block');
+       sidebar.classList.remove('d-none');
+       containerWrapper.classList.add('blur');
+    });
+
+    overlay.addEventListener('click', () => {
+       overlay.classList.remove('d-block');
+       sidebar.classList.add('d-none');
+       containerWrapper.classList.remove('blur');
+    });
+
+    overlay.addEventListener('mousemove', (event) => {
+       if (!sidebar.contains(event.target)) {
+          overlay.classList.remove('d-block');
+          sidebar.classList.add('d-none');
+          containerWrapper.classList.remove('blur');
+       }
+    });
+
+    function toggleCategorySub(categoryMain) {
+       var categorySubs = document.querySelectorAll('.category-sub');
+
+       categorySubs.forEach(function (sub) {
+          if (sub !== categoryMain.nextElementSibling) {
+             sub.style.display = "none";
+          }
+       });
+
+       var categorySub = categoryMain.nextElementSibling;
+
+       if (categorySub.style.display === "none" || categorySub.style.display === "") {
+          categorySub.style.display = "block";
+       } else {
+          categorySub.style.display = "none";
+       }
+    }
+    function togglePassword(inputId, iconElement) {
+       const input = document.getElementById(inputId);
+       if (input.type === "password") {
+          input.type = "text";
+          iconElement.textContent = "🙈"; // Icon đổi thành 'ẩn'
+       } else {
+          input.type = "password";
+          iconElement.textContent = "👁️"; // Icon đổi thành 'hiện'
+       }
+    }
+
+</script>

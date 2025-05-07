@@ -1,0 +1,51 @@
+﻿@model BachHoaXanh.Models.SubCategory
+
+@{
+    ViewData["Title"] = "Thêm danh mục con";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="main-panel">
+    <nav class="navbar navbar-default navbar-fixed">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">Quản lý danh mục</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div class="container-fluid">
+            <div class="card center-block" style="max-width: 60%;">
+                <div class="header">
+                    <h4 class="title">Thêm danh mục con</h4>
+                </div>
+                <div class="content">
+                    <form asp-action="SubCategoryAdd" method="post" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <!-- Input for SubCategory Name -->
+                                <div class="form-group">
+                                    <label asp-for="SubCategoryName" class="control-label">Tên danh mục con</label>
+                                    <input asp-for="SubCategoryName" class="form-control" />
+                                    <span asp-validation-for="SubCategoryName" class="text-danger"></span>
+                                </div>
+
+                                <!-- Dropdown for selecting Category -->
+                                <div class="form-group">
+                                    <label asp-for="CategoryID" class="control-label">Danh mục</label>
+                                    <select asp-for="CategoryID" asp-items="ViewBag.CategoryList" class="form-control">
+                                        <option value="">-- Chọn danh mục --</option>
+                                    </select>
+                                    <span asp-validation-for="CategoryID" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-info btn-fill pull-right">Thêm danh mục con</button>
+                        <div class="clearfix"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

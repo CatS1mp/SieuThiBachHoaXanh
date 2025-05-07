@@ -1,0 +1,112 @@
+﻿@model BachHoaXanh.ViewModels.AdminViewModel
+
+@{
+    ViewData["Title"] = "Thống kê";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="main-panel">
+    <nav class="navbar navbar-default navbar-fixed">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">Dashboard</a>
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="@Url.Action("Logout","User")">
+                            <p>Đăng xuất tài khoản</p>
+                        </a>
+                    </li>
+                    <li class="separator hidden-lg"></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Tổng hóa đơn -->
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="header">
+                            <h4 class="title">Tổng hóa đơn</h4>
+                        </div>
+                        <div class="content">
+                             <h3>@Model.Orders.Count()</h3>
+                            <p>Đơn hàng đã xử lý</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tổng sản phẩm -->
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="header">
+                            <h4 class="title">Tổng sản phẩm</h4>
+                        </div>
+                        <div class="content">
+                            <h3>@Model.Products.Count()</h3>
+                            <p>Sản phẩm hiện có</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tổng người dùng -->
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="header">
+                            <h4 class="title">Tổng người dùng</h4>
+                        </div>
+                        <div class="content">
+                            <h3>@Model.Users.Count()</h3>
+                            <p>Người dùng đã đăng ký</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <!-- Tổng hóa đơn -->
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="header">
+                            <h4 class="title">Tổng danh mục</h4>
+                        </div>
+                        <div class="content">
+                            <h3>@Model.Categories.Count()</h3>
+                            <p>Số lượng danh mục</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tổng sản phẩm -->
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="header">
+                            <h4 class="title">Tổng danh mục con</h4>
+                        </div>
+                        <div class="content">
+                            <h3>@Model.SubCategories.Count()</h3>
+                            <p>Số lượng danh mục con</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tổng người dùng -->
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="header">
+                            <h4 class="title">Tổng phương thức thanh toán</h4>
+                        </div>
+                        <div class="content">
+                            <h3>@Model.PaymentMethods.Count()</h3>
+                            <p>Số lượng phương thức thanh toán</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
