@@ -45,7 +45,7 @@
                     }
                     <h3 class="product-name">@product.ProductName</h3>
                     <div class="product-info">
-                        <p class="product-price">Giá: <b>@product.Price.ToString("") VNĐ</b></p>
+                        <p class="product-price">Giá: <b>@product.Price.ToString("N0") VNĐ</b></p>
                     </div>
                     <div class="product-btn"><a href="@Url.Action("Detail", "Home", new { id = product.ProductID })" class="btn">Chi tiết</a></div>
                 </div>

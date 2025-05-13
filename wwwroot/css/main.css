@@ -249,7 +249,29 @@ ol {
     }
 
 
+/* ========== OPTION ========== */
+.option-container {
+    margin-bottom: 20px;
+    position: relative;
+}
+.option {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 14px;
+    color: #222;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-top: 1px solid #ddd;
+}
 
+    .option:hover {
+        color: var(--third-color);
+        cursor: pointer;
+    }
+    .option a {
+        display: block; /* Biến thẻ <a> thành block để xuống dòng */
+        font-weight: bold;
+    }
 
 /* ========== CATEGORY ========== */
 .category-container {
@@ -838,7 +860,6 @@ ol {
         color: #007bff;
         cursor: pointer;
         text-align: right;
-        margin-bottom: 25px;
         position: relative;
     }
 

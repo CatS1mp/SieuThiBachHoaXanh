@@ -35,4 +35,18 @@ namespace BachHoaXanh.Models
         public List<ProductImage> Images { get; set; }
     }
 
+    [Table("FavoriteProducts")]
+    public class FavoriteProduct
+    {
+        [Key]
+        public int FavoriteID { get; set; }
+        public int UserID { get; set; } // Tham chiếu đến ASP.NET Identity User
+        public int ProductID { get; set; }
+        [ForeignKey("UserID")]
+        public User Users { get; set; }  // Navigation property
+        [ForeignKey("ProductID")]
+        public Product Product { get; set; }       // Navigation property
+    }
+
+
 }

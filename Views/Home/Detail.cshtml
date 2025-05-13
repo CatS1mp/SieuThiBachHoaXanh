@@ -1,15 +1,15 @@
-﻿@model BachHoaXanh.Models.Product
+﻿@model BachHoaXanh.ViewModels.ProductDetailViewModel
 @{
-    ViewData["Title"] = "Sản phẩm " + Model.ProductName;
+    ViewData["Title"] = "Sản phẩm " + Model.Product.ProductName;
 }
-
+<link rel="stylesheet" href="~/css/product-detail.css">
 <div class="container-wrapper">
     @await Html.PartialAsync("_SidebarOverplay")
     <div class="breadcrumb-container">
         <div class="breadcrumb-icon d-inline-block">
             <i class="fas fa-chevron-left"></i>
         </div>
-        <p>Xem chi tiết sản phẩm <b>#(@Model.ProductID)</b></p>
+        <p>Xem chi tiết sản phẩm <b>#(@Model.Product.ProductID)</b></p>
     </div>
 
     <div class="product-detail-container">
@@ -19,7 +19,7 @@
                 <div class="main-swiper">
                     <div class="swiper mySwiper">
                         <div class="swiper-wrapper">
-                            @foreach (var image in Model.Images)
+                            @foreach (var image in Model.Product.Images)
                             {
                                 <div class="swiper-slide">
                                     <a href="#" data-fancybox="gallery">
@@ -40,7 +40,7 @@
                 <div class="sub-swiper">
                     <div thumbsSlider="" class="swiper mySwiper2">
                         <div class="swiper-wrapper">
-                            @foreach (var image in Model.Images)
+                            @foreach (var image in Model.Product.Images)
                             {
                                 <div class="swiper-slide">
                                     <img src="~/images/@image.ImagePath" />
@@ -55,42 +55,50 @@
                 <p class="label">Thông tin sản phẩm</p>
                 <div class="divine"></div>
                 <br>
-                <p>@Model.Description</p>
+                <p>@Model.Product.Description</p>
             </div>
         </div>
 
         <div class="pdetail-right">
-            <p class="pname">@Model.ProductName</p>
-            <div class="pshare" onclick="showShareMessage()"><i class="fa-solid fa-share-from-square pr-1"></i>Chia sẻ</div>
+            <p class="pname">@Model.Product.ProductName</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px">
+                <span class="favorite"
+                      onclick="toggleFavorite(@Model.Product.ProductID, this)"
+                      data-is-favorited="@Model.isFav.ToString().ToLower()">
+                    <img class="icon-fav" src="~/images/@(Model.isFav ? "favor.png" : "unfavor.png")" />
+                    @(Model.isFav ? "Đã yêu thích" : "Yêu thích")
+                </span>
+                <div class="pshare" onclick="showShareMessage()"><i class="fa-solid fa-share-from-square pr-1"></i>Chia sẻ</div>
+            </div>
 
-            <form id="cartForm" action="@Url.RouteUrl("them-gio-hang", new { productid = Model.ProductID })" method="post">
-                <input type="hidden" name="ProductID" value="@Model.ProductID" />
+            <form id="cartForm" action="@Url.RouteUrl("them-gio-hang", new { productid = Model.Product.ProductID })" method="post">
+                <input type="hidden" name="ProductID" value="@Model.Product.ProductID" />
     
                 <!-- Quantity Controls -->
                 <div class="qty-controls">
                     <p class="label">Số lượng:</p>
                     <div>
                         <button type="button" class="qtyminus" aria-hidden="true">&minus;</button>
-                        <input type="number" id="qty" name="quantity" min="1" max="@Model.StockQuantity" step="1" value="1">
+                        <input type="number" id="qty" name="quantity" min="1" max="@Model.Product.StockQuantity" step="1" value="1">
                         <button type="button" class="qtyplus" aria-hidden="true">&plus;</button>
                     </div>
                 </div>
 
                 <p class="kho">
-                    Sản phẩm này còn <b><u>@Model.StockQuantity</u></b> sản phẩm trong kho
+                    Sản phẩm này còn <b><u>@Model.Product.StockQuantity</u></b> sản phẩm trong kho
                 </p>
 
                 <!-- Price Display -->
                 <div class="pprice-container">
                     <p class="label">Giá:</p>
                     <div class="price-controlers">
-                        <p class="price main-price"><b>@Model.Price<sup><u>đ</u></sup></b></p>
+                        <p class="price main-price"><b>@(Model.Product.Price.ToString("N0"))<sup><u>đ</u></sup></b></p>
                     </div>
                 </div>
                 <div class="pprice-container">
                     <p class="label">Tạm tính:</p>
                     <div class="pprice-controllers">
-                        <p id="temporary-price" class="price main-price"><b>@Model.Price <sup><u>đ</u></sup></b></p>
+                        <p id="temporary-price" class="price main-price"><b>@(Model.Product.Price.ToString("N0")) <sup><u>đ</u></sup></b></p>
                     </div>
                 </div>
 
@@ -102,12 +110,12 @@
         </div>
     </div>
 </div>
-
+@section Scripts {
 <script>
     function showShareMessage() {
         const pshare = document.querySelector('.pshare');
         pshare.classList.add('active');
-        const productUrl = `${window.location.origin}/san-pham/${@Model.ProductID}`;
+        const productUrl = `${window.location.origin}/san-pham/${@Model.Product.ProductID}`;
     
         navigator.clipboard.writeText(productUrl)
             .then(() => {
@@ -126,7 +134,7 @@
     var btnminus = document.querySelector('.qtyminus');
     var btnplus = document.querySelector('.qtyplus');
     var temporaryPriceDisplay = document.querySelector('#temporary-price');
-    var pricePerUnit = @Model.Price;
+    var pricePerUnit = @((int)Model.Product.Price);
 
     if (input !== undefined && btnminus !== undefined && btnplus !== undefined && input !== null && btnminus !== null && btnplus !== null) {
         var min = Number(input.getAttribute('min'));
@@ -215,4 +223,32 @@
             categorySub.style.display = "none";
         }
     }
+    function getAntiForgeryToken() {
+        return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    }
+    async function toggleFavorite(productId, el) {
+        let isFavorited = el.dataset.isFavorited === "true"; // <-- lấy từ HTML
+
+        const url = isFavorited
+            ? '/Home/RemoveFromFavorites'
+                : '/Home/AddToFavorites';
+
+        const formData = new FormData();
+        formData.append("productId", productId);
+
+        const response = await fetch(url, {
+            method: "POST",
+            body: formData,
+            headers: {
+                'RequestVerificationToken': getAntiForgeryToken()
+            }
+        });
+
+        if (response.ok) {
+                location.reload();
+        } else {
+            alert("Có lỗi xảy ra khi gửi yêu cầu.");
+        }
+    }
 </script>
+}

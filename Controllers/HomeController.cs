@@ -1,10 +1,12 @@
 ﻿using BachHoaXanh.Data;
 using BachHoaXanh.Models;
 using BachHoaXanh.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Security.Claims;
 
 public class HomeController : Controller
 {
@@ -73,14 +75,77 @@ public class HomeController : Controller
     [Route("san-pham/{id}")]
     public IActionResult Detail(int id)
     {
-        var product = _context.ProductList.Include(p => p.SubCategory)
-                                           .ThenInclude(sc => sc.Category)
-                                           .Include(p => p.Images)
-                                           .FirstOrDefault(p => p.ProductID == id);
+        foreach (var claim in User.Claims)
+        {
+            Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
+        }
+
+        int userId = int.Parse(User.FindFirstValue("UserID"));
+
+        var product = _context.ProductList
+            .Include(p => p.SubCategory)
+            .ThenInclude(sc => sc.Category)
+            .Include(p => p.Images)
+            .FirstOrDefault(p => p.ProductID == id);
+        bool isFavorite = _context.FavoriteProductList
+        .Any(p => p.ProductID == id && p.UserID == userId);
         if (product == null)
         {
             return NotFound();
         }
-        return View(product);
+        var productViewModel = new ProductDetailViewModel
+        {
+            Product = product,
+            isFav = isFavorite
+        };
+        return View(productViewModel);
     }
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> AddToFavorites(int productId)
+    {
+        foreach (var claim in User.Claims)
+        {
+            Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
+        }
+        int userId = int.Parse(User.FindFirstValue("UserID"));
+        var exists = await _context.FavoriteProductList
+            .AnyAsync(f => f.UserID == userId && f.ProductID == productId);
+
+        if (!exists)
+        {
+            _context.FavoriteProductList.Add(new FavoriteProduct
+            {
+                UserID = userId,
+                ProductID = productId
+            });
+
+            await _context.SaveChangesAsync();
+        }
+
+        return RedirectToAction("Detail", new { id = productId });
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> RemoveFromFavorites(int productId)
+    {
+        foreach (var claim in User.Claims)
+        {
+            Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
+        }
+        int userId = int.Parse(User.FindFirstValue("UserID"));
+        var favorite = await _context.FavoriteProductList
+            .FirstOrDefaultAsync(f => f.UserID == userId && f.ProductID == productId);
+
+        if (favorite != null)
+        {
+            _context.FavoriteProductList.Remove(favorite);
+            await _context.SaveChangesAsync();
+        }
+
+        return RedirectToAction("Detail", new { id = productId });
+        }
 }
+
+

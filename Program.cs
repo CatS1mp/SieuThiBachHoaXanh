@@ -59,6 +59,7 @@ app.UseMiddleware<CategoryMiddleware>();
 app.UseAuthentication(); // Ensure authentication is used before authorization
 app.UseAuthorization();  // Ensure authorization comes after authentication
 
+
 // Map default controller route
 app.MapControllerRoute(
     name: "default",
