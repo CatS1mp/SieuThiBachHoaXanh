@@ -42,7 +42,7 @@
 
             <div class="form-group">
                 <label for="Phone">Số điện thoại</label>
-                <input type="number" id="Phone" asp-for="Phone" placeholder="Nhập số điện thoại" required class="form-control" />
+                <input type="tel" id="Phone" asp-for="Phone" placeholder="Nhập số điện thoại" required class="form-control" />
                 @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger" })
             </div>
 
