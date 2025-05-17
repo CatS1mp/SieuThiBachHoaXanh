@@ -280,6 +280,19 @@ namespace BachHoaXanh.Controllers
                 return NotFound();
             }
 
+            var model = new AddressViewModel
+            {
+                AddressID = address.AddressID,
+                Province = address.Province,
+                District = address.District,
+                Ward = address.Ward,
+                Street = address.Street,
+                IsDefault = address.IsDefault
+            };
+
+            return View(model);
+        }
+
         [Route("san-pham-yeu-thich")]
         [Authorize]
         public IActionResult Favorite(int page = 1, string search = "", int? danhmuc = null)
@@ -347,7 +360,7 @@ namespace BachHoaXanh.Controllers
             return View(productViewModel);
         }
 
-    }
+    
 
         [HttpPost]
         [ValidateAntiForgeryToken]
