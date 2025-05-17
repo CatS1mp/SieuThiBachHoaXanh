@@ -8,33 +8,6 @@
 <div class="container-wrapper">
     @await Html.PartialAsync("_SidebarOverplay")
 </div>
-<div class="container-wrapper">
-
-    @await Html.PartialAsync("UserSidebarPartial")
-    <div class="content flex-1 pl-[280px]"> 
-       
-
-        <div class="profile-container">
-            <div class="breadcrumb-icon d-inline-block">
-                <a href="/Home/Index" class="fas fa-chevron-left"></a>
-            </div>
-            <h2>Thông tin tài khoản</h2>
-            <form asp-action="UpdateProfile" method="post">
-        
-                @Html.AntiForgeryToken()    
-
-                <div class="form-group">
-                    <label for="username">Tên đăng nhập</label>
-                    <input type="text" id="username" name="UserName" value="@Model.UserName" readonly />
-                </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" asp-for="Email" name="email" placeholder="Nhập email" value="@Model.Email">
-                </div>
-                <div class="form-group">
-                    <label for="phone">Số điện thoại</label>
-                    <input type="tel" id="phone" asp-for="Phone" name="phone" placeholder="Nhập số điện thoại" value="@Model.Phone">
-                </div>
 <div class="container-small-wrapper">
     <div class="breadcrumb-container">
         <div class="breadcrumb-icon d-inline-block">
@@ -61,15 +34,6 @@
                 <input type="tel" id="phone" asp-for="Phone" name="phone" placeholder="Nhập số điện thoại" value="@Model.Phone">
                 <span asp-validation-for="Phone" class="text-danger"></span>
             </div>
-            
-                <div class="form-group">
-                      <label for="address">Địa chỉ</label>
-                      <textarea id="address" asp-for="Address" placeholder="Địa chỉ giao hàng"></textarea>
-                   </div>
-                <button type="submit" class="auth-btn">Lưu thay đổi</button>
-            </form>
-            @{
-                var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
             <div class="form-group">
                 <label for="address">Địa chỉ mặc định</label>
                 <textarea id="address" asp-for="Address" placeholder="Địa chỉ giao hàng">@Model.Address</textarea>
@@ -78,20 +42,6 @@
             <button type="submit" class="auth-btn">Lưu thay đổi</button>
         </form>
 
-                Console.WriteLine(role);
-
-                if (role == "Admin")
-                {
-                    <a href="@Url.Action("Index", "Admin")" type="submit" class="logout-btn">Đăng nhập vào trang quản lý</a>
-                }
-            }
-
-            <a href="@Url.Action("Logout","User")" type="submit" class="logout-btn">Đăng xuất tài khoản</a>
-
-
-        </div>
-    </div>
-</div>
         <h3>Danh sách địa chỉ</h3>
         <a href="@Url.Action("AddAddress", "User")" class="auth-btn">Thêm địa chỉ mới</a>
         <div class="address-list">
