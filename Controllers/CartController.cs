@@ -25,7 +25,9 @@ namespace BachHoaXanh.Controllers
         {
             var cartItems = GetCartItems();
             var userN = User.Identity.Name;
-            User u = _context.UserList.FirstOrDefault(u => u.UserName == userN);
+            User u = _context.UserList
+                .Include(u => u.Addresses)
+                .FirstOrDefault(u => u.UserName == userN);
             var model = new CartView
             {
                 CartItems = cartItems,
@@ -54,7 +56,7 @@ namespace BachHoaXanh.Controllers
             if (cartItem != null)
             {
                 cartItem.Quantity += quantity;
-                cartItem.Note = note ?? cartItem.Note; 
+                cartItem.Note = note ?? cartItem.Note;
                 cartItem.PaymentMethodID = paymentMethodID;
             }
             else
@@ -87,7 +89,7 @@ namespace BachHoaXanh.Controllers
                 if (cartItem != null)
                 {
                     cartItem.Quantity = item.Quantity;
-                    cartItem.Note = item.Note ?? cartItem.Note; // Update note
+                    cartItem.Note = item.Note ?? cartItem.Note;
                     cartItem.PaymentMethodID = item.PaymentMethodID != 0 ? item.PaymentMethodID : cartItem.PaymentMethodID;
                 }
             }
@@ -105,13 +107,13 @@ namespace BachHoaXanh.Controllers
                 return BadRequest("Product ID is required.");
             }
 
-            var cart = GetCartItems(); 
-            var cartItem = cart.FirstOrDefault(p => p.ProductID == productId); 
+            var cart = GetCartItems();
+            var cartItem = cart.FirstOrDefault(p => p.ProductID == productId);
 
             if (cartItem != null)
             {
                 cart.Remove(cartItem);
-                SaveCartSession(cart); 
+                SaveCartSession(cart);
             }
 
             return Json(new { success = true, cartCount = cart.Count() });
@@ -119,11 +121,10 @@ namespace BachHoaXanh.Controllers
 
         public int GetCartItemCount()
         {
-            var cartItems = GetCartItems(); 
-            return cartItems.Sum(ci => ci.Quantity); 
+            var cartItems = GetCartItems();
+            return cartItems.Sum(ci => ci.Quantity);
         }
 
-        // Retrieve cart items from session
         public List<CartItem> GetCartItems()
         {
             var session = HttpContext.Session;
@@ -132,32 +133,31 @@ namespace BachHoaXanh.Controllers
                 ? JsonConvert.DeserializeObject<List<CartItem>>(jsonCart)
                 : new List<CartItem>();
         }
+
         [HttpPost]
         [Route("cap-nhat-phuong-thuc-thanh-toan")]
         public IActionResult UpdatePaymentMethod([FromBody] int paymentMethodID)
         {
-            Console.WriteLine("Payement id request update is: " + paymentMethodID);
             if (paymentMethodID == 0)
             {
                 return BadRequest("Payment Method ID is required.");
             }
 
-            var cart = GetCartItems(); 
+            var cart = GetCartItems();
             foreach (var cartItem in cart)
             {
                 cartItem.PaymentMethodID = paymentMethodID;
             }
 
             SaveCartSession(cart);
-
             return Ok(new { message = "Payment method updated successfully." });
         }
 
-        // Clear the cart
         private void ClearCart()
         {
             HttpContext.Session.Remove(CARTKEY);
         }
+
         [HttpPost]
         [Route("xoa-het-gio-hang")]
         public IActionResult ClearAllCart()
@@ -180,10 +180,11 @@ namespace BachHoaXanh.Controllers
             string jsonCart = JsonConvert.SerializeObject(cartItems);
             session.SetString(CARTKEY, jsonCart);
         }
+
         [HttpPost]
         [Route("tao-don-hang")]
         [Authorize]
-        public IActionResult CreateOrder([FromForm] string note)
+        public IActionResult CreateOrder([FromForm] int shippingAddressID, [FromForm] string note)
         {
             var cartItems = GetCartItems();
             if (!cartItems.Any())
@@ -203,18 +204,29 @@ namespace BachHoaXanh.Controllers
                 return NotFound("Người dùng không tồn tại.");
             }
 
+            // Lấy địa chỉ từ shippingAddressID
+            var address = _context.Addresses
+                .FirstOrDefault(a => a.AddressID == shippingAddressID && a.UserID == u.UserID);
+            if (address == null)
+            {
+                return BadRequest("Địa chỉ giao hàng không hợp lệ.");
+            }
+
             var paymentMethodID = cartItems.FirstOrDefault()?.PaymentMethodID ?? 1;
             if (paymentMethodID == 0)
             {
                 return BadRequest("Phương thức thanh toán không hợp lệ.");
             }
 
+            // Tạo chuỗi địa chỉ đầy đủ từ Address
+            string fullAddress = $"{address.Street}, {address.Ward}, {address.District}, {address.Province}";
+
             var order = new Order
             {
                 UserID = u.UserID,
                 TotalAmount = cartItems.Sum(ci => ci.Quantity * ci.Product.Price),
                 PaymentMethodID = paymentMethodID,
-                ShippingAddress = u.Address,
+                ShippingAddress = fullAddress,
                 CreatedAt = DateTime.Now,
                 OrderStatus = "Pending",
                 Note = note
@@ -242,10 +254,5 @@ namespace BachHoaXanh.Controllers
 
             return Ok(new { message = "Đơn hàng đã được tạo thành công", orderID = order.OrderID });
         }
-
-
-
-
     }
-
 }

@@ -11,12 +11,12 @@ using Microsoft.AspNetCore.Identity;
 using BachHoaXanh.Helpers;
 using BachHoaXanh.ViewModels;
 using System.Net;
+using System.Linq;
 
 namespace BachHoaXanh.Controllers
 {
     public class UserController : Controller
     {
-
         private readonly ApplicationDbContext _context;
         private readonly ILogger<UserController> _logger;
 
@@ -93,9 +93,9 @@ namespace BachHoaXanh.Controllers
                         _logger.LogInformation($"User {user.UserName} authenticated successfully.");
 
                         var claims = new List<Claim> {
-                          new Claim("UserID", user.UserID.ToString()),
-                          new Claim(ClaimTypes.Name, user.UserName),
-                          new Claim(ClaimTypes.Role, user.Role)
+                            new Claim("UserID", user.UserID.ToString()),
+                            new Claim(ClaimTypes.Name, user.UserName),
+                            new Claim(ClaimTypes.Role, user.Role)
                         };
 
                         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -139,40 +139,39 @@ namespace BachHoaXanh.Controllers
         [Authorize]
         public IActionResult Profile()
         {
-            // Debug: Ghi log tất cả claims của người dùng
             _logger.LogInformation("User Claims:");
             foreach (var claim in User.Claims)
             {
                 _logger.LogInformation("Claim Type: {Type}, Value: {Value}", claim.Type, claim.Value);
             }
 
-            // Lấy UserName từ User.Identity.Name
             var userName = User.Identity.Name;
             _logger.LogInformation("User.Identity.Name: {UserName}", userName ?? "null");
 
-            // Truy vấn người dùng từ cơ sở dữ liệu
-            var user = _context.UserList.FirstOrDefault(u => u.UserName == userName);
+            var user = _context.UserList
+                .Include(u => u.Addresses)
+                .FirstOrDefault(u => u.UserName == userName);
             if (user == null)
             {
                 _logger.LogWarning("Không tìm thấy người dùng với UserName: {UserName}", userName);
                 return NotFound();
             }
 
-            // Debug: Ghi log thông tin người dùng tìm được
             _logger.LogInformation("Tìm thấy người dùng: UserName={UserName}, Email={Email}, Address={Address}, Phone={Phone}",
                 user.UserName, user.Email, user.Address, user.Phone);
 
-            // Tạo model để truyền sang view
             var model = new UpdateProfileView
             {
                 UserName = user.UserName,
                 Email = user.Email,
                 Address = user.Address,
-                Phone = user.Phone
+                Phone = user.Phone,
+                Addresses = user.Addresses?.ToList() ?? new List<Address>()
             };
 
             return View(model);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("thong-tin-tai-khoan")]
@@ -197,9 +196,164 @@ namespace BachHoaXanh.Controllers
                 }
             }
 
+            // Reload addresses if model state is invalid
+            var userWithAddresses = await _context.UserList
+                .Include(u => u.Addresses)
+                .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+            model.Addresses = userWithAddresses?.Addresses?.ToList() ?? new List<Address>();
+
             return View("Profile", model);
         }
 
-    }
+        [HttpGet]
+        [Route("them-dia-chi")]
+        [Authorize]
+        public IActionResult AddAddress()
+        {
+            return View(new AddressViewModel());
+        }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("them-dia-chi")]
+        [Authorize]
+        public async Task<IActionResult> AddAddress(AddressViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var userName = User.Identity.Name;
+                var user = await _context.UserList.FirstOrDefaultAsync(u => u.UserName == userName);
+
+                if (user != null)
+                {
+                    var address = new Address
+                    {
+                        UserID = user.UserID,
+                        Province = model.Province,
+                        District = model.District,
+                        Ward = model.Ward,
+                        Street = model.Street,
+                        IsDefault = model.IsDefault
+                    };
+
+                    // If setting as default, unset other default addresses
+                    if (model.IsDefault)
+                    {
+                        var existingAddresses = await _context.Addresses
+                            .Where(a => a.UserID == user.UserID && a.IsDefault)
+                            .ToListAsync();
+                        foreach (var addr in existingAddresses)
+                        {
+                            addr.IsDefault = false;
+                            _context.Addresses.Update(addr);
+                        }
+                    }
+
+                    _context.Addresses.Add(address);
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction("Profile");
+                }
+                ModelState.AddModelError("", "User not found.");
+            }
+
+            return View(model);
+        }
+
+        [HttpGet]
+        [Route("sua-dia-chi/{id}")]
+        [Authorize]
+        public async Task<IActionResult> EditAddress(int id)
+        {
+            var userName = User.Identity.Name;
+            var address = await _context.Addresses
+                .Where(a => a.AddressID == id && a.User.UserName == userName)
+                .FirstOrDefaultAsync();
+
+            if (address == null)
+            {
+                return NotFound();
+            }
+
+            var model = new AddressViewModel
+            {
+                AddressID = address.AddressID,
+                Province = address.Province,
+                District = address.District,
+                Ward = address.Ward,
+                Street = address.Street,
+                IsDefault = address.IsDefault
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("sua-dia-chi/{id}")]
+        [Authorize]
+        public async Task<IActionResult> EditAddress(int id, AddressViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var userName = User.Identity.Name;
+                var address = await _context.Addresses
+                    .Where(a => a.AddressID == id && a.User.UserName == userName)
+                    .FirstOrDefaultAsync();
+
+                if (address == null)
+                {
+                    return NotFound();
+                }
+
+                address.Province = model.Province;
+                address.District = model.District;
+                address.Ward = model.Ward;
+                address.Street = model.Street;
+                address.IsDefault = model.IsDefault;
+
+                // If setting as default, unset other default addresses
+                if (model.IsDefault)
+                {
+                    var existingAddresses = await _context.Addresses
+                        .Where(a => a.UserID == address.UserID && a.IsDefault && a.AddressID != id)
+                        .ToListAsync();
+                    foreach (var addr in existingAddresses)
+                    {
+                        addr.IsDefault = false;
+                        _context.Addresses.Update(addr);
+                    }
+                }
+
+                _context.Addresses.Update(address);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("Profile");
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("xoa-dia-chi/{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAddress(int id)
+        {
+            var userName = User.Identity.Name;
+            var address = await _context.Addresses
+                .Where(a => a.AddressID == id && a.User.UserName == userName)
+                .FirstOrDefaultAsync();
+
+            if (address == null)
+            {
+                return NotFound();
+            }
+
+            _context.Addresses.Remove(address);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Profile");
+        }
+    }
 }

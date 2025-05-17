@@ -17,6 +17,7 @@ namespace BachHoaXanh.Data
         public DbSet<Order> OrderList { get; set; }
         public DbSet<OrderDetail> OrderDetailList { get; set; }
         public DbSet<PaymentMethod> PaymentMethodList { get; set; }
+        public DbSet<Address> Addresses { get; set; }
 
     }
 
