@@ -31,5 +31,6 @@ namespace BachHoaXanh.Models
         public string Role { get; set; } = "Customer"; 
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public ICollection<Address> Addresses { get; set; }
     }
 }

@@ -54,10 +54,25 @@ else
         </div>
         <div class="pdetail-right">
             <div class="order-summary">
-                <div class="delivery-info">
-                    <h4>Giao đến</h4>
-                    <p class="address">@(Model.User.Address ?? "Chưa có địa chỉ - Vui lòng quay lại trang thông tin cá nhân để cập nhật địa chỉ")</p>
-                    <p class="name-phone">@(Model.User.FullName) - @(Model.User.Phone)</p>
+                <div class="address-selector">
+                    <label>Chọn địa chỉ giao hàng</label>
+                    @if (!Model.User.Addresses.Any())
+                    {
+                        <p class="text-danger">Bạn chưa có địa chỉ nào. <a href="@Url.Action("AddAddress", "User")">Thêm địa chỉ</a></p>
+                    }
+                    else
+                    {
+                        @foreach (var address in Model.User.Addresses)
+                        {
+                            <div class="address-item">
+                                <input type="radio" id="address-@address.AddressID" name="shippingAddress" value="@address.AddressID" @(address.IsDefault ? "checked" : "") required />
+                                <label for="address-@address.AddressID">
+                                    @address.Street, @address.Ward, @address.District, @address.Province @(address.IsDefault ? "(Mặc định)" : "")
+                                </label>
+                            </div>
+                        }
+                        <a href="@Url.Action("AddAddress", "User")" class="btn btn-link">Thêm địa chỉ mới</a>
+                    }
                 </div>
 
                 <div class="cost-breakdown">

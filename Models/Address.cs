@@ -28,4 +28,21 @@ namespace BachHoaXanh.Models
 
         public User User { get; set; }
     }
+    public class AddressViewModel
+    {
+        public int AddressID { get; set; }
+        public string Province { get; set; }
+        public string District { get; set; }
+        public string Ward { get; set; }
+        public string Street { get; set; }
+        public bool IsDefault { get; set; }
+    }
+    public class UpdateProfileView
+    {
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string Address { get; set; }
+        public List<Address> Addresses { get; set; }
+    }
 }
