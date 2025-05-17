@@ -26,13 +26,17 @@ namespace BachHoaXanh.Models
 
         public DateTime? UpdatedAt { get; set; }
 
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; }
+
+        [NotMapped]
+        public bool isFav { get; set; } = false;
 
         [ForeignKey("SubCategoryID")]
         public SubCategory SubCategory { get; set; }
         public int? SubCategoryID { get; set; }
-
         public List<ProductImage> Images { get; set; }
+        
+
     }
 
     [Table("FavoriteProducts")]

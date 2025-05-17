@@ -4,6 +4,7 @@ using BachHoaXanh.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -20,6 +21,9 @@ public class HomeController : Controller
     }
     public IActionResult Index(int page = 1, string search = "", int? danhmuc = null)
     {
+
+        int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
+
         int pageSize = 8;
         var categories = _context.CategoryList.Include(c => c.SubCategories).ToList();
         var productsQuery = _context.ProductList.AsQueryable();
@@ -57,7 +61,12 @@ public class HomeController : Controller
             .Skip((page - 1) * pageSize) 
             .Take(pageSize)
             .ToList();
-
+        foreach(var product in products)
+        {
+            var isFavorite = _context.FavoriteProductList
+                .Any(f => f.UserID == userId && f.ProductID == product.ProductID);
+            product.isFav = isFavorite;
+        }
         var productViewModel = new ProductViewModel
         {
             Products = products,
@@ -80,61 +89,61 @@ public class HomeController : Controller
             Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
         }
 
-        int userId = int.Parse(User.FindFirstValue("UserID"));
+        int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
 
         var product = _context.ProductList
             .Include(p => p.SubCategory)
             .ThenInclude(sc => sc.Category)
             .Include(p => p.Images)
             .FirstOrDefault(p => p.ProductID == id);
-        bool isFavorite = _context.FavoriteProductList
+        product.isFav = _context.FavoriteProductList
         .Any(p => p.ProductID == id && p.UserID == userId);
         if (product == null)
         {
             return NotFound();
         }
-        var productViewModel = new ProductDetailViewModel
-        {
-            Product = product,
-            isFav = isFavorite
-        };
-        return View(productViewModel);
+
+        return View(product);
     }
     [Authorize]
     [HttpPost]
-    public async Task<IActionResult> AddToFavorites(int productId)
+    public async Task<IActionResult> AddToFavorites(int productId, string returnUrl = null)
     {
-        foreach (var claim in User.Claims)
-        {
-            Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
-        }
-        int userId = int.Parse(User.FindFirstValue("UserID"));
-        var exists = await _context.FavoriteProductList
-            .AnyAsync(f => f.UserID == userId && f.ProductID == productId);
 
-        if (!exists)
+        int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
+
+        var favorite = await _context.FavoriteProductList
+            .FirstOrDefaultAsync(f => f.UserID == userId && f.ProductID == productId);
+
+        if (favorite == null)
         {
             _context.FavoriteProductList.Add(new FavoriteProduct
             {
                 UserID = userId,
                 ProductID = productId
             });
-
             await _context.SaveChangesAsync();
         }
 
-        return RedirectToAction("Detail", new { id = productId });
+        var product = await _context.ProductList.FirstOrDefaultAsync(p => p.ProductID == productId);
+        if (product != null)
+            product.isFav = true;
+
+        // Optional: return status or redirect
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl); // if returning a full view
+        }
+
+        return Ok(); // if calling from JavaScript and only expect status
     }
 
-    [Authorize]
     [HttpPost]
-    public async Task<IActionResult> RemoveFromFavorites(int productId)
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemoveFromFavorites(int productId, string returnUrl = null)
     {
-        foreach (var claim in User.Claims)
-        {
-            Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
-        }
-        int userId = int.Parse(User.FindFirstValue("UserID"));
+        int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
+
         var favorite = await _context.FavoriteProductList
             .FirstOrDefaultAsync(f => f.UserID == userId && f.ProductID == productId);
 
@@ -144,8 +153,18 @@ public class HomeController : Controller
             await _context.SaveChangesAsync();
         }
 
-        return RedirectToAction("Detail", new { id = productId });
+        var product = await _context.ProductList.FirstOrDefaultAsync(p => p.ProductID == productId);
+        if (product != null)
+            product.isFav = false;
+
+        // Optional: return status or redirect
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl); // if returning a full view
         }
+
+        return Ok(); // if calling from JavaScript and only expect status
+    }
 }
 
 

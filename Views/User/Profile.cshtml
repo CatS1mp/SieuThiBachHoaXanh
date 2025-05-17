@@ -14,14 +14,12 @@
 
     @await Html.PartialAsync("UserSidebarPartial")
     <div class="content flex-1 pl-[280px]"> 
-        <div class="breadcrumb-container">
-            <div class="breadcrumb-icon d-inline-block">
-                <i class="fas fa-chevron-left"></i>
-            </div>
-            <p>Bạn có chỉnh sửa thông tin tài khoản ở đây</p>
-        </div>
+       
 
         <div class="profile-container">
+            <div class="breadcrumb-icon d-inline-block">
+                <a href="/Home/Index" class="fas fa-chevron-left"></a>
+            </div>
             <h2>Thông tin tài khoản</h2>
             <form asp-action="UpdateProfile" method="post">
         

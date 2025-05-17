@@ -252,7 +252,12 @@ namespace BachHoaXanh.Controllers
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
-
+            foreach (var product in products)
+            {
+                var isFavorite = _context.FavoriteProductList
+                    .Any(f => f.UserID == userId && f.ProductID == product.ProductID);
+                product.isFav = isFavorite;
+            }
             var productViewModel = new ProductViewModel
             {
                 Products = products,

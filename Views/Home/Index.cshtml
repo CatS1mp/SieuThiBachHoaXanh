@@ -11,30 +11,17 @@
     @await Html.PartialAsync("_Sidebar")
 
     <div class="content flex-1 pl-[280px]">
-        <!-- Search Form -->
-        <div class="breadcrumb-container">
-            <div class="breadcrumb-icon d-inline-block">
-                <i class="fas fa-chevron-left"></i>
-            </div>
-            <p>Danh sách sản phẩm</p>
-        </div>
 
-        <div class="result-message">
-            @if (Model.TotalProducts > 0) 
-            {
-                <span>@Model.TotalProducts sản phẩm tìm thấy.</span> 
-            }
-            else
-            {
-                <span>Không tìm thấy sản phẩm phù hợp.</span> 
-            }
-        </div>
 
         <!-- Product List -->
         <div id="product-list-container" class="product-list-container">
             @foreach (var product in Model.Products)
             {
                 <div class="product-item">
+                    <img 
+                        data-is-favorited="@product.isFav.ToString().ToLower()" 
+                        onclick="toggleFavorite(@product.ProductID, this)" class="icon-fav" 
+                        src="~/images/@(product.isFav ? "favor.png" : "unfavor.png")" />
                     @if (product.Images != null && product.Images.Any())
                     {
                         <img class="product-image" src="~/images/@product.Images.FirstOrDefault(img => img.IsMainImage)?.ImagePath" alt="@product.ProductName">
@@ -79,4 +66,35 @@
         var categorySub = categoryMain.nextElementSibling;
         categorySub.style.display = (categorySub.style.display === "none" || categorySub.style.display === "") ? "block" : "none";
     }
+    function getAntiForgeryToken() {
+        return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    }
+        async function toggleFavorite(productId, el) {
+        let isFavorited = el.dataset.isFavorited === "true";
+
+        const url = isFavorited
+            ? '/Home/RemoveFromFavorites'
+            : '/Home/AddToFavorites';
+
+        const formData = new FormData();
+        formData.append("productId", productId);
+
+        // Append the current path as returnUrl
+        formData.append("returnUrl", window.location.pathname + window.location.search);
+
+        const response = await fetch(url, {
+            method: "POST",
+            body: formData,
+            headers: {
+                'RequestVerificationToken': getAntiForgeryToken()
+            }
+        });
+
+        if (response.ok) {
+            location.reload(); // or redirect manually if needed
+        } else {
+            alert("Có lỗi xảy ra khi gửi yêu cầu.");
+        }
+    }
+
 </script>
