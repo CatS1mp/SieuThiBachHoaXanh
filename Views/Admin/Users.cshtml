@@ -8,7 +8,6 @@
     <nav class="navbar navbar-default navbar-fixed">
         <div class="container-fluid">
             <div class="navbar-header">
-
                 <a class="navbar-brand" href="#">Quản lý người dùng</a>
             </div>
             <div class="collapse navbar-collapse">
@@ -18,13 +17,12 @@
                             <p>Đăng xuất tài khoản</p>
                         </a>
                     </li>
-                    <li class=" separator hidden-lg"></li>
+                    <li class="separator hidden-lg"></li>
                 </ul>
             </div>
         </div>
     </nav>
     <div class="table-container">
-
         <a href="@Url.Action("UserAdd", "Admin")" type="submit" class="btn btn-info btn-fill pull-left" style="margin-bottom: 10px;">Thêm tài khoản mới</a>
         <table id="productTable" class="table mt-3" style="width:100%">
             <thead>
@@ -35,11 +33,14 @@
                     <th>Email</th>
                     <th>Số điện thoại</th>
                     <th>Quyền</th>
+                    <th>Điểm tích lũy</th>
+                    <th>Rank</th>
                     <th></th>
                 </tr>
+            </thead>
             <tbody>
-                    @foreach (var user in Model)
-                    {
+                @foreach (var user in Model)
+                {
                     <tr>
                         <td>@user.UserID</td>
                         <td>@user.UserName</td>
@@ -47,6 +48,8 @@
                         <td>@user.Email</td>
                         <td>@user.Phone</td>
                         <td>@user.Role</td>
+                        <td>@user.Points</td>
+                        <td>@user.Rank</td>
                         <td>
                             <a href="@Url.Action("UserEdit", "Admin", new { userName = user.UserName })" class="btn btn-success btn-xs dt-edit" style="margin-right:16px;">
                                 <i class="fa-regular fa-pen-to-square"></i>
@@ -56,14 +59,13 @@
                             </button>
                         </td>
                     </tr>
-                    }
+                }
             </tbody>
         </table>
     </div>
 
-
-@section scripts{
-    <script>
+    @section scripts {
+        <script>
             $(document).ready(function () {
                 $('#productTable').DataTable({
                     language: {
@@ -81,27 +83,25 @@
                             previous: "Trước"
                         }
                     },
-                    paging: true, 
+                    paging: true,
                     pageLength: 10,
-                    lengthChange: false, 
+                    lengthChange: false,
                 });
             });
 
-
-         function deleteUser(username) {
-            if (confirm("Bạn có chắc chắn muốn xóa tài khoản này?")) {
-                $.ajax({
-                    url: `/api/user/${username}`,
-                    type: 'DELETE',
-                    success: function () {
+            function deleteUser(username) {
+                if (confirm("Bạn có chắc chắn muốn xóa tài khoản này?")) {
+                    $.ajax({
+                        url: `/api/user/${username}`,
+                        type: 'DELETE',
+                        success: function () {
                             location.reload();
-                    },
-                    error: function () {
-                        alert("Có lỗi xảy ra, vui lòng thử lại.");
-                    }
-                });
+                        },
+                        error: function () {
+                            alert("Có lỗi xảy ra, vui lòng thử lại.");
+                        }
+                    });
+                }
             }
-        }
-
-    </script>
+        </script>
     }

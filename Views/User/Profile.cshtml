@@ -1,5 +1,5 @@
 ﻿@using System.Security.Claims
-@model BachHoaXanh.Models.UpdateProfileView
+@model BachHoaXanh.ViewModels.UpdateProfileView
 
 @{
     ViewData["Title"] = "Thông tin tài khoản";
@@ -117,20 +117,15 @@
     @await Html.PartialAsync("_SidebarOverplay")
 </div>
 <div class="container-wrapper">
-
     @await Html.PartialAsync("UserSidebarPartial")
-    <div class="content flex-1 pl-[280px]"> 
-       
-
+    <div class="content flex-1 pl-[280px]">
         <div class="profile-container">
             <div class="breadcrumb-icon d-inline-block">
                 <a href="/Home/Index" class="fas fa-chevron-left"></a>
             </div>
             <h2>Thông tin tài khoản</h2>
             <form asp-action="UpdateProfile" method="post">
-        
-                @Html.AntiForgeryToken()    
-
+                @Html.AntiForgeryToken()
                 <div class="form-group">
                     <label for="username">Tên đăng nhập</label>
                     <input type="text" id="username" name="UserName" value="@Model.UserName" readonly />
@@ -143,20 +138,23 @@
                     <label for="phone">Số điện thoại</label>
                     <input type="tel" id="phone" asp-for="Phone" name="phone" placeholder="Nhập số điện thoại" value="@Model.Phone">
                 </div>
+                <div class="form-group">
+                    <label for="address">Địa chỉ mặc định</label>
+                    <textarea id="address" asp-for="Address" placeholder="Địa chỉ giao hàng">@Model.Address</textarea>
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label for="points">Điểm tích lũy</label>
+                    <input type="text" id="points" value="@Model.Points" readonly />
+                </div>
+                <div class="form-group">
+                    <label for="rank">Xếp hạng thành viên</label>
+                    <input type="text" id="rank" value="@Model.Rank" readonly />
+                </div>
+                <button type="submit" class="auth-btn">Lưu thay đổi</button>
 
-            
                 @{
                     var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-                    <div class="form-group">
-                        <label for="address">Địa chỉ mặc định</label>
-                        <textarea id="address" asp-for="Address" placeholder="Địa chỉ giao hàng">@Model.Address</textarea>
-                        <span asp-validation-for="Address" class="text-danger"></span>
-                    </div>
-                    <button type="submit" class="auth-btn">Lưu thay đổi</button>
-        
-
-                    Console.WriteLine(role);
-
                     if (role == "Admin")
                     {
                         <a href="@Url.Action("Index", "Admin")" type="submit" class="logout-btn">Đăng nhập vào trang quản lý</a>
@@ -166,38 +164,36 @@
                 <a href="@Url.Action("Logout","User")" type="submit" class="logout-btn">Đăng xuất tài khoản</a>
             </form>
 
-        </div>
-    </div>
-</div>
-        <h3>Danh sách địa chỉ</h3>
-        <a href="@Url.Action("AddAddress", "User")" class="auth-btn">Thêm địa chỉ mới</a>
-        <div class="address-list">
-            @if (Model.Addresses != null && Model.Addresses.Any())
-            {
-                foreach (var address in Model.Addresses)
+            <h3>Danh sách địa chỉ</h3>
+            <a href="@Url.Action("AddAddress", "User")" class="auth-btn">Thêm địa chỉ mới</a>
+            <div class="address-list">
+                @if (Model.Addresses != null && Model.Addresses.Any())
                 {
-                    <div class="address-item">
-                        <p>
-                            <strong>@address.Street, @address.Ward, @address.District, @address.Province</strong>
-                            @if (address.IsDefault)
-                            {
-                                <span> (Mặc định)</span>
-                            }
-                        </p>
-                        <div class="address-actions">
-                            <a href="@Url.Action("EditAddress", "User", new { id = address.AddressID })" class="btn btn-sm btn-primary">Sửa</a>
-                            <form asp-action="DeleteAddress" asp-route-id="@address.AddressID" method="post" style="display:inline;">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa địa chỉ này?');">Xóa</button>
-                            </form>
+                    foreach (var address in Model.Addresses)
+                    {
+                        <div class="address-item">
+                            <p>
+                                <strong>@address.Street, @address.Ward, @address.District, @address.Province</strong>
+                                @if (address.IsDefault)
+                                {
+                                    <span> (Mặc định)</span>
+                                }
+                            </p>
+                            <div class="address-actions">
+                                <a href="@Url.Action("EditAddress", "User", new { id = address.AddressID })" class="btn btn-sm btn-primary">Sửa</a>
+                                <form asp-action="DeleteAddress" asp-route-id="@address.AddressID" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa địa chỉ này?');">Xóa</button>
+                                </form>
+                            </div>
                         </div>
-                    </div>
+                    }
                 }
-            }
-            else
-            {
-                <p>Chưa có địa chỉ nào được thêm.</p>
-            }
+                else
+                {
+                    <p>Chưa có địa chỉ nào được thêm.</p>
+                }
+            </div>
         </div>
     </div>
 </div>

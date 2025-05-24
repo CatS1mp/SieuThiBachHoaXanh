@@ -170,15 +170,17 @@ namespace BachHoaXanh.Controllers
                 return NotFound();
             }
 
-            _logger.LogInformation("Tìm thấy người dùng: UserName={UserName}, Email={Email}, Address={Address}, Phone={Phone}",
-                user.UserName, user.Email, user.Address, user.Phone);
+            _logger.LogInformation("Tìm thấy người dùng: UserName={UserName}, Email={Email}, Address={Address}, Phone={Phone}, Points={Points}, Rank={Rank}",
+                user.UserName, user.Email, user.Address, user.Phone, user.Points, user.Rank);
 
-            var model = new UpdateProfileView
+            var model = new BachHoaXanh.ViewModels.UpdateProfileView
             {
                 UserName = user.UserName,
                 Email = user.Email,
                 Address = user.Address,
                 Phone = user.Phone,
+                Points = user.Points,
+                Rank = user.Rank,
                 Addresses = user.Addresses?.ToList() ?? new List<Address>()
             };
 
@@ -189,7 +191,7 @@ namespace BachHoaXanh.Controllers
         [ValidateAntiForgeryToken]
         [Route("thong-tin-tai-khoan")]
         [Authorize]
-        public async Task<IActionResult> UpdateProfile(UpdateProfileView model)
+        public async Task<IActionResult> UpdateProfile(BachHoaXanh.ViewModels.UpdateProfileView model)
         {
             if (ModelState.IsValid)
             {
@@ -206,7 +208,8 @@ namespace BachHoaXanh.Controllers
                     await _context.SaveChangesAsync();
                     return RedirectToAction("Profile");
                 }
-            } else
+            }
+            else
             {
                 // Ghi log lỗi nếu model không hợp lệ
                 _logger.LogWarning("Model state is invalid. Errors: {Errors}", ModelState.Values.SelectMany(v => v.Errors));
@@ -325,7 +328,6 @@ namespace BachHoaXanh.Controllers
             if (danhmuc.HasValue)
             {
                 productsQuery = productsQuery.Where(p => p.SubCategory.SubCategoryID == danhmuc.Value);
-
             }
 
             if (page < 1)
@@ -370,8 +372,6 @@ namespace BachHoaXanh.Controllers
 
             return View(productViewModel);
         }
-
-    
 
         [HttpPost]
         [ValidateAntiForgeryToken]
