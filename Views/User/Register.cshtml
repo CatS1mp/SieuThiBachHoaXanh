@@ -4,14 +4,12 @@
     ViewData["Title"] = "Đăng ký tài khoản";
 }
 
-
 <div class="container-wrapper">
     @await Html.PartialAsync("_SidebarOverplay")
 </div>
 
 <div class="container-small-wrapper">
     <!-- Sidebar -->
-
     <div class="breadcrumb-container">
         <div class="breadcrumb-icon d-inline-block">
             <i class="fas fa-chevron-left"></i>
@@ -21,24 +19,27 @@
 
     <div class="auth-container">
         <h2>Đăng Ký</h2>
-        <form asp-action="Register" method="post">
-            <div class="form-group">
-                <label for="UserName">Tên đăng nhập</label>
-                <input type="text" id="UserName" asp-for="UserName" placeholder="Nhập tên đăng nhập" required class="form-control" />
-                @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
-            </div>
 
-            <div class="form-group">
-                <label for="FullName">Họ và Tên</label>
-                <input type="text" id="FullName" asp-for="FullName" placeholder="Nhập họ và tên" required class="form-control" />
-                @Html.ValidationMessageFor(model => model.FullName, "", new { @class = "text-danger" })
-            </div>
+        <!-- Registration Form -->
+        <div id="registerForm">
+            <form id="registrationForm" asp-action="Register" method="post">
+                <div class="form-group">
+                    <label for="UserName">Tên đăng nhập</label>
+                    <input type="text" id="UserName" asp-for="UserName" placeholder="Nhập tên đăng nhập" required class="form-control" />
+                    @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
+                </div>
 
-            <div class="form-group">
-                <label for="Email">Email</label>
-                <input type="email" id="Email" asp-for="Email" placeholder="Nhập email" required class="form-control" />
-                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
-            </div>
+                <div class="form-group">
+                    <label for="FullName">Họ và Tên</label>
+                    <input type="text" id="FullName" asp-for="FullName" placeholder="Nhập họ và tên" required class="form-control" />
+                    @Html.ValidationMessageFor(model => model.FullName, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label for="Email">Email</label>
+                    <input type="email" id="Email" asp-for="Email" placeholder="Nhập email" required class="form-control" />
+                    @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                </div>
 
             <div class="form-group">
                 <label for="Phone">Số điện thoại</label>
@@ -46,29 +47,113 @@
                 @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger" })
             </div>
 
-            <div class="form-group">
-                <label for="Password">Mật khẩu</label>
-                <div class="password-wrapper">
-                    <input type="password" id="Password" asp-for="Password" placeholder="Nhập mật khẩu" required class="form-control" />
-                    <span class="toggle-password" onclick="togglePassword('Password', this)">👁️</span>
+                <div class="form-group">
+                    <label for="Password">Mật khẩu</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="Password" asp-for="Password" placeholder="Nhập mật khẩu" required class="form-control" />
+                        <span class="toggle-password" onclick="togglePassword('Password', this)">👁️</span>
+                    </div>
+                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
                 </div>
-                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
-            </div>
 
-            <button type="submit" class="auth-btn">Đăng Ký</button>
-        </form>
+                <button type="submit" class="auth-btn">Gửi OTP</button>
+            </form>
+            <div id="registerMessage" class="text-danger mt-3"></div>
+        </div>
+
+        <!-- OTP Verification Form (Initially Hidden) -->
+        <div id="otpForm" style="display: none;">
+            <h3>Xác Minh OTP</h3>
+            <form id="verifyOtpForm">
+                <div class="form-group">
+                    <label for="otp">Mã OTP</label>
+                    <input type="text" id="otp" name="otp" placeholder="Nhập mã OTP (6 chữ số)" maxlength="6" required class="form-control" />
+                </div>
+                <button type="submit" class="auth-btn">Xác Minh</button>
+            </form>
+            <div id="otpMessage" class="text-danger mt-3"></div>
+        </div>
     </div>
 </div>
 
-<script>
-    function togglePassword(inputId, iconElement) {
-    const input = document.getElementById(inputId);
-    if (input.type === "password") {
-        input.type = "text";
-        iconElement.textContent = "🙈";
-        } else {
-        input.type = "password";
-        iconElement.textContent = "👁️";
-    }
-    }
-</script>
+@section Scripts {
+    <script>
+        // Password toggle functionality
+        function togglePassword(inputId, iconElement) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                iconElement.textContent = "🙈";
+            } else {
+                input.type = "password";
+                iconElement.textContent = "👁️";
+            }
+        }
+
+        // Handle registration form submission
+        document.getElementById("registrationForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const email = document.getElementById("Email").value;
+            const registerMessage = document.getElementById("registerMessage");
+
+            // Send OTP request
+            try {
+                const response = await fetch('/api/OTP/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    registerMessage.innerHTML = '<div class="alert alert-success">OTP đã được gửi đến email của bạn!</div>';
+                    document.getElementById("registerForm").style.display = "none";
+                    document.getElementById("otpForm").style.display = "block";
+                } else {
+                    registerMessage.innerHTML = '<div class="alert alert-danger">' + result.message + '</div>';
+                }
+            } catch (error) {
+                registerMessage.innerHTML = '<div class="alert alert-danger">Lỗi khi gửi OTP. Vui lòng thử lại.</div>';
+            }
+        });
+
+        // Handle OTP verification form submission
+        document.getElementById("verifyOtpForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const email = document.getElementById("Email").value;
+            const otp = document.getElementById("otp").value;
+            const otpMessage = document.getElementById("otpMessage");
+
+            // Verify OTP
+            try {
+                const response = await fetch('/api/OTP/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    otpMessage.innerHTML = '<div class="alert alert-success">Xác minh OTP thành công! Đang hoàn tất đăng ký...</div>';
+                    // Submit the original registration form programmatically
+                    const registrationForm = document.getElementById("registrationForm");
+                    const formData = new FormData(registrationForm);
+                    const response = await fetch(registrationForm.action, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    console.log('Register Response:', response.status, await response.text());
+                    if (response.ok) {
+                        window.location.href = '/User/Login'; // Redirect to success page
+                    } else {
+                        otpMessage.innerHTML = '<div class="alert alert-danger">Lỗi khi hoàn tất đăng ký. Vui lòng thử lại.</div>';
+                    }
+                } else {
+                    otpMessage.innerHTML = '<div class="alert alert-danger">' + result.message + '</div>';
+                }
+            } catch (error) {
+                otpMessage.innerHTML = '<div class="alert alert-danger">Lỗi khi xác minh OTP. Vui lòng thử lại.</div>';
+            }
+        });
+    </script>
+}

@@ -42,6 +42,8 @@ namespace BachHoaXanh.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(User model)
         {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            Console.WriteLine(string.Join(", ", errors));
             if (ModelState.IsValid)
             {
                 if (await _context.UserList.AnyAsync(u => u.UserName == model.UserName))
@@ -56,8 +58,17 @@ namespace BachHoaXanh.Controllers
                     return View(model);
                 }
                 model.Password = MD5Hasher.HashPassword(model.Password);
-                _context.UserList.Add(model);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.UserList.Add(model);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Database Error: {ex.Message}");
+                    ModelState.AddModelError("", $"Database Error: {ex.Message}");
+                    return View(model);
+                }
 
                 return RedirectToAction("Login");
             }
