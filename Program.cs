@@ -1,10 +1,19 @@
-﻿using BachHoaXanh.Data;
+﻿using BachHoaXanh.Controllers;
+using BachHoaXanh.Data;
+using BachHoaXanh.Models;
 using BachHoaXanh.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+// Bind OtpSettings from appsettings.json
+builder.Services.Configure<OtpSettings>(builder.Configuration.GetSection("OtpSettings"));
+
+// Register EmailService
+builder.Services.AddSingleton<IEmailService, EmailService>();
 
 // Add services to the container
 builder.Services.AddControllersWithViews();
@@ -58,6 +67,7 @@ app.UseMiddleware<CategoryMiddleware>();
 // Authentication and authorization middleware
 app.UseAuthentication(); // Ensure authentication is used before authorization
 app.UseAuthorization();  // Ensure authorization comes after authentication
+
 
 // Map default controller route
 app.MapControllerRoute(

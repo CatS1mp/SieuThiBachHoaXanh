@@ -1,5 +1,18 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿<!-- Sidebar -->
+<div class="overlay" id="overlay"></div>
+<div class="sidebar" style="scrollbar-gutter: stable;">
+    <div class="option-container">
+
+        <div class="category">
+            <div class="option" onclick="">
+                <a href="@Url.Action("Profile", "User")">Thông tin người dùng</a>
+                
+            </div>
+
+            <div class="option" onclick="">
+                <a href ="@Url.Action("Favorite", "User")">Sản phẩm yêu thích</a>
+            </div>
+        </div>
+
+    </div>
+</div>

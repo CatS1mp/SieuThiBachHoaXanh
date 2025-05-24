@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using BachHoaXanh.Helpers;
 using BachHoaXanh.ViewModels;
 using System.Net;
+using Azure;
 using System.Linq;
 
 namespace BachHoaXanh.Controllers
@@ -41,6 +42,8 @@ namespace BachHoaXanh.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(User model)
         {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            Console.WriteLine(string.Join(", ", errors));
             if (ModelState.IsValid)
             {
                 if (await _context.UserList.AnyAsync(u => u.UserName == model.UserName))
@@ -55,8 +58,17 @@ namespace BachHoaXanh.Controllers
                     return View(model);
                 }
                 model.Password = MD5Hasher.HashPassword(model.Password);
-                _context.UserList.Add(model);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.UserList.Add(model);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Database Error: {ex.Message}");
+                    ModelState.AddModelError("", $"Database Error: {ex.Message}");
+                    return View(model);
+                }
 
                 return RedirectToAction("Login");
             }
@@ -91,6 +103,7 @@ namespace BachHoaXanh.Controllers
                     if (user.Password == hashedPassword)
                     {
                         _logger.LogInformation($"User {user.UserName} authenticated successfully.");
+                        Console.WriteLine($"User {user.UserID} authenticated successfully.");
 
                         var claims = new List<Claim> {
                             new Claim("UserID", user.UserID.ToString()),
@@ -191,9 +204,12 @@ namespace BachHoaXanh.Controllers
 
                     _context.UserList.Update(user);
                     await _context.SaveChangesAsync();
-
                     return RedirectToAction("Profile");
                 }
+            } else
+            {
+                // Ghi log lỗi nếu model không hợp lệ
+                _logger.LogWarning("Model state is invalid. Errors: {Errors}", ModelState.Values.SelectMany(v => v.Errors));
             }
 
             // Reload addresses if model state is invalid
@@ -287,6 +303,75 @@ namespace BachHoaXanh.Controllers
 
             return View(model);
         }
+
+        [Route("san-pham-yeu-thich")]
+        [Authorize]
+        public IActionResult Favorite(int page = 1, string search = "", int? danhmuc = null)
+        {
+            int userId = int.Parse(User.FindFirstValue("UserID"));
+
+            int pageSize = 8;
+            var categories = _context.CategoryList.Include(c => c.SubCategories).ToList();
+            var productsQuery = _context.ProductList
+                .Where(p => _context.FavoriteProductList
+                    .Any(f => f.UserID == userId && f.ProductID == p.ProductID))
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                productsQuery = productsQuery.Where(p => p.ProductName.Contains(search) || p.Description.Contains(search));
+            }
+
+            if (danhmuc.HasValue)
+            {
+                productsQuery = productsQuery.Where(p => p.SubCategory.SubCategoryID == danhmuc.Value);
+
+            }
+
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            ViewData["Search"] = search;
+            ViewData["SubCategoryId"] = danhmuc;
+
+            int totalProducts = productsQuery.Count();
+            int totalPages = (int)Math.Ceiling((double)totalProducts / pageSize);
+
+            if (page > totalPages && totalPages > 0)
+            {
+                page = totalPages;
+            }
+
+            var products = productsQuery
+                .Include(p => p.SubCategory)
+                .ThenInclude(sc => sc.Category)
+                .Include(p => p.Images)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+            foreach (var product in products)
+            {
+                var isFavorite = _context.FavoriteProductList
+                    .Any(f => f.UserID == userId && f.ProductID == product.ProductID);
+                product.isFav = isFavorite;
+            }
+            var productViewModel = new ProductViewModel
+            {
+                Products = products,
+                Categories = categories,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                TotalProducts = totalProducts,
+                SearchQuery = search,
+                SubCategoryId = danhmuc
+            };
+
+            return View(productViewModel);
+        }
+
+    
 
         [HttpPost]
         [ValidateAntiForgeryToken]

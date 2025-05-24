@@ -249,7 +249,29 @@ ol {
     }
 
 
+/* ========== OPTION ========== */
+.option-container {
+    margin-bottom: 20px;
+    position: relative;
+}
+.option {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 14px;
+    color: #222;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-top: 1px solid #ddd;
+}
 
+    .option:hover {
+        color: var(--third-color);
+        cursor: pointer;
+    }
+    .option a {
+        display: block; /* Biến thẻ <a> thành block để xuống dòng */
+        font-weight: bold;
+    }
 
 /* ========== CATEGORY ========== */
 .category-container {
@@ -413,6 +435,7 @@ ol {
     align-items: flex-start;
     /* Căn các phần tử con về bên trái */
     justify-content: space-between;
+    position: relative;
     padding: 15px;
     background-color: #fff;
     border-radius: 8px;
@@ -428,6 +451,10 @@ ol {
         transform: translateY(-5px);
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     }
+        .product-item:hover .icon-fav {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
 .product-image {
     width: 100%;
@@ -838,7 +865,6 @@ ol {
         color: #007bff;
         cursor: pointer;
         text-align: right;
-        margin-bottom: 25px;
         position: relative;
     }
 
@@ -1993,4 +2019,19 @@ ol {
 }
 .content .result-message{
     text-align: end;
+}
+
+/* ====================favorite icon */
+
+.icon-fav {
+    width: 20px;
+    height: 20px;
+    top: 10px;
+    left: 10px;
+    vertical-align: middle;
+    transform: translateY(-20px);
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }

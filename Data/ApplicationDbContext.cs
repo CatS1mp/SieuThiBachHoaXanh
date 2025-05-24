@@ -13,6 +13,7 @@ namespace BachHoaXanh.Data
         public DbSet<Category> CategoryList { get; set; }
         public DbSet<SubCategory> SubCategoryList { get; set; }
         public DbSet<Product> ProductList { get; set; }
+        public DbSet<FavoriteProduct> FavoriteProductList { get; set; }
         public DbSet<ProductImage> ProductImageList { get; set; }
         public DbSet<Order> OrderList { get; set; }
         public DbSet<OrderDetail> OrderDetailList { get; set; }
