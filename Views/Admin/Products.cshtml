@@ -104,12 +104,26 @@
         transform: scale(1.05);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
+    /* Styling for expired products */
+    .expired-row {
+        background-color: #ffe6e6 !important; /* Light red */
+        border-left: 4px solid #dc3545 !important; /* Red border */
+    }
+    /* Styling for low stock products */
+    .low-stock-row {
+        background-color: #fff3cd !important; /* Light yellow */
+        border-left: 4px solid #ffc107 !important; /* Yellow border */
+    }
+    /* Ensure badges are readable */
+    .badge {
+        font-size: 0.9em;
+        padding: 5px 10px;
+    }
 </style>
 <div class="main-panel">
     <nav class="navbar navbar-default navbar-fixed">
         <div class="container-fluid">
             <div class="navbar-header">
-
                 <a class="navbar-brand" href="#">Quản lý sản phẩm</a>
             </div>
             <div class="collapse navbar-collapse">
@@ -119,17 +133,17 @@
                             <p>Đăng xuất tài khoản</p>
                         </a>
                     </li>
-                    <li class=" separator hidden-lg"></li>
+                    <li class="separator hidden-lg"></li>
                 </ul>
             </div>
         </div>
     </nav>
     <div class="table-container">
-        <a href="@Url.Action("ProductCreate","Admin")"  type="submit" class="btn btn-info btn-fill pull-left" style="margin-bottom: 10px;">Thêm sản phẩm</a>
+        <a href="@Url.Action("ProductCreate","Admin")" type="submit" class="btn btn-info btn-fill pull-left" style="margin-bottom: 10px;">Thêm sản phẩm</a>
 
         <table id="productTable" class="table mt-3" style="width:100%">
             <thead>
-                <tr class="">
+                <tr>
                     <th>Sản phẩm</th>
                     <th>Trạng thái</th>
                     <th>Số lượng SP</th>
@@ -137,11 +151,12 @@
                     <th>Hoạt động</th>
                     <th></th>
                 </tr>
+            </thead>
             <tbody>
             </tbody>
         </table>
     </div>
-
+</div>
 
 @section scripts{
     <script>
@@ -210,21 +225,6 @@
                     }
                 });
             });
-
-         function deleteUser(username) {
-            if (confirm("Bạn có chắc chắn muốn xóa tài khoản này?")) {
-                $.ajax({
-                    url: `/api/user/${username}`,
-                    type: 'DELETE',
-                    success: function () {
-                            location.reload();
-                    },
-                    error: function () {
-                        alert("Có lỗi xảy ra, vui lòng thử lại.");
-                    }
-                });
-            }
-            }
 
             function deleteProduct(productID) {
                 if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {

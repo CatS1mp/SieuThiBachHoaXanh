@@ -23,6 +23,7 @@ public class HomeController : Controller
     {
 
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
+        Console.WriteLine($"Home UserID: {userId}");
 
         int pageSize = 8;
         var categories = _context.CategoryList.Include(c => c.SubCategories).ToList();
@@ -55,6 +56,7 @@ public class HomeController : Controller
         }
 
         var products = productsQuery
+            .Include(p => p.Stocks)
             .Include(p => p.SubCategory)
             .ThenInclude(sc => sc.Category)
             .Include(p => p.Images)
@@ -92,6 +94,7 @@ public class HomeController : Controller
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
 
         var product = _context.ProductList
+            .Include(p => p.Stocks)
             .Include(p => p.SubCategory)
             .ThenInclude(sc => sc.Category)
             .Include(p => p.Images)
@@ -111,7 +114,11 @@ public class HomeController : Controller
     {
 
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
-
+        Console.WriteLine($"Use1rID: {userId}");
+        if (userId == -1)
+        {
+            return RedirectToAction("Login", "User");
+        }
         var favorite = await _context.FavoriteProductList
             .FirstOrDefaultAsync(f => f.UserID == userId && f.ProductID == productId);
 
@@ -143,6 +150,7 @@ public class HomeController : Controller
     public async Task<IActionResult> RemoveFromFavorites(int productId, string returnUrl = null)
     {
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
+        Console.WriteLine($"Use2rID: {userId}");
 
         var favorite = await _context.FavoriteProductList
             .FirstOrDefaultAsync(f => f.UserID == userId && f.ProductID == productId);

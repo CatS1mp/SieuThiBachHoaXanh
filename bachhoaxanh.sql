@@ -10,6 +10,10 @@ DROP TABLE IF EXISTS FavoriteProducts;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS PaymentMethods;
 DROP TABLE IF EXISTS Categories;
+DROP TABLE IF EXISTS Addresses;
+DROP TABLE IF EXISTS ProductStocks;
+
+
 GO
 
 -- Tạo bảng Users để quản lý thông tin người dùng
@@ -21,6 +25,8 @@ CREATE TABLE Users (
     Password NVARCHAR(255) NOT NULL,
     Phone NVARCHAR(15),
     Address NVARCHAR(255),
+    Points decimal(18, 2) NOT NULL DEFAULT 0,
+    Rank NVARCHAR(50) NOT NULL DEFAULT N'Chưa xếp hạng',
     Role NVARCHAR(20) DEFAULT 'Customer', -- Quản lý phân quyền: Admin, Customer
     CreatedAt DATETIME DEFAULT GETDATE()
 );
@@ -44,11 +50,20 @@ CREATE TABLE Products (
     Description NVARCHAR(MAX),
     Price DECIMAL(18, 2) NOT NULL,
     SubCategoryID INT,
-    StockQuantity INT DEFAULT 0,
     CreatedAt DATETIME DEFAULT GETDATE(),
     UpdatedAt DATETIME NULL,
     IsActive BIT DEFAULT 1, -- Sản phẩm có khả dụng không
     FOREIGN KEY (SubCategoryID) REFERENCES SubCategories(SubCategoryID) ON DELETE SET NULL
+);
+
+CREATE TABLE ProductStocks (
+    StockID INT PRIMARY KEY IDENTITY(1,1),
+    ProductID INT,
+    Quantity INT DEFAULT 0,
+    ExpirationDate DATETIME NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    UpdatedAt DATETIME NULL,
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID) ON DELETE CASCADE
 );
 
 CREATE TABLE FavoriteProducts(
@@ -102,6 +117,18 @@ CREATE TABLE OrderDetails (
     FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
 );
 
+CREATE TABLE Addresses (
+    AddressID INT IDENTITY (1, 1) NOT NULL,
+    UserID INT NOT NULL,
+    Province NVARCHAR (100) NULL,
+    District NVARCHAR (100) NULL,
+    Ward NVARCHAR (100) NULL,
+    Street NVARCHAR (255) NOT NULL,
+    IsDefault BIT DEFAULT ((0)) NULL,
+    PRIMARY KEY CLUSTERED (AddressID ASC),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
 -- Dữ liệu cho bảng Categories
 INSERT INTO Categories (CategoryName) 
 VALUES 
@@ -140,35 +167,35 @@ VALUES
 (N'Bánh kẹo', 10);
 
 -- Dữ liệu cho bảng Products
-INSERT INTO Products (ProductName, Description, Price, SubCategoryID, StockQuantity) 
+INSERT INTO Products (ProductName, Description, Price, SubCategoryID) 
 VALUES 
-(N'Iphone 13', N'Điện thoại thông minh Apple, 128GB', 20000000, 1, 100),
-(N'Smart TV Samsung 50 inch', N'Ti vi thông minh, độ phân giải 4K', 15000000, 2, 50),
-(N'Quạt điện Panasonic', N'Quạt đứng, 3 tốc độ', 800000, 3, 150),
-(N'Máy xay sinh tố Philips', N'Máy xay sinh tố 600W', 1200000, 4, 120),
-(N'Thuốc giảm đau Panadol', N'Thuốc giảm đau, hạ sốt', 50000, 5, 200),
-(N'Vitamins D3', N'Viên uống vitamin D3', 150000, 6, 80),
-(N'Thịt bò tươi', N'Thịt bò nhập khẩu từ Mỹ', 350000, 7, 300),
-(N'Cơm tấm 500g', N'Cơm tấm sườn nướng, gạo tấm ngon', 70000, 8, 400),
-(N'Nước ngọt Pepsi', N'Nước ngọt Pepsi, chai 1.5L', 15000, 9, 500),
-(N'Cafe nguyên chất', N'Cafe hạt rang xay nguyên chất', 95000, 10, 250),
-(N'Sổ tay A5', N'Sổ tay bìa cứng', 25000, 11, 600),
-(N'Máy tính xách tay Dell', N'Máy tính xách tay Dell 14 inch', 12000000, 12, 75),
-(N'Son môi MAC', N'Son môi màu đỏ, lâu trôi', 500000, 13, 200),
-(N'Sữa rửa mặt Olay', N'Sữa rửa mặt Olay cho da nhạy cảm', 150000, 14, 100),
-(N'Bưởi Da xanh', N'Bưởi Da xanh tươi ngon', 50000, 15, 250),
-(N'Dưa hấu không hạt', N'Dưa hấu ngọt, không hạt', 30000, 16, 400),
-(N'Khoai tây tươi', N'Khoai tây tươi, nhập khẩu', 35000, 17, 600),
-(N'Ớt chuông đỏ', N'Ớt chuông đỏ, tươi ngon', 60000, 18, 180),
-(N'Bánh Oreo', N'Bánh Oreo gói 200g', 45000, 19, 500),
-(N'Kẹo dẻo Haribo', N'Kẹo dẻo Haribo gói 100g', 30000, 19, 700);
+(N'Iphone 13', N'Điện thoại thông minh Apple, 128GB', 20000000, 1),
+(N'Smart TV Samsung 50 inch', N'Ti vi thông minh, độ phân giải 4K', 15000000, 2),
+(N'Quạt điện Panasonic', N'Quạt đứng, 3 tốc độ', 800000, 3),
+(N'Máy xay sinh tố Philips', N'Máy xay sinh tố 600W', 1200000, 4),
+(N'Thuốc giảm đau Panadol', N'Thuốc giảm đau, hạ sốt', 50000, 5),
+(N'Vitamins D3', N'Viên uống vitamin D3', 150000, 6),
+(N'Thịt bò tươi', N'Thịt bò nhập khẩu từ Mỹ', 350000, 7),
+(N'Cơm tấm 500g', N'Cơm tấm sườn nướng, gạo tấm ngon', 70000, 8),
+(N'Nước ngọt Pepsi', N'Nước ngọt Pepsi, chai 1.5L', 15000, 9),
+(N'Cafe nguyên chất', N'Cafe hạt rang xay nguyên chất', 95000, 10),
+(N'Sổ tay A5', N'Sổ tay bìa cứng', 25000, 11),
+(N'Máy tính xách tay Dell', N'Máy tính xách tay Dell 14 inch', 12000000, 12),
+(N'Son môi MAC', N'Son môi màu đỏ, lâu trôi', 500000, 13),
+(N'Sữa rửa mặt Olay', N'Sữa rửa mặt Olay cho da nhạy cảm', 150000, 14),
+(N'Bưởi Da xanh', N'Bưởi Da xanh tươi ngon', 50000, 15),
+(N'Dưa hấu không hạt', N'Dưa hấu ngọt, không hạt', 30000, 16),
+(N'Khoai tây tươi', N'Khoai tây tươi, nhập khẩu', 35000, 17),
+(N'Ớt chuông đỏ', N'Ớt chuông đỏ, tươi ngon', 60000, 18),
+(N'Bánh Oreo', N'Bánh Oreo gói 200g', 45000, 19),
+(N'Kẹo dẻo Haribo', N'Kẹo dẻo Haribo gói 100g', 30000, 19);
 
 -- Dữ liệu cho bảng Users
 INSERT INTO Users (UserName, FullName, Email, Password, Phone, Role)
 VALUES 
 (N'admin', N'Lê Anh Tuấn', N'leanhtuank16@siu.edu.vn', N'4297f44b13955235245b2497399d7a93', N'0123456789', N'Admin'),
 (N'tranvanminh', N'Trần Văn Minh', N'tranvanminhk16@siu.edu.vn', N'4297f44b13955235245b2497399d7a93', N'0912345678', N'Customer'),
-(N'kho', N'Lê Minh C', N'le.minh.c@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345679', N'Customer'),
+(N'kho', N'Lê Minh C', N'socola200500@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345679', N'Admin'),
 (N'tran_thi_d', N'Trần Thị D', N'tran.d@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345680', N'Customer'),
 (N'hoang_van_e', N'Hoàng Văn E', N'hoang.e@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345681', N'Customer'),
 (N'nguyen_thi_f', N'Nguyễn Thị F', N'nguyen.f@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345682', N'Customer'),

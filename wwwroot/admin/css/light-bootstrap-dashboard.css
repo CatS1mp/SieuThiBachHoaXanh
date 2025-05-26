@@ -154,7 +154,7 @@ h1 .subtitle {
 /*     General overwrite     */
 body,
 .wrapper {
-    min-height: 100vh;
+    min-height: 100vh !important;
     position: relative;
 }
 

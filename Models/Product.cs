@@ -20,8 +20,6 @@ namespace BachHoaXanh.Models
         [Range(0, double.MaxValue)]
         public decimal Price { get; set; }
 
-        public int StockQuantity { get; set; } = 0;
-
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public DateTime? UpdatedAt { get; set; }
@@ -35,7 +33,13 @@ namespace BachHoaXanh.Models
         public SubCategory SubCategory { get; set; }
         public int? SubCategoryID { get; set; }
         public List<ProductImage> Images { get; set; }
-        
+
+        // Add navigation property for ProductStock
+        public List<StockProduct> Stocks { get; set; } = new List<StockProduct>();
+
+        [NotMapped]
+        public int StockQuantity => Stocks?.Where(s => s.ExpirationDate >= DateTime.Now)
+                                 .Sum(s => s.Quantity) ?? 0;
 
     }
 

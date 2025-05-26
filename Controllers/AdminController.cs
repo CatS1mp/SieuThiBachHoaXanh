@@ -289,7 +289,6 @@ namespace BachHoaXanh.Controllers
         {
             if (ModelState.IsValid)
             {
-                Console.WriteLine("smfsajndnj");
                 var category = _context.CategoryList.FirstOrDefault(c => c.CategoryID == model.CategoryID);
                 if (category != null)
                 {
@@ -374,6 +373,8 @@ namespace BachHoaXanh.Controllers
         public IActionResult GetProducts()
         {
             var products = _context.ProductList
+                .Include(p => p.Stocks)
+                .Include(p => p.Images)
                 .Include(p => p.SubCategory)
                 .Select(p => new
                 {
@@ -386,7 +387,9 @@ namespace BachHoaXanh.Controllers
                     Price = p.Price.ToString("N0") + " VNĐ",
                     Status = p.StockQuantity > 0 ? 1 : 0,
                     Active = p.IsActive ? "Kinh doanh" : "Ngừng kinh doanh",
-                    ProductID = p.ProductID
+                    ProductID = p.ProductID,
+                    IsExpired = p.Stocks != null && p.Stocks.Any() && p.Stocks.All(s => s.ExpirationDate < DateTime.Now),
+                    IsLowStock = p.StockQuantity > 0 && p.StockQuantity <= 5 // Threshold for low stock
                 })
                 .ToList();
 
@@ -485,13 +488,44 @@ namespace BachHoaXanh.Controllers
             return RedirectToAction("Products");
         }
 
+        [HttpDelete]
+        [Route("api/images/{id}")]
+        public async Task<IActionResult> DeleteImage(int id)
+        {
+            var image = await _context.ProductImageList.FindAsync(id);
+            if (image == null)
+            {
+                return NotFound();
+            }
+
+            // Optionally delete the file from the server
+            var filePath = Path.Combine(_environment.WebRootPath, "images", image.ImagePath);
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
+            _context.ProductImageList.Remove(image);
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return StatusCode(500);
+            }
+        }
+
         // Sửa sản phẩm - GET
         [HttpGet]
-        public async Task<IActionResult> ProductEdit(int? id)
+        public async Task<IActionResult> ProductEdit(int id)
         {
-            // Lấy sản phẩm và ảnh liên quan từ cơ sở dữ liệu
             var product = await _context.ProductList
+                .Include(p => p.Stocks)
                 .Include(p => p.Images)
+                .Include(p => p.SubCategory)
                 .FirstOrDefaultAsync(p => p.ProductID == id);
 
             if (product == null)
@@ -499,21 +533,13 @@ namespace BachHoaXanh.Controllers
                 return NotFound();
             }
 
-            // Lấy danh sách SubCategories
-            var subCategories = await _context.SubCategoryList
-                .Select(s => new { s.SubCategoryID, s.SubCategoryName })
-                .ToListAsync();
-
-            // Truyền dữ liệu qua ViewBag
-            ViewBag.SubCategoryList = new SelectList(subCategories, "SubCategoryID", "SubCategoryName", product.SubCategoryID);
-
+            ViewBag.SubCategoryList = new SelectList(_context.SubCategoryList, "SubCategoryID", "SubCategoryName", product.SubCategoryID);
             return View(product);
         }
-
-        // Sửa sản phẩm - POST
+        // POST: ProductEdit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProductEdit(int id, Product product, IFormFile? imageFile)
+        public async Task<IActionResult> ProductEdit(int id, Product product, IFormFile? imageFile, int? newStockQuantities, DateTime? newStockExpirationDates, int? mainImage)
         {
             if (id != product.ProductID)
             {
@@ -523,67 +549,102 @@ namespace BachHoaXanh.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var existingProduct = await _context.ProductList.FindAsync(id);
+                var existingProduct = await _context.ProductList
+                    .Include(p => p.Images)
+                    .Include(p => p.Stocks)
+                    .FirstOrDefaultAsync(p => p.ProductID == id);
+
                 if (existingProduct == null)
                 {
                     return NotFound();
                 }
 
-                var productImage = await _context.ProductImageList.FirstOrDefaultAsync(img => img.ProductID == id);
-
-                // Cập nhật các thuộc tính của sản phẩm (trừ hình ảnh)
                 existingProduct.ProductName = product.ProductName;
                 existingProduct.Description = product.Description;
                 existingProduct.Price = product.Price;
                 existingProduct.SubCategoryID = product.SubCategoryID;
-                existingProduct.StockQuantity = product.StockQuantity;
                 existingProduct.IsActive = product.IsActive;
                 existingProduct.UpdatedAt = DateTime.Now;
 
-                // Cập nhật sản phẩm trong DbContext
-                _context.Update(existingProduct);
+                if (newStockQuantities.HasValue && newStockQuantities > 0)
+                {
+                    var newStock = new StockProduct
+                    {
+                        ProductID = existingProduct.ProductID,
+                        Quantity = newStockQuantities.Value,
+                        ExpirationDate = newStockExpirationDates ?? DateTime.MaxValue,
+                        CreatedAt = DateTime.Now
+                    };
+                    _context.StockProductList.Add(newStock);
+                }
 
-                // Nếu có ảnh mới thì xử lý
                 if (imageFile != null && imageFile.Length > 0)
                 {
                     var fileName = Path.GetFileName(imageFile.FileName);
                     var imagePath = Path.Combine(_environment.WebRootPath, "images");
-
                     if (!Directory.Exists(imagePath))
                     {
                         Directory.CreateDirectory(imagePath);
                     }
-
                     var filePath = Path.Combine(imagePath, fileName);
-
-                    // Đổi tên nếu trùng
                     if (System.IO.File.Exists(filePath))
                     {
                         fileName = $"{Path.GetFileNameWithoutExtension(fileName)}_{Guid.NewGuid()}{Path.GetExtension(fileName)}";
                         filePath = Path.Combine(imagePath, fileName);
                     }
-
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
                         await imageFile.CopyToAsync(fileStream);
                     }
 
-                    // Cập nhật đường dẫn ảnh
-                    if (productImage != null)
+                    var newImage = new ProductImage
                     {
-                        productImage.ImagePath = fileName;
-                    }
-                    else
-                    {
-                        _context.ProductImageList.Add(new ProductImage
-                        {
-                            ProductID = product.ProductID,
-                            ImagePath = fileName,
-                            IsMainImage = true
-                        });
-                    }
+                        ProductID = existingProduct.ProductID,
+                        ImagePath = fileName,
+                        IsMainImage = false // Will be set below if needed
+                    };
+                    _context.ProductImageList.Add(newImage);
+                    await _context.SaveChangesAsync(); // Save to get ImageID
+
                 }
 
+                // Update main image logic
+                var allImages = await _context.ProductImageList
+                    .Where(i => i.ProductID == existingProduct.ProductID)
+                    .ToListAsync();
+
+                // If user selected a main image, update accordingly
+                if (mainImage.HasValue)
+                {
+                    Console.WriteLine($"MainImage: {mainImage.Value}");
+                    foreach (var image in allImages)
+                    {
+                        if (image.ImageID == mainImage.Value)
+                        {
+                            image.IsMainImage = true;
+                        }
+                        else
+                        {
+                            image.IsMainImage = false;
+                        }
+                    }
+                }
+                else
+                {
+                    // If no selection, ensure there's a main image
+                    var hasMainImage = allImages.Any(i => i.IsMainImage);
+                    if (!hasMainImage)
+                    {
+                        if (allImages.Count == 1)
+                        {
+                            allImages[0].IsMainImage = true;
+                        }
+                        else
+                        {
+                            allImages.Last().IsMainImage = true; // Default to newest
+                        }
+                    }
+                }
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 return RedirectToAction("Products");
@@ -591,10 +652,70 @@ namespace BachHoaXanh.Controllers
             catch
             {
                 await transaction.RollbackAsync();
-                ModelState.AddModelError("", "Failed to update the product.");
+                ModelState.AddModelError("", "Không thể cập nhật sản phẩm.");
+                var productWithDetails = await _context.ProductList
+                    .Include(p => p.Stocks)
+                    .Include(p => p.Images)
+                    .FirstOrDefaultAsync(p => p.ProductID == id);
+                if (productWithDetails != null)
+                {
+                    product.Stocks = productWithDetails.Stocks ?? new List<StockProduct>();
+                    product.Images = productWithDetails.Images ?? new List<ProductImage>();
+                }
+                ViewBag.SubCategoryList = new SelectList(_context.SubCategoryList, "SubCategoryID", "SubCategoryName", product.SubCategoryID);
                 return View(product);
             }
+        }
+        [HttpPut]
+        [Route("api/stocks/{id}")]
+        public async Task<IActionResult> UpdateStock(int id, [FromBody] StockProduct stock)
+        {
+            if (id != stock.StockID)
+            {
+                return BadRequest();
+            }
 
+            var existingStock = await _context.StockProductList.FindAsync(id);
+            if (existingStock == null)
+            {
+                return NotFound();
+            }
+
+            existingStock.Quantity = stock.Quantity;
+            existingStock.ExpirationDate = stock.ExpirationDate;
+            existingStock.UpdatedAt = DateTime.Now;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
+        }
+
+        [HttpDelete]
+        [Route("api/stocks/{id}")]
+        public async Task<IActionResult> DeleteStock(int id)
+        {
+            var stock = await _context.StockProductList.FindAsync(id);
+            if (stock == null)
+            {
+                return NotFound();
+            }
+
+            _context.StockProductList.Remove(stock);
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
     }
 
