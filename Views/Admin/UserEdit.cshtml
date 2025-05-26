@@ -83,12 +83,20 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
+                                    <label>Rank hiện tại</label>
+                                    <input value="@Model.Rank" type="text" class="form-control" readonly />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label for="role">Quyền</label>
-                                    <select asp-for="Role"  id="role" class="form-control" name="Role">
+                                    <select asp-for="Role" id="role" class="form-control" name="Role">
                                         <option value="" disabled selected>Chọn quyền</option>
                                         <option value="Customer">Customer</option>
                                         <option value="Admin">Admin</option>
-
                                     </select>
                                 </div>
                             </div>
@@ -103,9 +111,8 @@
     </div>
 </div>
 
-
-@section scripts{
-    
-
+@section scripts {
+    <script>
+        // Add any additional scripts if needed
     </script>
-    }
+}

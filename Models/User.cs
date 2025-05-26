@@ -28,9 +28,15 @@ namespace BachHoaXanh.Models
         public string? Address { get; set; }
 
         [StringLength(20, ErrorMessage = "Vai trò không quá 20 ký tự.")]
-        public string Role { get; set; } = "Customer"; 
+        public string Role { get; set; } = "Customer";
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public decimal Points { get; set; } = 0; // Thêm cột Points
+
+        [StringLength(50)]
+        public string Rank { get; set; } = "Chưa xếp hạng"; // Thêm cột Rank
+
         public ICollection<Address> Addresses { get; set; } = new List<Address>();
     }
 }

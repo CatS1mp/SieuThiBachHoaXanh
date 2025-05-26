@@ -33,6 +33,9 @@ namespace BachHoaXanh.Controllers
                 .OrderByDescending(o => o.CreatedAt)
                 .ToList();
 
+            // Tính điểm và cập nhật xếp hạng cho người dùng
+            UpdateUserPointsAndRank(int.Parse(userId));
+
             return View(orders);
         }
 
@@ -70,8 +73,44 @@ namespace BachHoaXanh.Controllers
             order.OrderStatus = "Cancelled";
             _context.SaveChanges();
 
+            // Cập nhật lại điểm và xếp hạng sau khi hủy đơn
+            UpdateUserPointsAndRank(order.UserID);
+
             return Json(new { success = true });
         }
 
+        private void UpdateUserPointsAndRank(int userId)
+        {
+            // Lấy tất cả đơn hàng của người dùng, chỉ tính khi OrderStatus là "Completed"
+            var orders = _context.OrderList
+                .Where(o => o.UserID == userId && o.OrderStatus == "Completed")
+                .ToList();
+
+            // Tính tổng số tiền từ các đơn hàng
+            decimal totalSpent = orders.Sum(o => o.TotalAmount);
+
+            // Tính điểm: 100,000 VNĐ = 10 điểm
+            decimal points = (totalSpent / 100000) * 10;
+
+            // Cập nhật xếp hạng dựa trên điểm
+            string rank = "Chưa xếp hạng";
+            if (points >= 10000)
+                rank = "Kim cương";
+            else if (points >= 1000)
+                rank = "Vàng";
+            else if (points >= 500)
+                rank = "Bạc";
+            else if (points >= 100)
+                rank = "Đồng";
+
+            // Cập nhật điểm và xếp hạng vào bảng Users
+            var user = _context.UserList.FirstOrDefault(u => u.UserID == userId);
+            if (user != null)
+            {
+                user.Points = points;
+                user.Rank = rank;
+                _context.SaveChanges();
+            }
+        }
     }
 }
