@@ -114,6 +114,15 @@
         background-color: #fff3cd !important; /* Light yellow */
         border-left: 4px solid #ffc107 !important; /* Yellow border */
     }
+    /* Styling for low stock badge */
+    .low-stock-badge {
+        background-color: #ffc107;
+        color: #333;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.9em;
+        margin-left: 5px;
+    }
     /* Ensure badges are readable */
     .badge {
         font-size: 0.9em;
@@ -158,89 +167,93 @@
     </div>
 </div>
 
-@section scripts{
+@section scripts {
     <script>
-
-            $(document).ready(function () {
-                $('#productTable').DataTable({
-                    ajax: {
-                        url: '/api/products',
-                        dataSrc: 'data'
-                    },
-                    columns: [
-                        {
-                            data: 'productImageUrl',
-                            render: function (data, type, row) {
-                                let imageUrl = data;
-                                return `<img src="${imageUrl}" alt="${row.productName}" class="product-img">
-                                                <div class="info">
-                                                    <div class="product-name">${row.productName}</div>
-                                                    <div class="product-category">${row.subCategoryName}</div>
-                                                </div>`;
-                            }
-                        },
-                        {
-                            data: 'status',
-                            render: function (data) {
-                                let badgeClass = data == 1 ? "bg-success" : "bg-danger";
-                                let statusText = data == 1 ? "Còn hàng" : "Hết hàng";
-                                return `<span class="badge badge-sm ${badgeClass}">${statusText}</span>`;
-                            }
-                        },
-                        { data: 'stock' },
-                        { data: 'price' },
-                        {
-                            data: 'active',
-                            render: function (data) {
-                                let badgeClass = data === "Kinh doanh" ? "bg-success" : "bg-danger";
-                                return `<span class="badge badge-sm ${badgeClass}">${data}</span>`;
-                            }
-                        },
-                        {
-                            data: 'productID',
-                            render: function (data) {
-                                return `<a href="/admin/ProductEdit/${data}" class="btn btn-success btn-xs dt-edit" style="margin-right:16px;">
-                                                    <i class="fa-regular fa-pen-to-square"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-danger btn-xs dt-delete" onclick="deleteProduct('${data}')">
-                                                    <i class="fa-solid fa-trash"></i>
-                                                </button>`;
-                            }
+        $(document).ready(function () {
+            $('#productTable').DataTable({
+                ajax: {
+                    url: '/api/products',
+                    dataSrc: 'data'
+                },
+                columns: [
+                    {
+                        data: 'productImageUrl',
+                        render: function (data, type, row) {
+                            let imageUrl = data;
+                            return `<img src="${imageUrl}" alt="${row.productName}" class="product-img">
+                                            <div class="info">
+                                                <div class="product-name">${row.productName}</div>
+                                                <div class="product-category">${row.subCategoryName}</div>
+                                            </div>`;
                         }
-                    ],
-                    language: {
-                        emptyTable: "Không có dữ liệu nào trong bảng",
-                        search: "Tìm kiếm:",
-                        lengthMenu: "Hiển thị <b>_MENU_</b> mục",
-                        info: "Hiển thị <b>_START_</b> đến <b>_END_</b> của <b>_TOTAL_ sản phẩm</b>",
-                        infoEmpty: "Hiển thị <b>0</b> đến <b>0</b> của <b>0</b> sản phẩm",
-                        infoFiltered: "(được lọc từ <b>_MAX_</b> sản phẩm)",
-                        zeroRecords: "Không tìm thấy kết quả nào phù hợp",
-                        paginate: {
-                            first: "Đầu",
-                            last: "Cuối",
-                            next: "Tiếp",
-                            previous: "Trước"
+                    },
+                    {
+                        data: 'status',
+                        render: function (data) {
+                            let badgeClass = data == 1 ? "bg-success" : "bg-danger";
+                            let statusText = data == 1 ? "Còn hàng" : "Hết hàng";
+                            return `<span class="badge badge-sm ${badgeClass}">${statusText}</span>`;
+                        }
+                    },
+                    {
+                        data: 'stock',
+                        render: function (data) {
+                            let stockDisplay = data;
+                            let lowStockTag = data < 10 ? '<span class="low-stock-badge">Low Stock</span>' : '';
+                            return `${stockDisplay} ${lowStockTag}`;
+                        }
+                    },
+                    { data: 'price' },
+                    {
+                        data: 'active',
+                        render: function (data) {
+                            let badgeClass = data === "Kinh doanh" ? "bg-success" : "bg-danger";
+                            return `<span class="badge badge-sm ${badgeClass}">${data}</span>`;
+                        }
+                    },
+                    {
+                        data: 'productID',
+                        render: function (data) {
+                            return `<a href="/admin/ProductEdit/${data}" class="btn btn-success btn-xs dt-edit" style="margin-right:16px;">
+                                                <i class="fa-regular fa-pen-to-square"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-danger btn-xs dt-delete" onclick="deleteProduct('${data}')">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>`;
                         }
                     }
-                });
-            });
-
-            function deleteProduct(productID) {
-                if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
-                    $.ajax({
-                        url: `/api/products/${productID}`,
-                        type: 'DELETE',
-                        success: function () {
-                            $('#productTable').DataTable().ajax.reload();
-                        },
-                        error: function () {
-                            alert("Có lỗi xảy ra, vui lòng thử lại.");
-                        }
-                    });
+                ],
+                language: {
+                    emptyTable: "Không có dữ liệu nào trong bảng",
+                    search: "Tìm kiếm:",
+                    lengthMenu: "Hiển thị <b>_MENU_</b> mục",
+                    info: "Hiển thị <b>_START_</b> đến <b>_END_</b> của <b>_TOTAL_ sản phẩm</b>",
+                    infoEmpty: "Hiển thị <b>0</b> đến <b>0</b> của <b>0</b> sản phẩm",
+                    infoFiltered: "(được lọc từ <b>_MAX_</b> sản phẩm)",
+                    zeroRecords: "Không tìm thấy kết quả nào phù hợp",
+                    paginate: {
+                        first: "Đầu",
+                        last: "Cuối",
+                        next: "Tiếp",
+                        previous: "Trước"
+                    }
                 }
+            });
+        });
+
+        function deleteProduct(productID) {
+            if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
+                $.ajax({
+                    url: `/api/products/${productID}`,
+                    type: 'DELETE',
+                    success: function () {
+                        $('#productTable').DataTable().ajax.reload();
+                    },
+                    error: function () {
+                        alert("Có lỗi xảy ra, vui lòng thử lại.");
+                    }
+                });
             }
-
-
+        }
     </script>
-    }
+}

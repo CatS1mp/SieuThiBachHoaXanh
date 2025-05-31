@@ -7,26 +7,32 @@
 
 <style>
     .profile-container {
-        background-color: #fff;
+        background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
         border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        padding: 20px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        padding: 25px;
         margin-top: 20px;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
         .profile-container h2 {
-            font-size: 24px;
+            font-size: 28px;
             color: #2e7d32;
             text-align: center;
-            margin-bottom: 20px;
-            font-weight: 600;
+            margin-bottom: 25px;
+            font-weight: 700;
+            border-bottom: 2px solid #4caf50;
+            padding-bottom: 10px;
         }
 
         .profile-container h3 {
-            font-size: 20px;
+            font-size: 22px;
             color: #2e7d32;
             margin-top: 30px;
             margin-bottom: 15px;
+            font-weight: 600;
         }
 
     .form-group {
@@ -36,81 +42,127 @@
         .form-group label {
             font-weight: 500;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             display: block;
         }
 
         .form-group input,
+        .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 6px;
             font-size: 16px;
-            transition: border-color 0.3s;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
             .form-group input:focus,
+            .form-group select:focus,
             .form-group textarea:focus {
                 border-color: #4caf50;
-                box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+                box-shadow: 0 0 6px rgba(76, 175, 80, 0.3);
+                outline: none;
             }
 
     .auth-btn {
         background-color: #4caf50;
         color: white;
-        padding: 10px 20px;
+        padding: 12px 25px;
         border: none;
-        border-radius: 5px;
+        border-radius: 6px;
         font-size: 16px;
         cursor: pointer;
-        transition: background-color 0.3s;
+        transition: background-color 0.3s, transform 0.2s;
     }
 
         .auth-btn:hover {
             background-color: #45a049;
+            transform: scale(1.05);
         }
 
-    .address-list {
+    .logout-btn {
+        background-color: #757575;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .logout-btn:hover {
+            background-color: #616161;
+            transform: scale(1.05);
+        }
+
+    .address-section {
         margin-top: 10px;
     }
 
-    .address-item {
+        .address-section select {
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+
+            .address-section select option[value="add-new"] {
+                font-style: italic;
+                color: #4caf50;
+            }
+
+    .membership-section {
+        background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%);
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #4caf50;
+        margin-top: 20px;
+        margin-bottom: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-        margin-bottom: 10px;
     }
 
-    .address-actions .btn {
-        padding: 5px 10px;
+    .membership-badge {
+        background-color: #ffd700;
+        color: #333;
+        padding: 8px 15px;
+        border-radius: 50%;
+        font-weight: 700;
+        font-size: 16px;
+        transition: transform 0.2s;
+    }
+
+        .membership-badge:hover {
+            transform: scale(1.1);
+        }
+
+    @@media (max-width: 768px) {
+        .profile-container
+
+    {
+        padding: 15px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
         font-size: 14px;
-        margin-left: 5px;
     }
 
-    .btn-primary {
-        background-color: #2196f3;
-        color: white;
-        border: none;
+    .auth-btn, .logout-btn {
+        width: 100%;
+        margin-top: 10px;
     }
 
-        .btn-primary:hover {
-            background-color: #1e88e5;
-        }
-
-    .btn-danger {
-        background-color: #f44336;
-        color: white;
-        border: none;
+    .membership-section {
+        flex-direction: column;
+        text-align: center;
     }
 
-        .btn-danger:hover {
-            background-color: #e53935;
-        }
+    }
 </style>
 
 <div class="container-wrapper">
@@ -138,62 +190,52 @@
                     <label for="phone">Số điện thoại</label>
                     <input type="tel" id="phone" asp-for="Phone" name="phone" placeholder="Nhập số điện thoại" value="@Model.Phone">
                 </div>
-                <div class="form-group">
-                    <label for="address">Địa chỉ mặc định</label>
-                    <textarea id="address" asp-for="Address" placeholder="Địa chỉ giao hàng">@Model.Address</textarea>
-                    <span asp-validation-for="Address" class="text-danger"></span>
+                <div class="form-group address-section">
+                    <label for="address">Quản lý địa chỉ</label>
+                    <select id="address" onchange="handleAddressSelection(this)">
+                        @if (Model.Addresses != null && Model.Addresses.Any())
+                        {
+                            foreach (var address in Model.Addresses)
+                            {
+                                var addressString = $"{address.Street}, {address.Ward}, {address.District}, {address.Province}";
+                                if (address.IsDefault)
+                                {
+                                    <option value="@address.AddressID" selected>
+                                        @addressString (Mặc định)
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@address.AddressID">
+                                        @addressString
+                                    </option>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <option value="" disabled selected>Chưa có địa chỉ nào</option>
+                        }
+                        <option value="add-new">Thêm địa chỉ mới</option>
+                    </select>
                 </div>
-                <div class="form-group">
-                    <label for="points">Điểm tích lũy</label>
-                    <input type="text" id="points" value="@Model.Points" readonly />
-                </div>
-                <div class="form-group">
-                    <label for="rank">Xếp hạng thành viên</label>
-                    <input type="text" id="rank" value="@Model.Rank" readonly />
+                <div class="membership-section">
+                    <div>
+                        <label>Điểm tích lũy</label>
+                        <input type="text" value="@Model.Points.ToString("N0")" readonly style="border: none; background: transparent; width: auto; display: inline; font-weight: 600; font-size: 18px;" />
+                    </div>
+                    <div class="membership-badge">@Model.Rank</div>
                 </div>
                 <button type="submit" class="auth-btn">Lưu thay đổi</button>
-
                 @{
                     var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
                     if (role == "Admin")
                     {
-                        <a href="@Url.Action("Index", "Admin")" type="submit" class="logout-btn">Đăng nhập vào trang quản lý</a>
+                        <a href="@Url.Action("Index", "Admin")" class="logout-btn">Đăng nhập vào trang quản lý</a>
                     }
                 }
-
-                <a href="@Url.Action("Logout","User")" type="submit" class="logout-btn">Đăng xuất tài khoản</a>
+                <a href="@Url.Action("Logout", "User")" class="logout-btn">Đăng xuất tài khoản</a>
             </form>
-
-            <h3>Danh sách địa chỉ</h3>
-            <a href="@Url.Action("AddAddress", "User")" class="auth-btn">Thêm địa chỉ mới</a>
-            <div class="address-list">
-                @if (Model.Addresses != null && Model.Addresses.Any())
-                {
-                    foreach (var address in Model.Addresses)
-                    {
-                        <div class="address-item">
-                            <p>
-                                <strong>@address.Street, @address.Ward, @address.District, @address.Province</strong>
-                                @if (address.IsDefault)
-                                {
-                                    <span> (Mặc định)</span>
-                                }
-                            </p>
-                            <div class="address-actions">
-                                <a href="@Url.Action("EditAddress", "User", new { id = address.AddressID })" class="btn btn-sm btn-primary">Sửa</a>
-                                <form asp-action="DeleteAddress" asp-route-id="@address.AddressID" method="post" style="display:inline;">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa địa chỉ này?');">Xóa</button>
-                                </form>
-                            </div>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <p>Chưa có địa chỉ nào được thêm.</p>
-                }
-            </div>
         </div>
     </div>
 </div>
@@ -239,6 +281,12 @@
                 categorySub.style.display = "block";
             } else {
                 categorySub.style.display = "none";
+            }
+        }
+
+        function handleAddressSelection(select) {
+            if (select.value === "add-new") {
+                window.location.href = '@Url.Action("AddAddress", "User")';
             }
         }
     </script>
