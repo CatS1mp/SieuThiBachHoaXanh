@@ -3,6 +3,8 @@ GO
 
 DROP TABLE IF EXISTS OrderDetails;
 DROP TABLE IF EXISTS Orders;
+DROP TABLE IF EXISTS PromotionDetails;
+DROP TABLE IF EXISTS Promotions;
 DROP TABLE IF EXISTS ProductImages;
 DROP TABLE IF EXISTS Products;
 DROP TABLE IF EXISTS SubCategories;
@@ -10,6 +12,7 @@ DROP TABLE IF EXISTS FavoriteProducts;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS PaymentMethods;
 DROP TABLE IF EXISTS Categories;
+DROP TABLE IF EXISTS Addresses;
 GO
 
 -- Tạo bảng Users để quản lý thông tin người dùng
@@ -23,6 +26,18 @@ CREATE TABLE Users (
     Address NVARCHAR(255),
     Role NVARCHAR(20) DEFAULT 'Customer', -- Quản lý phân quyền: Admin, Customer
     CreatedAt DATETIME DEFAULT GETDATE()
+);
+
+CREATE TABLE Addresses (
+    AddressID INT IDENTITY (1, 1) NOT NULL,
+    UserID INT NOT NULL,
+    Province NVARCHAR (100) NULL,
+    District NVARCHAR (100) NULL,
+    Ward NVARCHAR (100) NULL,
+    Street NVARCHAR (255) NOT NULL,
+    IsDefault BIT DEFAULT ((0)) NULL,
+    PRIMARY KEY CLUSTERED (AddressID ASC),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
 );
 
 CREATE TABLE Categories (
@@ -99,6 +114,20 @@ CREATE TABLE OrderDetails (
     UnitPrice DECIMAL(18, 2) NOT NULL,
     TotalPrice AS (Quantity * UnitPrice), -- Tính tổng giá tự động
     FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
+CREATE TABLE Promotions (
+    PromotionID INT PRIMARY KEY IDENTITY(1,1),
+    PromotionName NVARCHAR(250) NOT NULL
+);
+
+CREATE TABLE PromotionDetails (
+    PromotionDetailID INT PRIMARY KEY IDENTITY(1,1),
+    PromotionID INT,
+    ProductID INT UNIQUE,
+    NewPrice DECIMAL(18, 2) NOT NULL,
+    FOREIGN KEY (PromotionID) REFERENCES Promotions(PromotionID),
     FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
 );
 
@@ -310,3 +339,19 @@ VALUES
 (16, 18, 1, 60000),
 (17, 19, 1, 45000),
 (18, 20, 3, 30000);
+
+
+INSERT INTO Promotions (PromotionName)
+VALUES 
+('Summer Sale'),
+('Black Friday'),
+('Tech Sale'),
+('New Year Deal'),
+('Back To School');
+
+INSERT INTO PromotionDetails (PromotionID, ProductID, NewPrice)
+VALUES 
+(3, 1, 15999999),
+(1, 16, 15000),
+(3, 2, 9999999),
+(1, 12, 9999999);

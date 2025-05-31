@@ -67,6 +67,16 @@ public class HomeController : Controller
                 .Any(f => f.UserID == userId && f.ProductID == product.ProductID);
             product.isFav = isFavorite;
         }
+
+        foreach (var product in products)
+        {
+            var promotion = _context.PromotionDetails
+                .FirstOrDefault(f => f.ProductID == product.ProductID);
+            if(promotion != null)
+            {
+                product.PromotionPrice = promotion.NewPrice;
+            }
+        }
         var productViewModel = new ProductViewModel
         {
             Products = products,

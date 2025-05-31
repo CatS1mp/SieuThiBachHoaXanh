@@ -5,6 +5,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,7 +19,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
     <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+        href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="~/BachHoaXanh.styles.css" asp-append-version="true" />
 
     <style>
@@ -27,33 +28,33 @@
         }
     </style>
 </head>
+
 <body>
 
-    
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top align-items-left" style="padding-bottom: 0!important">
         <div class="container"
-             style="max-width: 1200px!important; padding-left: 0!important; padding-right: 0!important">
+            style="max-width: 1200px!important; padding-left: 0!important; padding-right: 0!important">
             <div class="navbar-brand-container">
-                <a href="@Url.Action("Index", "Home")" class="navbar-brand" style="padding-top: 0!important; padding-bottom: 0!important">
+                <a href="@Url.Action("Index", "Home")" class="navbar-brand"
+                    style="padding-top: 0!important; padding-bottom: 0!important">
                     <img src="~/images/logo.png" alt="Logo" class="logo">
                 </a>
-                <button class="category-button">
+                @* <button class="category-button">
                     <i class="fa-solid fa-bars pr-2 pl-2"></i>
                     DANH MỤC SẢN PHẨM
-                </button>
+                </button> *@
             </div>
-            <div class="collapse navbar-collapse d-flex justify-content-between" id="navbarNav">
-                <div class="search-bar mx-auto">
-                    <form method="get" action="@Url.Action("Index", "Home")" class="search-bar mx-auto">
-                        <div class="input-group">
-                            <i class="fa fa-search search-icon"></i>
-                            <input type="search" class="form-control rounded" id="searchQuery" name="search" value="@ViewData["Search"]" placeholder="Tìm sản phẩm...">
-                        </div>
-                    </form>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
+            <div class="collapse navbar-collapse " id="navbarNav">
+                <form class="form-inline my-2 my-lg-0">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form>
 
-
-                </div>
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="information-btn nav-link mr-2" href="@Url.Action("Profile", "User")">
@@ -66,11 +67,13 @@
                         </a>
                     </li>
                     <li class="nav-item cart-container">
-                        <a class="cart-btn nav-link" href="@Url.Action("Index", "Cart")"><i class="fa-solid fa-cart-shopping"></i></a>
+                        <a class="cart-btn nav-link" href="@Url.Action("Index", "Cart")"><i
+                                class="fa-solid fa-cart-shopping"></i></a>
                         @await Html.PartialAsync("_CartCountPartial")
                     </li>
                 </ul>
             </div>
+        </div>
         </div>
     </nav>
 
@@ -87,33 +90,34 @@
     <script>
 
         var swiper2 = new Swiper(".mySwiper2", {
-           loop: true,
-           cssMode: true,
-           spaceBetween: 10,
-           slidesPerView: 5,
-           mousewheel: true,
-           freeMode: true,
-           watchSlidesProgress: true,
+            loop: true,
+            cssMode: true,
+            spaceBetween: 10,
+            slidesPerView: 5,
+            mousewheel: true,
+            freeMode: true,
+            watchSlidesProgress: true,
         });
         var swiper1 = new Swiper(".mySwiper", {
-           slidesPerView: 1,
-           cssMode: true,
-           spaceBetween: 30,
-           mousewheel: true,
-           loop: true,
-           pagination: {
-              el: ".swiper-pagination",
-              type: "fraction"
-           },
-           navigation: {
-              nextEl: ".swiper-btn-next",
-              prevEl: ".swiper-btn-prev",
-           },
-           thumbs: {
-              swiper: swiper2,
-           },
+            slidesPerView: 1,
+            cssMode: true,
+            spaceBetween: 30,
+            mousewheel: true,
+            loop: true,
+            pagination: {
+                el: ".swiper-pagination",
+                type: "fraction"
+            },
+            navigation: {
+                nextEl: ".swiper-btn-next",
+                prevEl: ".swiper-btn-prev",
+            },
+            thumbs: {
+                swiper: swiper2,
+            },
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>
