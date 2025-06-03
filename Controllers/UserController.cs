@@ -175,6 +175,7 @@ namespace BachHoaXanh.Controllers
 
             var model = new BachHoaXanh.ViewModels.UpdateProfileView
             {
+                UserId = user.UserID,
                 UserName = user.UserName,
                 Email = user.Email,
                 Address = user.Address,
@@ -316,6 +317,7 @@ namespace BachHoaXanh.Controllers
             int pageSize = 8;
             var categories = _context.CategoryList.Include(c => c.SubCategories).ToList();
             var productsQuery = _context.ProductList
+                .Where(p => p.Status != ProductStatus.NgungKinhDoanh)
                 .Where(p => _context.FavoriteProductList
                     .Any(f => f.UserID == userId && f.ProductID == p.ProductID))
                 .AsQueryable();

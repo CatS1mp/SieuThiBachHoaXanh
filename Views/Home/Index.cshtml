@@ -19,18 +19,24 @@
             {
                 <div class="product-item">
                     <img 
-                        data-is-favorited="@product.isFav.ToString().ToLower()" 
-                        onclick="toggleFavorite(@product.ProductID, this)" class="icon-fav" 
-                        src="~/images/@(product.isFav ? "favor.png" : "unfavor.png")" />
+                    data-is-favorited="@product.isFav.ToString().ToLower()" 
+                    onclick="toggleFavorite(@product.ProductID, this)" class="icon-fav" 
+                    src="~/images/@(product.isFav ? "favor.png" : "unfavor.png")" />
                     @if (product.Images != null && product.Images.Any())
                     {
-                        <img class="product-image" src="~/images/@product.Images.FirstOrDefault(img => img.IsMainImage)?.ImagePath" alt="@product.ProductName">
+                        <img class="product-image" src="~/images/prods/@product.Images.FirstOrDefault(img => img.IsMainImage)?.ImagePath" alt="@product.ProductName">
                     }
                     else
                     {
                         <img class="product-image" src="~/images/default-image.png" alt="@product.ProductName">
                     }
-                    <h3 class="product-name">@product.ProductName</h3>
+                    <div class="product-name-container">
+                        <h3 class="product-name">@product.ProductName</h3>
+                        @if (product.StockQuantity == 0)
+                        {
+                            <span class="badge badge-sm bg-danger">Tạm hết hàng</span>
+                        }
+                    </div>
                     <div class="product-info">
                         <p class="product-price">Giá: <b>@product.Price.ToString("N0") VNĐ</b></p>
                     </div>

@@ -154,11 +154,10 @@
             <thead>
                 <tr>
                     <th>Sản phẩm</th>
-                    <th>Trạng thái</th>
                     <th>Số lượng SP</th>
                     <th>Giá</th>
+                    <th>Trạng thái</th>
                     <th>Hoạt động</th>
-                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -188,14 +187,6 @@
                         }
                     },
                     {
-                        data: 'status',
-                        render: function (data) {
-                            let badgeClass = data == 1 ? "bg-success" : "bg-danger";
-                            let statusText = data == 1 ? "Còn hàng" : "Hết hàng";
-                            return `<span class="badge badge-sm ${badgeClass}">${statusText}</span>`;
-                        }
-                    },
-                    {
                         data: 'stock',
                         render: function (data) {
                             let stockDisplay = data;
@@ -205,7 +196,7 @@
                     },
                     { data: 'price' },
                     {
-                        data: 'active',
+                        data: 'status',
                         render: function (data) {
                             let badgeClass = data === "Kinh doanh" ? "bg-success" : "bg-danger";
                             return `<span class="badge badge-sm ${badgeClass}">${data}</span>`;

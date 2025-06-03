@@ -27,7 +27,9 @@ public class HomeController : Controller
 
         int pageSize = 8;
         var categories = _context.CategoryList.Include(c => c.SubCategories).ToList();
-        var productsQuery = _context.ProductList.AsQueryable();
+        var productsQuery = _context.ProductList
+                            .Where(p => p.Status != ProductStatus.NgungKinhDoanh)
+                            .AsQueryable();
 
         if (!string.IsNullOrEmpty(search))
         {

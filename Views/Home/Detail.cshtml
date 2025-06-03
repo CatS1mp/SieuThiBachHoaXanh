@@ -23,7 +23,7 @@
                             {
                                 <div class="swiper-slide">
                                     <a href="#" data-fancybox="gallery">
-                                        <img src="~/images/@image.ImagePath" />
+                                        <img src="~/images/prods/@image.ImagePath" />
                                     </a>
                                 </div>
                             }
@@ -43,7 +43,7 @@
                             @foreach (var image in Model.Images)
                             {
                                 <div class="swiper-slide">
-                                    <img src="~/images/@image.ImagePath" />
+                                    <img src="~/images/prods/@image.ImagePath"/>
                                 </div>
                             }
                         </div>
@@ -73,39 +73,58 @@
 
             <form id="cartForm" action="@Url.RouteUrl("them-gio-hang", new { productid = Model.ProductID })" method="post">
                 <input type="hidden" name="ProductID" value="@Model.ProductID" />
-    
-                <!-- Quantity Controls -->
-                <div class="qty-controls">
-                    <p class="label">Số lượng:</p>
-                    <div>
-                        <button type="button" class="qtyminus" aria-hidden="true">&minus;</button>
-                        <input id="qty" name="quantity" min="1" max="@Model.StockQuantity" step="1" value="1">
-                        <button type="button" class="qtyplus" aria-hidden="true">&plus;</button>
-                    </div>
-                </div>
 
-                <p class="kho">
-                    Sản phẩm này còn <b><u>@Model.StockQuantity</u></b> sản phẩm trong kho
-                </p>
-
-                <!-- Price Display -->
-                <div class="pprice-container">
-                    <p class="label">Giá:</p>
-                    <div class="price-controlers">
-                        <p class="price main-price"><b>@(Model.Price.ToString("N0"))<sup><u>đ</u></sup></b></p>
+                @if (Model.StockQuantity > 0)
+                {
+                    <!-- Quantity Controls -->
+                    <div class="qty-controls">
+                        <p class="label">Số lượng:</p>
+                        <div>
+                            <button type="button" class="qtyminus" aria-hidden="true">−</button>
+                            <input id="qty" name="quantity" min="1" max="@Model.StockQuantity" step="1" value="1">
+                            <button type="button" class="qtyplus" aria-hidden="true">+</button>
+                        </div>
                     </div>
-                </div>
-                <div class="pprice-container">
-                    <p class="label">Tạm tính:</p>
-                    <div class="pprice-controllers">
-                        <p id="temporary-price" class="price main-price"><b>@(Model.Price.ToString("N0")) <sup><u>đ</u></sup></b></p>
-                    </div>
-                </div>
 
-                <!-- Submit Button -->
-                <div class="btn-controls">
-                    <button type="submit" class="pcart-btn">Thêm giỏ hàng</button>
-                </div>
+                    <p class="kho">
+                        Sản phẩm này còn <b><u>@Model.StockQuantity</u></b> sản phẩm trong kho
+                    </p>
+
+                    <!-- Price Display -->
+                    <div class="pprice-container">
+                        <p class="label">Giá:</p>
+                        <div class="price-controlers">
+                            <p class="price main-price"><b>@(Model.Price.ToString("N0"))<sup><u>đ</u></sup></b></p>
+                        </div>
+                    </div>
+                    <div class="pprice-container">
+                        <p class="label">Tạm tính:</p>
+                        <div class="pprice-controllers">
+                            <p id="temporary-price" class="price main-price"><b>@(Model.Price.ToString("N0")) <sup><u>đ</u></sup></b></p>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="btn-controls">
+                        <button type="submit" class="pcart-btn">Thêm giỏ hàng</button>
+                    </div>
+                }
+                else
+                {
+                    <!-- Price and Out of Stock Display -->
+                    <div class="out-of-stock-container">
+                        <div class="pprice-container">
+                            <p class="label">Giá:</p>
+                            <div class="price-controlers">
+                                <p class="price main-price"><b>@(Model.Price.ToString("N0"))<sup><u>đ</u></sup></b></p>
+                            </div>
+                        </div>
+                        <div class="out-of-stock-notification">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Hết hàng</span>
+                        </div>
+                    </div>
+                }
             </form>
         </div>
     </div>
@@ -152,8 +171,22 @@
             var newval = (current - step);
             if (newval < min) {
                 newval = min;
+                Toastify({
+                    text: "Số lượng không thể nhỏ hơn " + min + "!",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#ff4444",
+                }).showToast();
             } else if (newval > max) {
                 newval = max;
+                Toastify({
+                    text: "Số lượng không thể vượt quá " + max + "!",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#ff4444",
+                }).showToast();
             }
             input.value = Number(newval);
             updateTemporaryPrice();
@@ -262,10 +295,24 @@
         let value = parseInt(this.value, 10);
         if (isNaN(value)) return;
 
-        if (value > maxQty) {
-            this.value = maxQty;
-        } else if (value < minQty) {
-            this.value = minQty;
+            if (value > maxQty) {
+                this.value = maxQty;
+            Toastify({
+                    text: "Số lượng không thể vượt quá " + maxQty + "!",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#ff4444",
+            }).showToast();
+            } else if (value < minQty) {
+                this.value = minQty;
+            Toastify({
+                    text: "Số lượng không thể nhỏ hơn " + minQty + "!",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#ff4444",
+            }).showToast();
         }
 
         // Now update the price using the corrected value

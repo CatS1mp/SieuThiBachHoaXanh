@@ -670,6 +670,11 @@ ol {
     box-sizing: border-box;
 }
 
+.product-name-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 .pdetail-left {
     flex-grow: 2;
     /* padding: 20px; */
@@ -825,6 +830,37 @@ ol {
         object-fit: contain;
     }
 
+/**/
+.out-of-stock-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.out-of-stock-notification {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Khoảng cách giữa icon và chữ */
+    background-color: #ffeeee; /* Màu nền nhạt */
+    color: #ff4444; /* Màu chữ đỏ */
+    font-weight: bold;
+    font-size: 14px;
+    padding: 8px 12px;
+    border: 1px solid #ff4444;
+    border-radius: 5px;
+    transition: all 0.3s ease; /* Hiệu ứng chuyển đổi */
+}
+
+    .out-of-stock-notification i {
+        font-size: 16px; /* Kích thước icon */
+    }
+
+    .out-of-stock-notification:hover {
+        background-color: #ffdddd; /* Đổi màu nền khi hover */
+        transform: scale(1.02); /* Phóng to nhẹ */
+        cursor: default;
+    }
 
 /* ==============  */
 
@@ -955,7 +991,6 @@ ol {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-top: 20px;
     }
 
         .pdetail-right .pprice-container .label,

@@ -24,7 +24,7 @@ namespace BachHoaXanh.Models
 
         public DateTime? UpdatedAt { get; set; }
 
-        public bool IsActive { get; set; }
+        public ProductStatus Status { get; set; } // Sử dụng enum
 
         [NotMapped]
         public bool isFav { get; set; } = false;
@@ -55,6 +55,11 @@ namespace BachHoaXanh.Models
         [ForeignKey("ProductID")]
         public Product Product { get; set; }       // Navigation property
     }
-
+    public enum ProductStatus : byte
+    {
+        KinhDoanh = 0,
+        TamHetHang = 1,
+        NgungKinhDoanh = 2
+    }
 
 }

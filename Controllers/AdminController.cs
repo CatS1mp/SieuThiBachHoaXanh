@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.Eventing.Reader;
 using System.Security.Cryptography;
 
 namespace BachHoaXanh.Controllers
@@ -304,6 +305,31 @@ namespace BachHoaXanh.Controllers
 
             return View(model);
         }
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> CategoryDelete(int id)
+        {
+            try
+            {
+                var category = await _context.CategoryList.FindAsync(id);
+
+                if (category == null)
+                {
+                    return NotFound();
+                }
+
+                _context.CategoryList.Remove(category);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Category deleted successfully!";
+                return RedirectToAction("Categories"); // Replace with your action that lists categories
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "An error occurred while deleting the category: " + ex.Message;
+                return RedirectToAction("Categories"); // Replace with your action that lists categories
+            }
+        }
         [Authorize]
         [HttpGet]
         public IActionResult SubCategoryAdd()
@@ -360,6 +386,31 @@ namespace BachHoaXanh.Controllers
             }
 
         }
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> subCategoryDelete(int id)
+        {
+            try
+            {
+                var subCategory = await _context.SubCategoryList.FindAsync(id);
+
+                if (subCategory == null)
+                {
+                    return NotFound();
+                }
+
+                _context.SubCategoryList.Remove(subCategory);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Category deleted successfully!";
+                return RedirectToAction("Categories"); // Replace with your action that lists categories
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "An error occurred while deleting the category: " + ex.Message;
+                return RedirectToAction("Categories"); // Replace with your action that lists categories
+            }
+        }
         [Authorize]
         [HttpGet]
         public IActionResult Products()
@@ -379,15 +430,16 @@ namespace BachHoaXanh.Controllers
                 .Select(p => new
                 {
                     ProductImageUrl = p.Images.FirstOrDefault(img => img.IsMainImage) != null
-                        ? $"/images/{p.Images.FirstOrDefault(img => img.IsMainImage).ImagePath}"
+                        ? $"/images/prods/{p.Images.FirstOrDefault(img => img.IsMainImage).ImagePath}"
                         : "/images/default/default-image.jpg",
                     ProductName = p.ProductName,
                     SubCategoryName = p.SubCategory != null ? p.SubCategory.SubCategoryName : "Không xác định",
                     Stock = p.StockQuantity,
                     Price = p.Price.ToString("N0") + " VNĐ",
-                    Status = p.StockQuantity > 0 ? 1 : 0,
-                    Active = p.IsActive ? "Kinh doanh" : "Ngừng kinh doanh",
-                    ProductID = p.ProductID,
+                    Status = p.Status == ProductStatus.KinhDoanh ? "Kinh doanh" :
+                             p.Status == ProductStatus.TamHetHang ? "Tạm hết hàng" :
+                             p.Status == ProductStatus.NgungKinhDoanh ? "Ngừng kinh doanh" : "Không xác định",
+            ProductID = p.ProductID,
                     IsExpired = p.Stocks != null && p.Stocks.Any() && p.Stocks.All(s => s.ExpirationDate < DateTime.Now),
                     IsLowStock = p.StockQuantity > 0 && p.StockQuantity <= 5 // Threshold for low stock
                 })
@@ -546,6 +598,8 @@ namespace BachHoaXanh.Controllers
                 return NotFound();
             }
 
+            
+
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -558,24 +612,40 @@ namespace BachHoaXanh.Controllers
                 {
                     return NotFound();
                 }
-
                 existingProduct.ProductName = product.ProductName;
                 existingProduct.Description = product.Description;
                 existingProduct.Price = product.Price;
                 existingProduct.SubCategoryID = product.SubCategoryID;
-                existingProduct.IsActive = product.IsActive;
+                
                 existingProduct.UpdatedAt = DateTime.Now;
 
                 if (newStockQuantities.HasValue && newStockQuantities > 0)
                 {
-                    var newStock = new StockProduct
+                    if(_context.StockProductList.Any(s => s.ExpirationDate == newStockExpirationDates))
                     {
-                        ProductID = existingProduct.ProductID,
-                        Quantity = newStockQuantities.Value,
-                        ExpirationDate = newStockExpirationDates ?? DateTime.MaxValue,
-                        CreatedAt = DateTime.Now
-                    };
-                    _context.StockProductList.Add(newStock);
+                        var newStock = await _context.StockProductList
+                            .Where(s => s.ExpirationDate == newStockExpirationDates)
+                            .FirstOrDefaultAsync();
+                        newStock.Quantity += newStockQuantities.GetValueOrDefault();
+                        _context.Update(newStock);
+
+                    } else {
+                        var newStock = new StockProduct
+                        {
+                            ProductID = existingProduct.ProductID,
+                            Quantity = newStockQuantities.Value,
+                            ExpirationDate = newStockExpirationDates ?? DateTime.MaxValue,
+                            CreatedAt = DateTime.Now
+                        };
+                        _context.StockProductList.Add(newStock);
+
+                    }
+
+                    if (existingProduct.Status == ProductStatus.TamHetHang)
+                    {
+                        existingProduct.Status = ProductStatus.KinhDoanh;
+                        _context.Update(existingProduct); // Cập nhật đối tượng trong DbContext
+                    }
                 }
 
                 if (imageFile != null && imageFile.Length > 0)
