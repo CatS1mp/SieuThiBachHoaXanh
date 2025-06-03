@@ -3,7 +3,170 @@
 @inject IHttpContextAccessor HttpContextAccessor
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
 
+
 <!DOCTYPE html>
+<style>
+    /* Nút mở chat */
+#chat-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #00A65A;  /* Màu xanh của Bách Hóa Xanh */
+    color: white;
+    border: none;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#chat-toggle:hover {
+    transform: scale(1.1);
+    background-color: #008d4c;
+}
+
+/* Hộp chat */
+#chatbox {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 380px;
+    height: 500px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    z-index: 998;
+}
+
+#chatbox.open {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Header chat */
+.chat-header {
+    background-color: #00A65A;
+    color: white;
+    padding: 15px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Nội dung tin nhắn */
+#chat-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+}
+
+/* Vùng nhập */
+#chat-input-area {
+    padding: 12px;
+    border-top: 1px solid #e9ecef;
+    background-color: #fff;
+    display: flex;
+    gap: 8px;
+}
+
+#chat-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 20px;
+    outline: none;
+    font-size: 14px;
+}
+
+.send-btn {
+    background-color: #00A65A;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.send-btn:hover {
+    background-color: #008d4c;
+}
+
+/* Tin nhắn */
+.msg-user, .msg-bot {
+    margin-bottom: 12px;
+    max-width: 85%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.msg-user {
+    margin-left: auto;
+    background-color: #00A65A;
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.msg-bot {
+    margin-right: auto;
+    background-color: #e9ecef;
+    color: #212529;
+    border-bottom-left-radius: 5px;
+}
+
+/* Hiệu ứng đang nhập */
+.typing-indicator {
+    display: none;
+    padding: 10px 15px;
+    background-color: #e9ecef;
+    border-radius: 15px;
+    margin-bottom: 12px;
+    width: fit-content;
+}
+
+.typing-indicator span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #90949c;
+    border-radius: 50%;
+    margin-right: 5px;
+    animation: typing 1s infinite;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@@keyframes typing {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+</style>
+
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -117,3 +280,133 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+@RenderSection("scripts", required: false)
+    <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+    <!-- Nút mở chat -->
+    <button id="chat-toggle">
+        <i class="fas fa-comments"></i>
+    </button>
+
+    <!-- Hộp chat -->
+    <div id="chatbox">
+        <div class="chat-header">
+            <h3><i class="fas fa-robot mr-2"></i>Trợ lý Bách Hóa Xanh</h3>
+            <button class="close-chat" style="background: none; border: none; color: white;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="chat-messages">
+            <div class="msg-bot">
+                Xin chào! Tôi là trợ lý ảo của Bách Hóa Xanh. Tôi có thể giúp gì cho bạn?
+            </div>
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        <div id="chat-input-area">
+            <input id="chat-input" type="text" placeholder="Nhập câu hỏi của bạn..." />
+            <button class="send-btn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleButton = document.getElementById('chat-toggle');
+        const chatbox = document.getElementById('chatbox');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.querySelector('.send-btn');
+        const closeBtn = document.querySelector('.close-chat');
+        const typingIndicator = document.querySelector('.typing-indicator');
+
+        function toggleChat() {
+            chatbox.classList.toggle('open');
+            if (chatbox.classList.contains('open')) {
+                chatInput.focus();
+            }
+        }
+
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+
+        async function sendMessage() {
+            const msg = chatInput.value.trim();
+            if (!msg) return;
+
+            // Hiển thị tin nhắn người dùng
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg-user';
+            userMsg.textContent = msg;
+            chatMessages.appendChild(userMsg);
+
+            chatInput.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Hiển thị typing indicator
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('@Url.Action("GeminiChat", "Chat")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ userinput: msg })
+                });
+
+                const data = await response.json();
+                hideTypingIndicator();
+
+                const botMsg = document.createElement('div');
+                botMsg.className = 'msg-bot';
+                
+                if (data.success) {
+                    botMsg.innerHTML = data.html;
+                } else {
+                    botMsg.textContent = data.message || 'Xin lỗi, tôi không thể xử lý yêu cầu của bạn lúc này.';
+                }
+                
+                chatMessages.appendChild(botMsg);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (error) {
+                hideTypingIndicator();
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'msg-bot';
+                errorMsg.textContent = 'Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.';
+                chatMessages.appendChild(errorMsg);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        // Sự kiện
+        toggleButton.addEventListener('click', toggleChat);
+        closeBtn.addEventListener('click', toggleChat);
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Load chat cũ nếu có
+        const savedChat = localStorage.getItem('chatContent');
+        if (savedChat) {
+            chatMessages.innerHTML = savedChat;
+        }
+
+        // Lưu chat khi đóng trang
+        window.addEventListener('beforeunload', () => {
+            localStorage.setItem('chatContent', chatMessages.innerHTML);
+        });
+    });
+</script>
