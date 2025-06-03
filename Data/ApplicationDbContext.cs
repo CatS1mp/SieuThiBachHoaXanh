@@ -10,6 +10,9 @@ namespace BachHoaXanh.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         public DbSet<User> UserList { get; set; }
+        public DbSet<FaceData> FaceData { get; set; }
+        public DbSet<FaceAuthHistory> FaceAuthHistory { get; set; }
+
         public DbSet<Category> CategoryList { get; set; }
         public DbSet<SubCategory> SubCategoryList { get; set; }
         public DbSet<Product> ProductList { get; set; }

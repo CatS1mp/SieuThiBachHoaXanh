@@ -1,0 +1,54 @@
+﻿@model int
+@{
+    ViewData["Title"] = "FaceAuth";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+<h2>Xác thực khuôn mặt cho Admin</h2>
+<video id="video" width="320" height="240" autoplay></video>
+<canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+<br />
+<button id="capture" class="btn btn-primary">Chụp ảnh</button>
+<button id="cancel" class="btn btn-secondary">Hủy</button>
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureButton = document.getElementById('capture');
+    const cancelButton = document.getElementById('cancel');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            toastr.error('Không truy cập được webcam: ' + err);
+        });
+
+    captureButton.addEventListener('click', async () => {
+        canvas.getContext('2d').drawImage(video, 0, 0, 320, 240);
+        const imageData = canvas.toDataURL('image/jpeg');
+        const blob = await (await fetch(imageData)).blob();
+        const formData = new FormData();
+        formData.append('image', blob, 'faceImage.jpg');
+        formData.append('userId', @Model);
+
+        const response = await fetch('/Auth/VerifyFace', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            toastr.success(result.message);
+            setTimeout(() => { window.location.href = result.redirectUrl; }, 1000);
+        } else {
+            toastr.warning(result.message);
+        }
+    });
+
+    cancelButton.addEventListener('click', () => {
+        window.location.href = '/Home';
+    });
+</script>

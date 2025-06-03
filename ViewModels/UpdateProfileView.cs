@@ -4,6 +4,7 @@ namespace BachHoaXanh.ViewModels
 {
     public class UpdateProfileView
     {
+        public int UserId { get; set; } // Thêm thuộc tính UserId
         public string UserName { get; set; }
         public string Email { get; set; }
         public string Address { get; set; }

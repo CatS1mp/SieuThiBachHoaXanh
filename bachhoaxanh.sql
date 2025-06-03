@@ -12,8 +12,9 @@ DROP TABLE IF EXISTS PaymentMethods;
 DROP TABLE IF EXISTS Categories;
 DROP TABLE IF EXISTS Addresses;
 DROP TABLE IF EXISTS ProductStocks;
-
-
+DROP TABLE IF EXISTS FaceData;
+DROP TABLE IF EXISTS FaceAuthHistory;
+DROP TABLE IF EXISTS __EFMigrationsHistory;
 GO
 
 -- Tạo bảng Users để quản lý thông tin người dùng
@@ -52,7 +53,7 @@ CREATE TABLE Products (
     SubCategoryID INT,
     CreatedAt DATETIME DEFAULT GETDATE(),
     UpdatedAt DATETIME NULL,
-    IsActive BIT DEFAULT 1, -- Sản phẩm có khả dụng không
+    Status TINYINT DEFAULT 2, -- Sản phẩm có khả dụng không
     FOREIGN KEY (SubCategoryID) REFERENCES SubCategories(SubCategoryID) ON DELETE SET NULL
 );
 
@@ -129,66 +130,127 @@ CREATE TABLE Addresses (
     FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
 );
 
--- Dữ liệu cho bảng Categories
+CREATE TABLE FaceData (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NOT NULL,
+    FaceImagePath NVARCHAR(255) NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+CREATE TABLE FaceAuthHistory (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NOT NULL,
+    AttemptTime DATETIME DEFAULT GETDATE(),
+    Result NVARCHAR(50) NOT NULL, -- 'Success' or 'Failed'
+    FailedImagePath NVARCHAR(255) NULL, -- Ảnh nếu thất bại
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+
+CREATE TABLE __EFMigrationsHistory (
+    MigrationId nvarchar(150) NOT NULL,
+    ProductVersion nvarchar(32) NOT NULL,
+    CONSTRAINT PK___EFMigrationsHistory PRIMARY KEY (MigrationId)
+);
+
+-- Inserting data for Categories (focused on greens, packaged food, and related essentials)
 INSERT INTO Categories (CategoryName) 
 VALUES 
-(N'Điện tử'),
-(N'Gia dụng'),
-(N'Thuốc & Sức khỏe'),
-(N'Thực phẩm'),
-(N'Nước giải khát'),
-(N'Văn phòng phẩm'),
-(N'Mỹ phẩm'),
+(N'Rau củ quả tươi'),
 (N'Trái cây tươi'),
-(N'Rau củ quả'),
-(N'Chăm sóc mẹ và bé');
+(N'Thực phẩm đóng gói'),
+(N'Thịt & Hải sản tươi'),
+(N'Thực phẩm đông lạnh'),
+(N'Nước giải khát'),
+(N'Gia vị & Nước chấm'),
+(N'Đồ ăn vặt'),
+(N'Sản phẩm từ sữa'),
+(N'Chăm sóc cá nhân');
 
--- Dữ liệu cho bảng SubCategories
+-- Inserting data for SubCategories (logically grouped for Bách Hóa Xanh)
 INSERT INTO SubCategories (SubCategoryName, CategoryID) 
 VALUES 
-(N'Thiết bị di động', 1),
-(N'Ti vi', 1),
-(N'Quạt điện', 2),
-(N'Máy xay sinh tố', 2),
-(N'Thuốc giảm đau', 3),
-(N'Vitamins & Supplements', 3),
-(N'Thịt tươi', 4),
-(N'Cơm & Mì', 4),
-(N'Nước ngọt', 5),
-(N'Cafe', 5),
-(N'Sổ', 6),
-(N'Máy tính', 6),
-(N'Son môi', 7),
-(N'Sữa rửa mặt', 7),
-(N'Bưởi', 8),
-(N'Dưa hấu', 8),
-(N'Khoai tây', 9),
-(N'Ớt chuông', 9),
-(N'Bánh kẹo', 10);
+(N'Rau lá xanh', 1),          -- Fresh greens like spinach, lettuce
+(N'Củ & Rễ', 1),             -- Root vegetables like potatoes, carrots
+(N'Nấm tươi', 1),            -- Fresh mushrooms
+(N'Táo & Lê', 2),            -- Apples and pears
+(N'Trái cây nhiệt đới', 2),  -- Tropical fruits like mango, pineapple
+(N'Cam & Quýt', 2),          -- Citrus fruits
+(N'Mì & Bún khô', 3),        -- Packaged noodles
+(N'Gạo & Ngũ cốc', 3),       -- Rice and cereals
+(N'Đồ hộp', 3),              -- Canned goods
+(N'Thịt heo tươi', 4),       -- Fresh pork
+(N'Thịt gà tươi', 4),        -- Fresh chicken
+(N'Hải sản tươi', 4),        -- Fresh seafood
+(N'Thịt đông lạnh', 5),      -- Frozen meat
+(N'Hải sản đông lạnh', 5),   -- Frozen seafood
+(N'Nước ngọt', 6),           -- Soft drinks
+(N'Nước trái cây', 6),       -- Fruit juices
+(N'Nước suối', 6),           -- Bottled water
+(N'Nước mắm & Nước chấm', 7),-- Fish sauce and dipping sauces
+(N'Gia vị khô', 7),          -- Dry spices
+(N'Bánh kẹo', 8),            -- Cookies and candies
+(N'Snack mặn', 8),           -- Savory snacks
+(N'Sữa tươi & Sữa chua', 9), -- Milk and yogurt
+(N'Phô mai', 9),             -- Cheese
+(N'Sữa tắm & Dầu gội', 10),  -- Body wash and shampoo
+(N'Kem đánh răng', 10);      -- Toothpaste
 
--- Dữ liệu cho bảng Products
+-- Inserting data for Products (aligned with Bách Hóa Xanh's focus)
 INSERT INTO Products (ProductName, Description, Price, SubCategoryID) 
 VALUES 
-(N'Iphone 13', N'Điện thoại thông minh Apple, 128GB', 20000000, 1),
-(N'Smart TV Samsung 50 inch', N'Ti vi thông minh, độ phân giải 4K', 15000000, 2),
-(N'Quạt điện Panasonic', N'Quạt đứng, 3 tốc độ', 800000, 3),
-(N'Máy xay sinh tố Philips', N'Máy xay sinh tố 600W', 1200000, 4),
-(N'Thuốc giảm đau Panadol', N'Thuốc giảm đau, hạ sốt', 50000, 5),
-(N'Vitamins D3', N'Viên uống vitamin D3', 150000, 6),
-(N'Thịt bò tươi', N'Thịt bò nhập khẩu từ Mỹ', 350000, 7),
-(N'Cơm tấm 500g', N'Cơm tấm sườn nướng, gạo tấm ngon', 70000, 8),
-(N'Nước ngọt Pepsi', N'Nước ngọt Pepsi, chai 1.5L', 15000, 9),
-(N'Cafe nguyên chất', N'Cafe hạt rang xay nguyên chất', 95000, 10),
-(N'Sổ tay A5', N'Sổ tay bìa cứng', 25000, 11),
-(N'Máy tính xách tay Dell', N'Máy tính xách tay Dell 14 inch', 12000000, 12),
-(N'Son môi MAC', N'Son môi màu đỏ, lâu trôi', 500000, 13),
-(N'Sữa rửa mặt Olay', N'Sữa rửa mặt Olay cho da nhạy cảm', 150000, 14),
-(N'Bưởi Da xanh', N'Bưởi Da xanh tươi ngon', 50000, 15),
-(N'Dưa hấu không hạt', N'Dưa hấu ngọt, không hạt', 30000, 16),
-(N'Khoai tây tươi', N'Khoai tây tươi, nhập khẩu', 35000, 17),
-(N'Ớt chuông đỏ', N'Ớt chuông đỏ, tươi ngon', 60000, 18),
-(N'Bánh Oreo', N'Bánh Oreo gói 200g', 45000, 19),
-(N'Kẹo dẻo Haribo', N'Kẹo dẻo Haribo gói 100g', 30000, 19);
+(N'Rau muống', N'Rau muống tươi, bó 500g', 15000, 1),
+(N'Cải thìa', N'Rau cải thìa tươi, bó 300g', 12000, 1),
+(N'Khoai tây', N'Khoai tây tươi, túi 1kg', 35000, 2),
+(N'Cà rốt', N'Cà rốt tươi, túi 1kg', 30000, 2),
+(N'Nấm bào ngư', N'Nấm bào ngư tươi, gói 200g', 20000, 3),
+(N'Táo Fuji', N'Táo Fuji nhập khẩu, túi 1kg', 60000, 4),
+(N'Lê Hàn Quốc', N'Lê ngọt, túi 1kg', 55000, 4),
+(N'Xoài cát', N'Xoài cát tươi, túi 1kg', 45000, 5),
+(N'Dứa', N'Dứa tươi, quả 1kg', 25000, 5),
+(N'Cam sành', N'Cam sành tươi, túi 1kg', 35000, 6),
+(N'Mì Hảo Hảo', N'Mì ăn liền Hảo Hảo, gói 75g', 5000, 7),
+(N'Gạo ST25', N'Gạo thơm ST25, túi 5kg', 120000, 8),
+(N'Cá ngừ đóng hộp', N'Cá ngừ ngâm dầu, hộp 185g', 35000, 9),
+(N'Thịt ba chỉ heo', N'Thịt ba chỉ heo tươi, 500g', 85000, 10),
+(N'Đùi gà tươi', N'Đùi gà tươi, 500g', 60000, 11),
+(N'Tôm sú tươi', N'Tôm sú tươi, 500g', 150000, 12),
+(N'Thịt bò đông lạnh', N'Thịt bò nhập khẩu đông lạnh, 500g', 120000, 13),
+(N'Mực ống đông lạnh', N'Mực ống đông lạnh, 500g', 100000, 14),
+(N'Nước ngọt Pepsi', N'Pepsi chai 1.5L', 15000, 15),
+(N'Nước ép cam', N'Nước ép cam nguyên chất, chai 500ml', 25000, 16),
+(N'Nước suối Lavie', N'Nước suối Lavie, chai 500ml', 8000, 17),
+(N'Nước mắm Nam Ngư', N'Nước mắm nguyên chất, chai 750ml', 45000, 18),
+(N'Tiêu đen', N'Hạt tiêu đen, gói 50g', 20000, 19),
+(N'Bánh Oreo', N'Bánh Oreo, gói 200g', 45000, 20),
+(N'Snack khoai tây', N'Snack khoai tây vị BBQ, gói 100g', 20000, 21),
+(N'Sữa tươi Vinamilk', N'Sữa tươi tiệt trùng, hộp 1L', 35000, 22),
+(N'Sữa chua Vinamilk', N'Sữa chua có đường, hộp 100g', 6000, 22),
+(N'Phô mai Con Bò Cười', N'Phô mai Con Bò Cười, hộp 120g', 40000, 23),
+(N'Sữa tắm Dove', N'Sữa tắm Dove dưỡng ẩm, chai 500ml', 120000, 24),
+(N'Kem đánh răng Colgate', N'Kem đánh răng Colgate, tuýp 100g', 35000, 25);
+
+UPDATE Products
+SET Status = 1
+
+-- Declare variables
+DECLARE @RowCount INT = @@ROWCOUNT; -- Get the number of inserted rows
+DECLARE @StartID INT = SCOPE_IDENTITY() - @RowCount + 1; -- Get the first ProductID
+DECLARE @CurrentID INT = @StartID; -- Start with the first ProductID
+
+-- Loop from 1 to the number of rows to insert 2 images per product
+WHILE @CurrentID <= (@StartID + @RowCount - 1)
+BEGIN
+    -- Insert two images with naming [ProductID]_[OrderNumber].jpg
+    INSERT INTO ProductImages (ProductID, ImagePath, IsMainImage)
+    VALUES 
+        (@CurrentID, CAST(@CurrentID AS NVARCHAR) + '_1.jpg', 1), -- First image, main
+        (@CurrentID, CAST(@CurrentID AS NVARCHAR) + '_2.jpg', 0); -- Second image
+
+    -- Move to the next ProductID
+    SET @CurrentID = @CurrentID + 1;
+END;
 
 -- Dữ liệu cho bảng Users
 INSERT INTO Users (UserName, FullName, Email, Password, Phone, Role)
@@ -270,50 +332,6 @@ VALUES
 (18, 400000, 8, 'Cancelled', N'666 Đường WXY, Quận 6, TP.HCM'),
 (19, 1100000, 9, 'Pending', N'777 Đường ZAB, Quận 7, TP.HCM');
 
--- Dữ liệu cho bảng ProductImages
-INSERT INTO ProductImages (ProductID, ImagePath, IsMainImage)
-VALUES 
-(1, N'iphone13.jpg', 1),
-(2, N'smarttv.jpg', 1),
-(3, N'quatdien.jpg', 1),
-(4, N'mayxaysinhto.jpg', 1),
-(5, N'pan10.jpg', 1),
-(6, N'vitaminD3.jpg', 1),
-(7, N'thitbo.jpg', 1),
-(8, N'comtam.jpg', 1),
-(9, N'pepsi.jpg', 1),
-(10, N'cafe.jpg', 1),
-(11, N'sotay.jpg', 1),
-(12, N'maytinhxachtay.jpg', 1),
-(13, N'sonmoi.jpg', 1),
-(14, N'suaruamat.jpg', 1),
-(15, N'buoi1.jpg', 1),
-(16, N'duahuakhonghat.jpg', 1),
-(17, N'khoaitay.jpg', 1),
-(18, N'otchuong.jpg', 1),
-(19, N'oreo.jpg', 1),
-(20, N'keodeo.jpg', 1),
-(1, N'iphone13_2.jpg', 0),
-(2, N'smarttv_2.jpg', 0),
-(3, N'quatdien_2.jpg', 0),
-(4, N'mayxaysinhto_2.jpg', 0),
-(5, N'panadol_2.jpg', 0),
-(6, N'vitaminD3_2.jpg', 0),
-(7, N'thitbo_2.jpg', 0),
-(8, N'comtam_2.jpg', 0),
-(9, N'pepsi_2.jpg', 0),
-(10, N'cafe_2.jpg', 0),
-(11, N'sotay_2.jpg', 0),
-(12, N'maytinhxachtay_2.jpg', 0),
-(13, N'sonmoi_2.jpg', 0),
-(14, N'suaruamat_2.jpg', 0),
-(15, N'buoi2.jpg', 0),
-(16, N'duahuakhonghat_2.jpg', 0),
-(17, N'khoaitay_2.jpg', 0),
-(18, N'otchuong_2.jpg', 0),
-(19, N'oreo_2.jpg', 0),
-(20, N'keodeo_2.jpg', 0);
-
 -- Dữ liệu cho bảng OrderDetails
 INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice)
 VALUES 
@@ -337,3 +355,6 @@ VALUES
 (16, 18, 1, 60000),
 (17, 19, 1, 45000),
 (18, 20, 3, 30000);
+
+INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion)
+VALUES ('20250603153716_InitialCreate', '9.0.5');
