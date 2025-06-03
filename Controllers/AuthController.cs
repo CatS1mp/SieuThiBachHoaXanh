@@ -65,15 +65,16 @@ public class AuthController : Controller
 
         string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "face_images");
         if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
-        string imagePath = Path.Combine(uploadPath, $"{userId}_{DateTime.Now.Ticks}.jpg");
+        string imagePath = $"{userId}_{DateTime.Now.Ticks}.jpg";
+        string imagePath2 = Path.Combine(uploadPath, imagePath);
 
-        using (var stream = new FileStream(imagePath, FileMode.Create))
+        using (var stream = new FileStream(imagePath2, FileMode.Create))
         {
             await image.CopyToAsync(stream);
         }
 
         var cascade = new CascadeClassifier("haarcascades/haarcascade_frontalface_default.xml");
-        using var img = Cv2.ImRead(imagePath);
+        using var img = Cv2.ImRead(imagePath2);
         var faces = cascade.DetectMultiScale(img, 1.1, 3);
 
         if (faces.Length == 0)
@@ -90,7 +91,7 @@ public class AuthController : Controller
         }
 
         // Giả lập: Nếu phát hiện khuôn mặt và đã có dữ liệu đăng ký, coi như thành công
-        await LogAttempt(userId, "Success", null);
+        await LogAttempt(userId, "Success", imagePath);
         return Json(new { success = true, message = "Xác thực thành công!", redirectUrl = "/Admin/Index" });
     }
 
@@ -101,7 +102,7 @@ public class AuthController : Controller
             UserID = userId,
             AttemptTime = DateTime.Now,
             Result = result,
-            FailedImagePath = result == "Failed" ? imagePath : null
+            FailedImagePath =imagePath,
         });
         await _context.SaveChangesAsync();
     }

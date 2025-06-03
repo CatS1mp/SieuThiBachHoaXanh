@@ -787,7 +787,27 @@ namespace BachHoaXanh.Controllers
                 return StatusCode(500);
             }
         }
+        public IActionResult Auth(int id)
+        {
+            var history = _context.FaceAuthHistory
+            .Include(a => a.User)
+            .ToList();
+                return View(history);
+        }
+        public IActionResult FaceAuthDetail(int id)
+        {
+            var auth = _context.FaceAuthHistory
+                .Include(a => a.User)
+                .FirstOrDefault(a => a.Id == id);
+
+            if (auth == null)
+            {
+                return NotFound();
+            }
+
+            return View(auth);
+        }
     }
 
-
+    
 }
