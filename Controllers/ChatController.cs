@@ -58,13 +58,13 @@ namespace BachHoaXanh.Controllers
 
                 // Lấy thông tin sản phẩm từ database
                 var products = await _context.ProductList
-                    .Where(p => p.IsActive)
+                    .Where(p => p.Status != ProductStatus.NgungKinhDoanh)
                     .Select(p => new { 
                         p.ProductName, 
                         p.Description, 
                         p.Price, 
                         p.StockQuantity,
-                        p.IsActive
+                        p.Status
                     })
                     .ToListAsync();
 
@@ -91,7 +91,7 @@ namespace BachHoaXanh.Controllers
                 var fullPrompt = $"{systemPrompt}\n\nDữ liệu hệ thống:\n{fullContext}\n\nKhách hàng hỏi: {request.userinput}";
 
                 using var httpClient = new HttpClient();
-                var url = "http://103.82.36.41:5000/api/getChat";
+                var url = "http://localhost:5012/api/getChat";
 
                 var data = new { userinput = fullPrompt };
                 var response = await httpClient.PostAsJsonAsync(url, data);
@@ -132,3 +132,4 @@ namespace BachHoaXanh.Controllers
         }
     }
 }
+    
