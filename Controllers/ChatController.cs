@@ -36,10 +36,10 @@ namespace BachHoaXanh.Controllers
             if (string.IsNullOrWhiteSpace(request.UserInput))
             {
                 return BadRequest(new { success = false, message = "Vui lòng nhập câu hỏi" });
-            }
+        }
 
             try
-            {
+        {
                 // Nâng cấp prompt để yêu cầu Gemini trả về JSON nếu ý định mua hàng
                 var systemPrompt = @"Bạn là trợ lý của Bách Hóa Xanh, một cửa hàng bán lẻ chuyên cung cấp thực phẩm, đồ uống, hàng gia dụng, điện tử, và các sản phẩm tiêu dùng khác. Hãy trả lời câu hỏi của người dùng một cách thân thiện, chuyên nghiệp, sử dụng thông tin từ cơ sở dữ liệu. Định dạng câu trả lời bằng Markdown với:
 
@@ -99,17 +99,17 @@ Nếu người dùng yêu cầu thông tin cá nhân (như đơn hàng, sản ph
                         if (System.IO.File.Exists(physicalPath))
                         {
                             imageUrl = Url.Content("~/images/" + fileName);
-                        }
+        }
                     }
                     string productUrl = $"{Request.Scheme}://{Request.Host}/san-pham/{product.ProductID}";
 
                     productInfo.AppendLine($"### {product.ProductName}");
                     if (!string.IsNullOrEmpty(imageUrl))
-                    {
+        {
                         productInfo.AppendLine($"![{product.ProductName}]({imageUrl})");
                     }
                     else
-                    {
+            {
                         productInfo.AppendLine("- Ảnh sản phẩm: Không có ảnh chính");
                     }
                     productInfo.AppendLine($"- **Danh mục**: {product.CategoryName} > {product.SubCategoryName}");
@@ -141,12 +141,12 @@ Nếu người dùng yêu cầu thông tin cá nhân (như đơn hàng, sản ph
                                 f => f.ProductID,
                                 p => p.ProductID,
                                 (f, p) => p.ProductName)
-                            .ToList();
+                    .ToList();
 
                         var orders = _context.OrderList
                             .Where(o => o.UserID == userId)
                             .Select(o => new { o.OrderID, o.OrderStatus, o.TotalAmount, o.CreatedAt })
-                            .ToList();
+                    .ToList();
 
                         userInfo = $"\n**Thông tin người dùng**:\n";
                         if (favorites.Any())
@@ -224,7 +224,7 @@ Nếu người dùng yêu cầu thông tin cá nhân (như đơn hàng, sản ph
                 if (firstLine.TrimStart().StartsWith("{") && firstLine.TrimEnd().EndsWith("}"))
                 {
                     try
-                    {
+                {
                         actionObj = System.Text.Json.JsonSerializer.Deserialize<GeminiAction>(firstLine);
                     }
                     catch { }
@@ -330,12 +330,12 @@ Nếu người dùng yêu cầu thông tin cá nhân (như đơn hàng, sản ph
     public class GeminiPart
     {
         public string Text { get; set; }
-    }
+            }
 
     public class ChatRequest
     {
         public string UserInput { get; set; }
-    }
+        }
 
     // Thêm class GeminiAction để parse JSON
     public class GeminiAction
