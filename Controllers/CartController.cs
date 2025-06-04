@@ -27,6 +27,7 @@ namespace BachHoaXanh.Controllers
             var userN = User.Identity.Name;
             User u = _context.UserList
                 .Include(u => u.Addresses)
+                .AsSplitQuery() // Optimize query performance
                 .FirstOrDefault(u => u.UserName == userN);
             var model = new CartView
             {
@@ -41,12 +42,21 @@ namespace BachHoaXanh.Controllers
         {
             var product = _context.ProductList
                 .Include(p => p.Images)
+                .Include(p => p.Stocks)
                 .FirstOrDefault(p => p.ProductID == productid);
 
             if (product == null)
                 return NotFound("Không có sản phẩm");
 
-            quantity = Math.Clamp(quantity, 1, product.StockQuantity);
+            // Calculate stock quantity
+            int stockQuantity = product.Stocks?.Sum(s => s.Quantity) ?? 0;
+            if (stockQuantity <= 0)
+            {
+                TempData["ErrorMessage"] = "Sản phẩm hiện đã hết hàng.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            quantity = Math.Clamp(quantity, 1, stockQuantity);
 
             var cart = GetCartItems();
             var cartItem = cart.FirstOrDefault(p => p.ProductID == productid);
@@ -55,6 +65,11 @@ namespace BachHoaXanh.Controllers
 
             if (cartItem != null)
             {
+                if (cartItem.Quantity + quantity > stockQuantity)
+                {
+                    TempData["ErrorMessage"] = $"Không thể thêm số lượng này. Chỉ còn {stockQuantity} sản phẩm trong kho.";
+                    return RedirectToAction(nameof(Index));
+                }
                 cartItem.Quantity += quantity;
                 cartItem.Note = note ?? cartItem.Note;
                 cartItem.PaymentMethodID = paymentMethodID;
@@ -64,9 +79,7 @@ namespace BachHoaXanh.Controllers
                 cart.Add(new CartItem
                 {
                     Quantity = quantity,
-                    Product = product,
                     ProductID = product.ProductID,
-                    ProductImages = product.Images,
                     Note = note ?? "",
                     PaymentMethodID = paymentMethodID
                 });
@@ -88,6 +101,13 @@ namespace BachHoaXanh.Controllers
 
                 if (cartItem != null)
                 {
+                    var product = _context.ProductList
+                        .Include(p => p.Stocks)
+                        .FirstOrDefault(p => p.ProductID == item.ProductID);
+                    if (product != null && item.Quantity > product.StockQuantity)
+                    {
+                        return BadRequest($"Số lượng vượt quá tồn kho. Tối đa: {product.StockQuantity}");
+                    }
                     cartItem.Quantity = item.Quantity;
                     cartItem.Note = item.Note ?? cartItem.Note;
                     cartItem.PaymentMethodID = item.PaymentMethodID != 0 ? item.PaymentMethodID : cartItem.PaymentMethodID;
@@ -129,9 +149,19 @@ namespace BachHoaXanh.Controllers
         {
             var session = HttpContext.Session;
             string jsonCart = session.GetString(CARTKEY);
-            return jsonCart != null
+            var cartItems = jsonCart != null
                 ? JsonConvert.DeserializeObject<List<CartItem>>(jsonCart)
                 : new List<CartItem>();
+
+            // Always reload Product and Images from DB for each cart item
+            foreach (var item in cartItems)
+            {
+                item.Product = _context.ProductList
+                    .Include(p => p.Images)
+                    .FirstOrDefault(p => p.ProductID == item.ProductID);
+                item.ProductImages = item.Product?.Images ?? new List<ProductImage>();
+            }
+            return cartItems;
         }
 
         [HttpPost]

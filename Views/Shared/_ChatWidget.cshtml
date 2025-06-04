@@ -1,0 +1,23 @@
+﻿<button id="chat-toggle-btn" class="chat-toggle-btn" style="display:none;" onclick="toggleChat()">
+    <span id="chat-toggle-icon">��</span>
+</button>
+<div id="chat-widget" class="chat-widget">
+    <div class="chat-header">
+        <span class="chat-title">Trợ Lý Bách Hóa Xanh</span>
+        <button class="chat-toggle" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-body">
+        <div id="chat-messages" class="chat-messages">
+            <div class="message bot-message">
+                <p>Xin chào! Tôi là trợ lý của Bách Hóa Xanh. Hỏi tôi về thực phẩm, đồ uống, hàng gia dụng, hoặc đơn hàng của bạn nhé!</p>
+            </div>
+        </div>
+        <div id="typing-indicator" class="typing-indicator" style="display: none;">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+    <div class="chat-footer">
+        <input type="text" id="chat-input" placeholder="Nhập câu hỏi của bạn..." onkeypress="handleKeyPress(event)" />
+        <button onclick="sendMessage()">Gửi</button>
+    </div>
+</div>

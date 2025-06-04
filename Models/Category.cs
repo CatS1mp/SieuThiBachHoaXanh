@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BachHoaXanh.Models
 {
-
     [Table("Categories")]
     public class Category
     {
@@ -14,6 +13,5 @@ namespace BachHoaXanh.Models
         [StringLength(100)]
         public string CategoryName { get; set; }
         public ICollection<SubCategory>? SubCategories { get; set; }
-
     }
 }

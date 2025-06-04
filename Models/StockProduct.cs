@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BachHoaXanh.Models
 {
@@ -24,9 +24,6 @@ namespace BachHoaXanh.Models
 
         public DateTime? UpdatedAt { get; set; }
 
-        // Navigation property
         public Product Product { get; set; }
-
-        
     }
 }
