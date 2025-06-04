@@ -5,7 +5,9 @@ namespace BachHoaXanh.ViewModels
     public class ProductViewModel
     {
         public List<FavoriteProduct> FavoriteProducts { get; set; }
+        public List<Promotion> ActivePromotions { get; set; }
         public List<Product> Products { get; set; }
+        public Dictionary<int, Product> ProductDict { get; set; }
         public List<Category> Categories { get; set; }
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }

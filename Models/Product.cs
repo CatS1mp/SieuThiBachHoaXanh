@@ -31,11 +31,15 @@ namespace BachHoaXanh.Models
         [NotMapped]
         public bool isFav { get; set; } = false;
 
+        [NotMapped]
+        [Range(0, double.MaxValue)]
+        public decimal PromotionPrice { get; set; } = -1;
+
         [ForeignKey("SubCategoryID")]
         public SubCategory SubCategory { get; set; }
         public int? SubCategoryID { get; set; }
         public List<ProductImage> Images { get; set; }
-        
+
 
     }
 

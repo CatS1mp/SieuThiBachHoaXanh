@@ -62,18 +62,19 @@
         <div class="pdetail-right">
             <p class="pname">@Model.ProductName</p>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px">
-                <span class="favorite"
-                      onclick="toggleFavorite(@Model.ProductID, this)"
-                      data-is-favorited="@Model.isFav.ToString().ToLower()">
+                <span class="favorite" onclick="toggleFavorite(@Model.ProductID, this)"
+                    data-is-favorited="@Model.isFav.ToString().ToLower()">
                     <img class="icon-fav-detail" src="~/images/@(Model.isFav ? "favor.png" : "unfavor.png")" />
                     @(Model.isFav ? "Đã yêu thích" : "Yêu thích")
                 </span>
-                <div class="pshare" onclick="showShareMessage()"><i class="fa-solid fa-share-from-square pr-1"></i>Chia sẻ</div>
+                <div class="pshare" onclick="showShareMessage()"><i class="fa-solid fa-share-from-square pr-1"></i>Chia
+                    sẻ</div>
             </div>
 
-            <form id="cartForm" action="@Url.RouteUrl("them-gio-hang", new { productid = Model.ProductID })" method="post">
+            <form id="cartForm" action="@Url.RouteUrl("them-gio-hang", new { productid = Model.ProductID })"
+                method="post">
                 <input type="hidden" name="ProductID" value="@Model.ProductID" />
-    
+
                 <!-- Quantity Controls -->
                 <div class="qty-controls">
                     <p class="label">Số lượng:</p>
@@ -98,7 +99,8 @@
                 <div class="pprice-container">
                     <p class="label">Tạm tính:</p>
                     <div class="pprice-controllers">
-                        <p id="temporary-price" class="price main-price"><b>@(Model.Price.ToString("N0")) <sup><u>đ</u></sup></b></p>
+                        <p id="temporary-price" class="price main-price"><b>@(Model.Price.ToString("N0"))
+                                <sup><u>đ</u></sup></b></p>
                     </div>
                 </div>
 
@@ -111,166 +113,166 @@
     </div>
 </div>
 @section Scripts {
-<script>
-    function showShareMessage() {
-        const pshare = document.querySelector('.pshare');
-        pshare.classList.add('active');
-        const productUrl = `${window.location.origin}/san-pham/${@Model.ProductID}`;
-    
-        navigator.clipboard.writeText(productUrl)
-            .then(() => {
-                console.log("Liên kết sản phẩm đã được sao chép!");
-            })
-            .catch(err => {
-                console.error("Không thể sao chép liên kết: ", err);
-            });
-        setTimeout(() => {
-            pshare.classList.remove('active');
-        }, 3000);
-    }
+    <script>
+        function showShareMessage() {
+            const pshare = document.querySelector('.pshare');
+            pshare.classList.add('active');
+            const productUrl = `${window.location.origin}/san-pham/${@Model.ProductID}`;
 
-    // Quantity control logic
-    var input = document.querySelector('#qty');
-    var btnminus = document.querySelector('.qtyminus');
-    var btnplus = document.querySelector('.qtyplus');
-    var temporaryPriceDisplay = document.querySelector('#temporary-price');
-    var pricePerUnit = @((int)Model.Price);
-
-    if (input !== undefined && btnminus !== undefined && btnplus !== undefined && input !== null && btnminus !== null && btnplus !== null) {
-        var min = Number(input.getAttribute('min'));
-        var max = Number(input.getAttribute('max'));
-        var step = Number(input.getAttribute('step'));
-
-        function updateTemporaryPrice() {
-            var quantity = Number(input.value);
-            var totalPrice = (pricePerUnit * quantity).toLocaleString('vi-VN');
-            temporaryPriceDisplay.innerHTML = `<b>${totalPrice}<sup><u>đ</u></sup></b>`;
+            navigator.clipboard.writeText(productUrl)
+                .then(() => {
+                    console.log("Liên kết sản phẩm đã được sao chép!");
+                })
+                .catch(err => {
+                    console.error("Không thể sao chép liên kết: ", err);
+                });
+            setTimeout(() => {
+                pshare.classList.remove('active');
+            }, 3000);
         }
 
-        function qtyminus(e) {
-            var current = Number(input.value);
-            var newval = (current - step);
-            if (newval < min) {
-                newval = min;
-            } else if (newval > max) {
-                newval = max;
+        // Quantity control logic
+        var input = document.querySelector('#qty');
+        var btnminus = document.querySelector('.qtyminus');
+        var btnplus = document.querySelector('.qtyplus');
+        var temporaryPriceDisplay = document.querySelector('#temporary-price');
+        var pricePerUnit = @((int)Model.Price);
+
+        if (input !== undefined && btnminus !== undefined && btnplus !== undefined && input !== null && btnminus !== null && btnplus !== null) {
+            var min = Number(input.getAttribute('min'));
+            var max = Number(input.getAttribute('max'));
+            var step = Number(input.getAttribute('step'));
+
+            function updateTemporaryPrice() {
+                var quantity = Number(input.value);
+                var totalPrice = (pricePerUnit * quantity).toLocaleString('vi-VN');
+                temporaryPriceDisplay.innerHTML = `<b>${totalPrice}<sup><u>đ</u></sup></b>`;
             }
-            input.value = Number(newval);
+
+            function qtyminus(e) {
+                var current = Number(input.value);
+                var newval = (current - step);
+                if (newval < min) {
+                    newval = min;
+                } else if (newval > max) {
+                    newval = max;
+                }
+                input.value = Number(newval);
+                updateTemporaryPrice();
+                e.preventDefault();
+            }
+
+            function qtyplus(e) {
+                var current = Number(input.value);
+                var newval = (current + step);
+                if (newval > max) newval = max;
+                input.value = Number(newval);
+                updateTemporaryPrice();
+                e.preventDefault();
+            }
+
+            // Initialize the price display
             updateTemporaryPrice();
-            e.preventDefault();
+
+            btnminus.addEventListener('click', qtyminus);
+            btnplus.addEventListener('click', qtyplus);
+
+            // Listen for changes to the quantity input directly
+            input.addEventListener('input', updateTemporaryPrice);
         }
 
-        function qtyplus(e) {
-            var current = Number(input.value);
-            var newval = (current + step);
-            if (newval > max) newval = max;
-            input.value = Number(newval);
-            updateTemporaryPrice();
-            e.preventDefault();
-        }
+        // Category Sidebar Toggle Logic
+        const categoryButton = document.querySelector('.category-button');
+        const overlay = document.getElementById('overlay');
+        const containerWrapper = document.querySelector('.container-wrapper');
+        const sidebar = document.querySelector('.sidebar');
 
-        // Initialize the price display
-        updateTemporaryPrice();
+        categoryButton.addEventListener('click', () => {
+            overlay.classList.add('d-block');
+            sidebar.classList.remove('d-none');
+            containerWrapper.classList.add('blur');
+        });
 
-        btnminus.addEventListener('click', qtyminus);
-        btnplus.addEventListener('click', qtyplus);
-
-        // Listen for changes to the quantity input directly
-        input.addEventListener('input', updateTemporaryPrice);
-    }
-
-    // Category Sidebar Toggle Logic
-    const categoryButton = document.querySelector('.category-button');
-    const overlay = document.getElementById('overlay');
-    const containerWrapper = document.querySelector('.container-wrapper');
-    const sidebar = document.querySelector('.sidebar'); 
-
-    categoryButton.addEventListener('click', () => {
-        overlay.classList.add('d-block');
-        sidebar.classList.remove('d-none');
-        containerWrapper.classList.add('blur');
-    });
-
-    overlay.addEventListener('click', () => {
-        overlay.classList.remove('d-block');
-        sidebar.classList.add('d-none');
-        containerWrapper.classList.remove('blur');
-    });
-
-    overlay.addEventListener('mousemove', (event) => {
-        if (!sidebar.contains(event.target)) {
+        overlay.addEventListener('click', () => {
             overlay.classList.remove('d-block');
             sidebar.classList.add('d-none');
             containerWrapper.classList.remove('blur');
-        }
-    });
+        });
 
-    // Toggle subcategories
-    function toggleCategorySub(categoryMain) {
-        var categorySubs = document.querySelectorAll('.category-sub');
-
-        categorySubs.forEach(function (sub) {
-            if (sub !== categoryMain.nextElementSibling) {
-                sub.style.display = "none";
+        overlay.addEventListener('mousemove', (event) => {
+            if (!sidebar.contains(event.target)) {
+                overlay.classList.remove('d-block');
+                sidebar.classList.add('d-none');
+                containerWrapper.classList.remove('blur');
             }
         });
 
-        var categorySub = categoryMain.nextElementSibling;
+        // Toggle subcategories
+        function toggleCategorySub(categoryMain) {
+            var categorySubs = document.querySelectorAll('.category-sub');
 
-        if (categorySub.style.display === "none" || categorySub.style.display === "") {
-            categorySub.style.display = "block";
-        } else {
-            categorySub.style.display = "none";
-        }
-    }
-    function getAntiForgeryToken() {
-        return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    }
-    async function toggleFavorite(productId, el) {
-        let isFavorited = el.dataset.isFavorited === "true";
+            categorySubs.forEach(function (sub) {
+                if (sub !== categoryMain.nextElementSibling) {
+                    sub.style.display = "none";
+                }
+            });
 
-        const url = isFavorited
-            ? '/Home/RemoveFromFavorites'
-            : '/Home/AddToFavorites';
+            var categorySub = categoryMain.nextElementSibling;
 
-        const formData = new FormData();
-        formData.append("productId", productId);
-
-        // Append the current path as returnUrl
-        formData.append("returnUrl", window.location.pathname + window.location.search);
-
-        const response = await fetch(url, {
-            method: "POST",
-            body: formData,
-            headers: {
-                'RequestVerificationToken': getAntiForgeryToken()
+            if (categorySub.style.display === "none" || categorySub.style.display === "") {
+                categorySub.style.display = "block";
+            } else {
+                categorySub.style.display = "none";
             }
+        }
+        function getAntiForgeryToken() {
+            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        }
+        async function toggleFavorite(productId, el) {
+            let isFavorited = el.dataset.isFavorited === "true";
+
+            const url = isFavorited
+                ? '/Home/RemoveFromFavorites'
+                : '/Home/AddToFavorites';
+
+            const formData = new FormData();
+            formData.append("productId", productId);
+
+            // Append the current path as returnUrl
+            formData.append("returnUrl", window.location.pathname + window.location.search);
+
+            const response = await fetch(url, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': getAntiForgeryToken()
+                }
+            });
+
+            if (response.ok) {
+                location.reload(); // or redirect manually if needed
+            } else {
+                alert("Có lỗi xảy ra khi gửi yêu cầu.");
+            }
+        }
+
+
+        const qtyInput = document.getElementById("qty");
+        const maxQty = parseInt(qtyInput.max, 10);
+        const minQty = parseInt(qtyInput.min, 10);
+        qtyInput.addEventListener('input', function () {
+            let value = parseInt(this.value, 10);
+            if (isNaN(value)) return;
+
+            if (value > maxQty) {
+                this.value = maxQty;
+            } else if (value < minQty) {
+                this.value = minQty;
+            }
+
+            // Now update the price using the corrected value
+            updateTemporaryPrice();
         });
 
-        if (response.ok) {
-            location.reload(); // or redirect manually if needed
-        } else {
-            alert("Có lỗi xảy ra khi gửi yêu cầu.");
-        }
-    }
-
-
-    const qtyInput = document.getElementById("qty");
-    const maxQty = parseInt(qtyInput.max, 10);
-    const minQty = parseInt(qtyInput.min, 10);
-    qtyInput.addEventListener('input', function () {
-        let value = parseInt(this.value, 10);
-        if (isNaN(value)) return;
-
-        if (value > maxQty) {
-            this.value = maxQty;
-        } else if (value < minQty) {
-            this.value = minQty;
-        }
-
-        // Now update the price using the corrected value
-        updateTemporaryPrice();
-    });
-
-</script>
+    </script>
 }
