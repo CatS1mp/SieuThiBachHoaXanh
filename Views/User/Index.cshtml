@@ -60,51 +60,51 @@
     const sidebar = document.querySelector('.sidebar'); // Thêm selector cho sidebar
 
     categoryButton.addEventListener('click', () => {
-        overlay.classList.add('d-block');
-        sidebar.classList.remove('d-none');
-        containerWrapper.classList.add('blur');
+       overlay.classList.add('d-block');
+       sidebar.classList.remove('d-none');
+       containerWrapper.classList.add('blur');
     });
 
     overlay.addEventListener('click', () => {
-        overlay.classList.remove('d-block');
-        sidebar.classList.add('d-none');
-        containerWrapper.classList.remove('blur');
+       overlay.classList.remove('d-block');
+       sidebar.classList.add('d-none');
+       containerWrapper.classList.remove('blur');
     });
 
     overlay.addEventListener('mousemove', (event) => {
-        if (!sidebar.contains(event.target)) {
-            overlay.classList.remove('d-block');
-            sidebar.classList.add('d-none');
-            containerWrapper.classList.remove('blur');
-        }
+       if (!sidebar.contains(event.target)) {
+          overlay.classList.remove('d-block');
+          sidebar.classList.add('d-none');
+          containerWrapper.classList.remove('blur');
+       }
     });
 
     function toggleCategorySub(categoryMain) {
-        var categorySubs = document.querySelectorAll('.category-sub');
+       var categorySubs = document.querySelectorAll('.category-sub');
 
-        categorySubs.forEach(function (sub) {
-            if (sub !== categoryMain.nextElementSibling) {
-                sub.style.display = "none";
-            }
-        });
+       categorySubs.forEach(function (sub) {
+          if (sub !== categoryMain.nextElementSibling) {
+             sub.style.display = "none";
+          }
+       });
 
-        var categorySub = categoryMain.nextElementSibling;
+       var categorySub = categoryMain.nextElementSibling;
 
-        if (categorySub.style.display === "none" || categorySub.style.display === "") {
-            categorySub.style.display = "block";
-        } else {
-            categorySub.style.display = "none";
-        }
+       if (categorySub.style.display === "none" || categorySub.style.display === "") {
+          categorySub.style.display = "block";
+       } else {
+          categorySub.style.display = "none";
+       }
     }
     function togglePassword(inputId, iconElement) {
-        const input = document.getElementById(inputId);
-        if (input.type === "password") {
-            input.type = "text";
-            iconElement.textContent = "🙈"; // Icon đổi thành 'ẩn'
-        } else {
-            input.type = "password";
-            iconElement.textContent = "👁️"; // Icon đổi thành 'hiện'
-        }
+       const input = document.getElementById(inputId);
+       if (input.type === "password") {
+          input.type = "text";
+          iconElement.textContent = "🙈"; // Icon đổi thành 'ẩn'
+       } else {
+          input.type = "password";
+          iconElement.textContent = "👁️"; // Icon đổi thành 'hiện'
+       }
     }
 
 </script>

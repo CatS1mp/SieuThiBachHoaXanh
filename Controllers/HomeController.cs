@@ -21,8 +21,10 @@ public class HomeController : Controller
     }
     public IActionResult Index(int page = 1, string search = "", int? danhmuc = null)
     {
+
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
 
+        int pageSize = 8;
         var categories = _context.CategoryList.Include(c => c.SubCategories).ToList();
         var productsQuery = _context.ProductList.AsQueryable();
 
@@ -36,65 +38,42 @@ public class HomeController : Controller
             productsQuery = productsQuery.Where(p => p.SubCategory.SubCategoryID == danhmuc.Value);
         }
 
+        if (page < 1)
+        {
+            page = 1;
+        }
+
         ViewData["Search"] = search;
         ViewData["SubCategoryId"] = danhmuc;
+
+        int totalProducts = productsQuery.Count();
+        int totalPages = (int)Math.Ceiling((double)totalProducts / pageSize);
+
+        if (page > totalPages && totalPages > 0)
+        {
+            page = totalPages;
+        }
 
         var products = productsQuery
             .Include(p => p.SubCategory)
             .ThenInclude(sc => sc.Category)
             .Include(p => p.Images)
-            .ToList(); // Fetch all products (remove Skip and Take)
-
-        foreach (var product in products)
+            .Skip((page - 1) * pageSize) 
+            .Take(pageSize)
+            .ToList();
+        foreach(var product in products)
         {
             var isFavorite = _context.FavoriteProductList
                 .Any(f => f.UserID == userId && f.ProductID == product.ProductID);
             product.isFav = isFavorite;
         }
-
-        var now = DateTime.Now;
-        Console.WriteLine(now);
-
-        var activePromotions = _context.Promotions
-            .Where(p => p.StartDate <= now && p.EndDate >= now)
-            .Include(p => p.PromotionDetails)
-                .ThenInclude(pd => pd.Product)
-            .ToList();
-
-        Console.WriteLine($"Found {activePromotions.Count} active promotions.");
-
-        var productDict = products.ToDictionary(p => p.ProductID);
-        Console.WriteLine($"Created product dictionary with {productDict.Count} products.");
-
-        foreach (var promotion in activePromotions)
-        {
-            Console.WriteLine($"Promotion ID: {promotion.PromotionID} has {promotion.PromotionDetails?.Count ?? 0} promotion details.");
-
-            foreach (var promoDetail in promotion.PromotionDetails!)
-            {
-                Console.WriteLine($"Checking product ID: {promoDetail.ProductID} with new price: {promoDetail.NewPrice}");
-
-                if (productDict.TryGetValue(promoDetail.ProductID, out var product))
-                {
-                    product.PromotionPrice = promoDetail.NewPrice;
-                    Console.WriteLine($"Updated product ID: {product.ProductID} with PromotionPrice: {product.PromotionPrice}");
-                }
-                else
-                {
-                    Console.WriteLine($"Product ID: {promoDetail.ProductID} not found in product dictionary.");
-                }
-            }
-        }
-
         var productViewModel = new ProductViewModel
         {
             Products = products,
-            ActivePromotions = activePromotions,
-            ProductDict = productDict,
             Categories = categories,
             CurrentPage = page,
-            TotalPages = 1, // We'll calculate this per category in the view
-            TotalProducts = products.Count,
+            TotalPages = totalPages,
+            TotalProducts = totalProducts,
             SearchQuery = search,
             SubCategoryId = danhmuc
         };
@@ -117,17 +96,15 @@ public class HomeController : Controller
             .ThenInclude(sc => sc.Category)
             .Include(p => p.Images)
             .FirstOrDefault(p => p.ProductID == id);
+        product.isFav = _context.FavoriteProductList
+        .Any(p => p.ProductID == id && p.UserID == userId);
         if (product == null)
         {
             return NotFound();
         }
 
-        product.isFav = _context.FavoriteProductList
-        .Any(p => p.ProductID == id && p.UserID == userId);
-
         return View(product);
     }
-
     [Authorize]
     [HttpPost]
     public async Task<IActionResult> AddToFavorites(int productId, string returnUrl = null)

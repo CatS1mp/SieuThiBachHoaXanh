@@ -1,5 +1,6 @@
 ﻿<!-- Sidebar -->
-<div class="sidebar rounded-lg" style="scrollbar-gutter: stable">
+<div class="overlay" id="overlay"></div>
+<div class="sidebar" style="scrollbar-gutter: stable;">
     <div class="category-container">
         @foreach (var category in (List<Category>)Context.Items["Categories"])
         {
@@ -12,8 +13,8 @@
                     {
                         <div class="category-sub-item">
                             <a href="@Url.Action("Index", "Home", new { danhmuc = subCategory.SubCategoryID })">
-                                @subCategory.SubCategoryName
-                            </a>
+                            @subCategory.SubCategoryName
+                                    </a>
                         </div>
                     }
                 </div>
