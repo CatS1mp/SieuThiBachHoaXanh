@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BachHoaXanh.Models
 {
@@ -24,14 +24,14 @@ namespace BachHoaXanh.Models
         public string? Note { get; set; }
 
         [StringLength(50)]
-        public string OrderStatus { get; set; } = "Pending"; 
+        public string? OrderStatus { get; set; } = "Pending";
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public DateTime? UpdatedAt { get; set; }
 
-        public User User { get; set; }
-        public ICollection<OrderDetail> OrderDetails { get; set; }
-        public PaymentMethod PaymentMethod { get; set; }
+        public User? User { get; set; }
+        public ICollection<OrderDetail>? OrderDetails { get; set; }
+        public PaymentMethod? PaymentMethod { get; set; }
     }
 }

@@ -1,9 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BachHoaXanh.Models
 {
-
     [Table("SubCategories")]
     public class SubCategory
     {
@@ -12,12 +11,11 @@ namespace BachHoaXanh.Models
 
         [Required]
         [StringLength(100)]
-        public string SubCategoryName { get; set; }
+        public string? SubCategoryName { get; set; }
         public int? CategoryID { get; set; }
 
         [ForeignKey("CategoryID")]
-        public Category Category { get; set; }
-        public ICollection<Product> Products { get; set; }
-
+        public Category? Category { get; set; }
+        public ICollection<Product>? Products { get; set; }
     }
 }

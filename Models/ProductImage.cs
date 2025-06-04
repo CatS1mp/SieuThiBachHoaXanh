@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BachHoaXanh.Models
 {
@@ -10,13 +10,11 @@ namespace BachHoaXanh.Models
         public int ImageID { get; set; }
 
         [Required]
-        public string ImagePath { get; set; } // Path to the image
+        public string ImagePath { get; set; }
 
         public bool IsMainImage { get; set; } = false;
 
         [ForeignKey("ProductID")]
-
         public int ProductID { get; set; }
     }
-
 }

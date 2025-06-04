@@ -2,7 +2,6 @@
 @using Newtonsoft.Json
 @inject IHttpContextAccessor HttpContextAccessor
 
-
 @{
     var session = HttpContextAccessor.HttpContext.Session;
     string jsoncart = session.GetString(BachHoaXanh.Controllers.CartController.CARTKEY);

@@ -18,7 +18,7 @@ namespace BachHoaXanh.Middleware
         {
             if (context.Items["Categories"] == null)
             {
-                using (var scope = _scopeFactory.CreateScope()) // Tạo phạm vi mới
+                using (var scope = _scopeFactory.CreateScope())
                 {
                     var _context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                     var categories = _context.CategoryList.Include(c => c.SubCategories).ToList();

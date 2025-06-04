@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace BachHoaXanh.Models
 {
     [Table("Products")]
-
     public class Product
     {
         [Key]
@@ -12,9 +11,9 @@ namespace BachHoaXanh.Models
 
         [Required]
         [StringLength(250)]
-        public string ProductName { get; set; }
+        public string? ProductName { get; set; }
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Required]
         [Range(0, double.MaxValue)]
@@ -30,17 +29,18 @@ namespace BachHoaXanh.Models
         public bool isFav { get; set; } = false;
 
         [ForeignKey("SubCategoryID")]
-        public SubCategory SubCategory { get; set; }
+        public SubCategory? SubCategory { get; set; }
         public int? SubCategoryID { get; set; }
-        public List<ProductImage> Images { get; set; }
+        public List<ProductImage>? Images { get; set; }
 
-        // Add navigation property for ProductStock
         public List<StockProduct> Stocks { get; set; } = new List<StockProduct>();
 
         [NotMapped]
         public int StockQuantity => Stocks?.Where(s => s.ExpirationDate >= DateTime.Now)
                                  .Sum(s => s.Quantity) ?? 0;
 
+        // Removed: [ForeignKey("ProductID")]
+        // Removed: public FavoriteProduct? product { get; set; }
     }
 
     [Table("FavoriteProducts")]
@@ -48,13 +48,11 @@ namespace BachHoaXanh.Models
     {
         [Key]
         public int FavoriteID { get; set; }
-        public int UserID { get; set; } // Tham chiếu đến ASP.NET Identity User
+        public int UserID { get; set; }
         public int ProductID { get; set; }
         [ForeignKey("UserID")]
-        public User Users { get; set; }  // Navigation property
+        public User? Users { get; set; }
         [ForeignKey("ProductID")]
-        public Product Product { get; set; }       // Navigation property
+        public Product? Product { get; set; }
     }
-
-
 }
