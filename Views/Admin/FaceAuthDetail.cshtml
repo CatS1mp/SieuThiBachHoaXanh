@@ -4,35 +4,116 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
+<style>
+    .main-panel {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 200px); /* Điều chỉnh để căn giữa, trừ chiều cao navbar/footer */
+        padding: 20px;
+    }
+
+    .auth-detail-card {
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        width: 100%;
+        max-width: 600px; /* Giới hạn chiều rộng tối đa */
+        margin: 0 auto;
+    }
+
+        .auth-detail-card h2 {
+            text-align: center;
+            color: #343a40;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+    .detail-row {
+        display: flex;
+        margin-bottom: 15px;
+    }
+
+    .detail-label {
+        font-weight: bold;
+        width: 150px;
+        color: #495057;
+        text-align: right;
+        margin-right: 20px;
+    }
+
+    .detail-value {
+        flex-grow: 1;
+        color: #212529;
+    }
+
+        .detail-value img {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            object-fit: cover;
+        }
+
+    .no-image {
+        color: #6c757d;
+        font-style: italic;
+    }
+
+    .back-btn {
+        display: block;
+        width: 150px;
+        margin: 20px auto 0;
+        text-align: center;
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+
+        .back-btn:hover {
+            background-color: #5a6268;
+            color: white;
+        }
+</style>
+
 <div class="main-panel">
-    <h2>Chi tiết xác thực khuôn mặt</h2>
-    <dl class="row">
-        <dt class="col-sm-2">ID</dt>
-        <dd class="col-sm-10">@Model.Id</dd>
-
-        <dt class="col-sm-2">User ID</dt>
-        <dd class="col-sm-10">@Model.UserID</dd>
-
-        <dt class="col-sm-2">Username</dt>
-        <dd class="col-sm-10">@Model.User.UserName</dd>
-
-        <dt class="col-sm-2">Thời gian xác thực</dt>
-        <dd class="col-sm-10">@Model.AttemptTime.ToString("dd/MM/yyyy HH:mm:ss")</dd>
-
-        <dt class="col-sm-2">Trạng thái</dt>
-        <dd class="col-sm-10">@Model.Result</dd>
-
-        <dt class="col-sm-2">Ảnh thất bại</dt>
-        <dd class="col-sm-10">
-            @if (!string.IsNullOrEmpty(Model.FailedImagePath))
-            {
-                <img src="~/face_images/@Model.FailedImagePath" alt="Failed Image" style="width: 100px; height: 100px;" />
-            }
-            else
-            {
-                <span>Không có ảnh</span>
-            }
-        </dd>
-    </dl>
-    <a href="@Url.Action("Auth", "Admin")" class="btn btn-secondary">Quay lại</a>
+    <div class="auth-detail-card">
+        <h2>Chi tiết xác thực khuôn mặt</h2>
+        <div class="detail-row">
+            <div class="detail-label">ID</div>
+            <div class="detail-value">@Model.Id</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">User ID</div>
+            <div class="detail-value">@Model.UserID</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Username</div>
+            <div class="detail-value">@Model.User.UserName</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Thời gian xác thực</div>
+            <div class="detail-value">@Model.AttemptTime.ToString("dd/MM/yyyy HH:mm:ss")</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Trạng thái</div>
+            <div class="detail-value">@Model.Result</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Ảnh thất bại</div>
+            <div class="detail-value">
+                @if (!string.IsNullOrEmpty(Model.FailedImagePath))
+                {
+                    <img src="~/face_images/@Model.FailedImagePath" alt="Failed Image" style="width: 100px; height: 100px;" />
+                }
+                else
+                {
+                    <span class="no-image">Không có ảnh</span>
+                }
+            </div>
+        </div>
+        <a href="@Url.Action("Auth", "Admin")" class="back-btn">Quay lại</a>
+    </div>
 </div>
