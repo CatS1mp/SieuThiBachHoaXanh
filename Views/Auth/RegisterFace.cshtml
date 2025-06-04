@@ -25,26 +25,38 @@
         .catch(err => {
             toastr.error('Không truy cập được webcam: ' + err);
         });
-
-    captureButton.addEventListener('click', async () => {
+            captureButton.addEventListener('click', async () => {
+        toastr.info('📸 Đang chụp ảnh từ webcam...');
         canvas.getContext('2d').drawImage(video, 0, 0, 320, 240);
+
+        toastr.info('🧪 Đang chuyển ảnh sang định dạng blob...');
         const imageData = canvas.toDataURL('image/jpeg');
         const blob = await (await fetch(imageData)).blob();
+
+        toastr.info('📦 Chuẩn bị gửi dữ liệu đến server...');
         const formData = new FormData();
         formData.append('image', blob, 'faceImage.jpg');
         formData.append('userId', @Model);
 
-        const response = await fetch('/Auth/RegisterFace', {
-            method: 'POST',
-            body: formData
-        });
-        const result = await response.json();
+        try {
+            const response = await fetch('/Auth/RegisterFace', {
+                method: 'POST',
+                body: formData
+            });
 
-        if (result.success) {
-            toastr.success(result.message);
-            setTimeout(() => { window.location.href = '/Admin/Index'; }, 1000);
-        } else {
-            toastr.warning(result.message);
+            toastr.info('📬 Đã gửi xong, đang chờ phản hồi...');
+
+            const result = await response.json();
+
+            if (result.success) {
+                toastr.success('✅ ' + result.message);
+                setTimeout(() => { window.location.href = '/Admin/Index'; }, 1000);
+            } else {
+                toastr.warning('⚠️ ' + result.message);
+            }
+        } catch (err) {
+            toastr.error('❌ Lỗi khi gửi yêu cầu: ' + err);
+            console.error(err);
         }
     });
 

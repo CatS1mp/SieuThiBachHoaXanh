@@ -22,5 +22,14 @@ namespace BachHoaXanh.Data
         public DbSet<OrderDetail> OrderDetailList { get; set; }
         public DbSet<PaymentMethod> PaymentMethodList { get; set; }
         public DbSet<Address> Addresses { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Cấu hình quan hệ nếu cần
+            modelBuilder.Entity<FaceData>()
+                .HasOne(f => f.User)
+                .WithMany()
+                .HasForeignKey(f => f.UserID);
+        }
     }
 }

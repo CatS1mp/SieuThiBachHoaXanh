@@ -72,9 +72,9 @@ Nếu người dùng yêu cầu thông tin cá nhân (như đơn hàng, sản ph
                             psc.p.Price,
                             CategoryName = c.CategoryName,
                             SubCategoryName = psc.sc.SubCategoryName,
-                            psc.p.IsActive
+                            psc.p.Status
                         })
-                    .Where(p => p.IsActive)
+                    .Where(p => p.Status != ProductStatus.NgungKinhDoanh)
                     .ToList();
 
                 var stock = _context.StockProductList
@@ -95,21 +95,24 @@ Nếu người dùng yêu cầu thông tin cá nhân (như đơn hàng, sản ph
                     if (imageInfo != null && !string.IsNullOrEmpty(imageInfo.ImagePath))
                     {
                         var fileName = System.IO.Path.GetFileName(imageInfo.ImagePath);
-                        var physicalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", fileName);
+                        var physicalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images","prods", fileName);
+
                         if (System.IO.File.Exists(physicalPath))
                         {
-                            imageUrl = Url.Content("~/images/" + fileName);
-        }
+                            imageUrl = Url.Content("~/images/prods/" + fileName);
+                            Console.WriteLine($"path: {imageUrl}");
+
+                        }
                     }
                     string productUrl = $"{Request.Scheme}://{Request.Host}/san-pham/{product.ProductID}";
 
                     productInfo.AppendLine($"### {product.ProductName}");
                     if (!string.IsNullOrEmpty(imageUrl))
-        {
+                    {
                         productInfo.AppendLine($"![{product.ProductName}]({imageUrl})");
                     }
                     else
-            {
+                    {
                         productInfo.AppendLine("- Ảnh sản phẩm: Không có ảnh chính");
                     }
                     productInfo.AppendLine($"- **Danh mục**: {product.CategoryName} > {product.SubCategoryName}");

@@ -8,10 +8,9 @@ namespace BachHoaXanh.Models
     {
         public int Id { get; set; }
         public int UserID { get; set; }
-        public string FaceImagePath { get; set; }
+        public byte[] FaceEmbedding { get; set; } // Lưu đặc trưng khuôn mặt dưới dạng byte array
         public DateTime CreatedAt { get; set; }
         public User User { get; set; }
-
     }
     [Table("FaceAuthHistory")]
 
