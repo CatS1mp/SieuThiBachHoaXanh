@@ -93,8 +93,8 @@ ol {
 
 /* ========== NAVBAR ========== */
 .navbar {
-    /* background: radial-gradient(159.85% 367.97% at 150% 123.85%, #ffe147 0%, var(--secondary-color) 38.76%, var(--primary-color) 59.65%, var(--third-color) 100%); */
-    background-color: transparent;
+    background: radial-gradient(159.85% 367.97% at 150% 123.85%, #ffe147 0%, var(--secondary-color) 38.76%, var(--primary-color) 59.65%, var(--third-color) 100%);
+    /* background-color: transparent; */
   /* backdrop-filter: blur(10px); */
 }
 
@@ -212,10 +212,9 @@ ol {
 
 /* ========== SIDEBAR ========== */
 .sidebar {
-    width: 300px;
+    width: 90%;
     background-color: #f9f9f9;
     padding: 15px;
-    margin: 0px 10px;
     position: absolute;
     height: calc(100vh - 110px);
     overflow-y: auto;
