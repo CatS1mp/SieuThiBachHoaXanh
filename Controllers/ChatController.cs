@@ -1,9 +1,7 @@
 ﻿using BachHoaXanh.Data;
-using Microsoft.AspNetCore.Mvc;
 using Markdig;
-using BachHoaXanh.Models;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
+using static OpenCvSharp.Stitcher;
 
 namespace BachHoaXanh.Controllers
 {
@@ -14,7 +12,6 @@ namespace BachHoaXanh.Controllers
         {
             _context = context;
         }
-
         public class ChatRequest
         {
             public string userinput { get; set; }
@@ -90,4 +87,3 @@ namespace BachHoaXanh.Controllers
         }
     }
 }
-    
