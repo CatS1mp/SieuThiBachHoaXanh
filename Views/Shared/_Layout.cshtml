@@ -3,7 +3,129 @@
 @inject IHttpContextAccessor HttpContextAccessor
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
 
+<style>
+    /* Nút mở chat (nổi bật, bo tròn) */
+    #chat-toggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        font-size: 30px;
+        cursor: pointer;
+        transition: transform 0.3s ease, background-color 0.3s ease;
+        z-index: 999;
+    }
 
+        #chat-toggle:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+    /* Hộp chat */
+    #chatbox {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 400px;
+        max-width: 90vw;
+        height: 600px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        z-index: 998;
+    }
+
+        #chatbox.open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+    /* Nội dung tin nhắn */
+    #chat-messages {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 14px;
+        background-color: #f9f9f9;
+    }
+
+        #chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+
+    /* Vùng nhập */
+    #chat-input-area {
+        display: flex;
+        border-top: 1px solid #ddd;
+        background-color: #fff;
+    }
+
+    #chatbox input {
+        flex: 1;
+        border: none;
+        padding: 12px 14px;
+        font-size: 14px;
+        outline: none;
+    }
+
+    #chatbox button.send-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 0 20px;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        #chatbox button.send-btn:hover {
+            background-color: #0056b3;
+        }
+
+    /* Tin nhắn */
+    .msg-user {
+        text-align: right;
+        margin-bottom: 10px;
+        color: #007bff;
+        background-color: #e8f0fe;
+        padding: 8px 12px;
+        display: inline-block;
+        border-radius: 12px 12px 0 12px;
+        max-width: 80%;
+    }
+
+    .msg-bot {
+        text-align: left;
+        margin-bottom: 10px;
+        color: #333;
+        background-color: #f1f1f1;
+        padding: 8px 12px;
+        display: inline-block;
+        border-radius: 12px 12px 12px 0;
+        max-width: 80%;
+    }
+</style>
 <!DOCTYPE html>
 <style>
     /* Nút mở chat */

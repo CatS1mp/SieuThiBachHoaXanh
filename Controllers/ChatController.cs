@@ -7,11 +7,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BachHoaXanh.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ChatController : ControllerBase
+    public class ChatController
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context; More actions
         public ChatController(ApplicationDbContext context)
         {
             _context = context;
@@ -19,115 +17,75 @@ namespace BachHoaXanh.Controllers
 
         public class ChatRequest
         {
-            [Required]
-            public string? userinput { get; set; }
+            public string userinput { get; set; }
         }
 
         public class AIResponse
         {
-            [Required]
-            public string? reply { get; set; }
+            public string reply { get; set; }
         }
-
-        [HttpPost("GeminiChat")]
+        [HttpPost]
         public async Task<JsonResult> GeminiChat([FromBody] ChatRequest request)
         {
             try
             {
-                if (string.IsNullOrEmpty(request?.userinput))
-                {
-                    return new JsonResult(new { 
-                        success = false, 
-                        message = "Vui lòng nhập nội dung câu hỏi" 
-                    });
-                }
+                var systemPrompt = "Bạn là 1 trợ lý của trang web CeramicShop, " +
+                    "bạn sẽ trả lời các câu hỏi của người dùng về sản phẩm gốm sứ, " +
+                    "bao gồm thông tin về sản phẩm, giá cả, cách sử dụng và bảo quản. " +
+                    "Khi trả lời, hãy định dạng câu trả lời bằng Markdown để nội dung rõ ràng, dễ đọc. " +
+                    "Đặc biệt, danh sách sản phẩm nên được trình bày theo dạng danh sách đánh dấu (* hoặc -), " +
+                    "các tiêu đề sản phẩm nên được **in đậm**, giá nên được in nghiêng hoặc thêm dấu phân tách dễ nhìn. " +
+                    "Hãy trả lời một cách thân thiện và chuyên nghiệp. ";
 
-                var systemPrompt = "Bạn là trợ lý ảo của siêu thị Bách Hóa Xanh, " +
-                    "nhiệm vụ của bạn là hỗ trợ khách hàng về các vấn đề sau:\n" +
-                    "1. Tư vấn và cung cấp thông tin về sản phẩm\n" +
-                    "2. Hướng dẫn cách tìm kiếm sản phẩm trên website\n" +
-                    "3. Giải đáp thắc mắc về giá cả, khuyến mãi\n" +
-                    "4. Hỗ trợ về quy trình đặt hàng và thanh toán\n" +
-                    "5. Giải đáp các câu hỏi về chính sách bảo hành, đổi trả\n\n" +
-                    "Khi trả lời, hãy:\n" +
-                    "- Sử dụng ngôn ngữ thân thiện, lịch sự\n" +
-                    "- Trả lời ngắn gọn, dễ hiểu\n" +
-                    "- Sử dụng Markdown để định dạng văn bản cho dễ đọc\n" +
-                    "- Với sản phẩm: **Tên sản phẩm** - *Giá: xxx đ*\n" +
-                    "- Luôn chủ động hỏi thêm nếu cần thông tin để tư vấn tốt hơn";
+                var products = _context.Products
+                    .Select(p => new { p.ProductName, p.Description, p.Price, p.StockQuantity })
+                    .ToList();
 
-                // Lấy thông tin sản phẩm từ database
-                var products = await _context.ProductList
-                    .Where(p => p.Status != ProductStatus.NgungKinhDoanh)
-                    .Select(p => new { 
-                        p.ProductName, 
-                        p.Description, 
-                        p.Price, 
-                        p.StockQuantity,
-                        p.Status
-                    })
-                    .ToListAsync();
-
-                var categories = await _context.CategoryList
+                var categories = _context.Categories
                     .Select(c => new { c.CategoryName })
-                    .ToListAsync();
+                    .ToList();
 
-                var subcategories = await _context.SubCategoryList
+                var subcategories = _context.SubCategories
                     .Select(sc => new { sc.SubCategoryName })
-                    .ToListAsync();
+                    .ToList();
 
-                // Định dạng thông tin sản phẩm
-                var productInfo = string.Join("\n", products.Select(p => 
-                    $"- **{p.ProductName}**\n  - Mô tả: {p.Description}\n  - *Giá: {p.Price:N0}đ*\n  - Kho: {p.StockQuantity} sản phẩm"
-                ));
-                
+                var productInfo = string.Join("\n", products.Select(p => $"- **{p.ProductName}**: {p.Description} (Giá: *{p.Price}đ*) (Tồn kho: {p.StockQuantity})"));
                 var categoryInfo = string.Join(", ", categories.Select(c => c.CategoryName));
                 var subcategoryInfo = string.Join(", ", subcategories.Select(sc => sc.SubCategoryName));
 
-                var fullContext = $"Danh mục sản phẩm: {categoryInfo}\n" +
-                                $"Danh mục phụ: {subcategoryInfo}\n\n" +
-                                $"Thông tin sản phẩm hiện có:\n{productInfo}";
+                var fullContext = $"Danh mục: {categoryInfo}\nLoại phụ: {subcategoryInfo}\nSản phẩm:\n{productInfo}";
 
-                var fullPrompt = $"{systemPrompt}\n\nDữ liệu hệ thống:\n{fullContext}\n\nKhách hàng hỏi: {request.userinput}";
+                var fullPrompt = $"{systemPrompt}\n\nThông tin:\n{fullContext}\n\nCâu hỏi: {request.userinput}";
 
                 using var httpClient = new HttpClient();
-                var url = "http://localhost:5012/api/getChat";
+                var url = "http://103.82.36.41:5000/api/getChat";
 
                 var data = new { userinput = fullPrompt };
+
                 var response = await httpClient.PostAsJsonAsync(url, data);
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    return new JsonResult(new { 
-                        success = false, 
-                        message = "Xin lỗi, hiện tại hệ thống đang gặp sự cố. Vui lòng thử lại sau." 
-                    });
+                    return Json(new { success = false, message = "AI server error" });
                 }
 
-                var result = await response.Content.ReadFromJsonAsync<AIResponse>();
+                var result = await response.Content.ReadFromJsonAsync<AIResponse>(); // tới đây là có data
 
                 if (result == null || string.IsNullOrEmpty(result.reply))
                 {
-                    return new JsonResult(new { 
-                        success = false, 
-                        message = "Xin lỗi, không thể xử lý câu hỏi của bạn. Vui lòng thử lại." 
-                    });
+                    return Json(new { success = false, message = "Invalid response from AI server" });
                 }
 
-                // Chuyển đổi Markdown sang HTML
-                var htmlResponse = Markdown.ToHtml(result.reply ?? string.Empty);
+                string markdownResponse = result.reply;
 
-                return new JsonResult(new { 
-                    success = true, 
-                    html = htmlResponse 
-                });
+                string htmlResponse = Markdown.ToHtml(markdownResponse);
+
+                return Json(new { success = true, html = htmlResponse });
             }
             catch (Exception ex)
             {
-                return new JsonResult(new { 
-                    success = false, 
-                    message = "Đã xảy ra lỗi: " + ex.Message 
-                });
+                // Log ex.Message nếu có hệ thống log
+                return Json(new { success = false, message = "Exception: " + ex.Message });
             }
         }
     }
