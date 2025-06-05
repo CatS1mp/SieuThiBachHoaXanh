@@ -1,6 +1,9 @@
 USE BachHoaXanh
 GO
 
+
+DROP TABLE IF EXISTS PromotionDetails;
+DROP TABLE IF EXISTS Promotions;
 DROP TABLE IF EXISTS OrderDetails;
 DROP TABLE IF EXISTS Orders;
 DROP TABLE IF EXISTS ProductImages;
@@ -15,6 +18,7 @@ DROP TABLE IF EXISTS ProductStocks;
 DROP TABLE IF EXISTS FaceData;
 DROP TABLE IF EXISTS FaceAuthHistory;
 DROP TABLE IF EXISTS __EFMigrationsHistory;
+
 GO
 
 -- Tạo bảng Users để quản lý thông tin người dùng
@@ -81,7 +85,7 @@ CREATE TABLE ProductImages (
     ProductID INT,
     ImagePath NVARCHAR(255) NOT NULL,
     IsMainImage BIT DEFAULT 0, -- Đánh dấu ảnh chính
-    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+FOREIGN KEY (ProductID) REFERENCES Products(ProductID) ON DELETE CASCADE
 );
 
 -- Tạo bảng PaymentMethods để quản lý các phương thức thanh toán
@@ -232,7 +236,7 @@ VALUES
 (N'Kem đánh răng Colgate', N'Kem đánh răng Colgate, tuýp 100g', 35000, 25);
 
 UPDATE Products
-SET Status = 1
+SET Status = 0
 
 -- Declare variables
 DECLARE @RowCount INT = @@ROWCOUNT; -- Get the number of inserted rows
@@ -277,7 +281,7 @@ VALUES
 
 UPDATE Users SET Address = N'123 Đường ABC, Phường 1, Quận 1, TP.HCM' WHERE UserName = N'admin';
 UPDATE Users SET Address = N'456 Đường XYZ, Phường 2, Quận 2, TP.HCM' WHERE UserName = N'tranvanminh';
-UPDATE Users SET Address = N'789 Đường DEF, Phường 3, Quận 3, TP.HCM' WHERE UserName = N'le_minh_c';
+UPDATE Users SET Address = N'789 Đường DEF, Phường 3, Quận 3, TP.HCM' WHERE UserName = N'kho';
 UPDATE Users SET Address = N'111 Đường GHI, Phường 4, Quận 4, TP.HCM' WHERE UserName = N'tran_thi_d';
 UPDATE Users SET Address = N'222 Đường JKL, Phường 5, Quận 5, TP.HCM' WHERE UserName = N'hoang_van_e';
 UPDATE Users SET Address = N'333 Đường MNO, Phường 6, Quận 6, TP.HCM' WHERE UserName = N'nguyen_thi_f';
@@ -358,3 +362,24 @@ VALUES
 
 INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion)
 VALUES ('20250603153716_InitialCreate', '9.0.5');
+
+DECLARE @pid INT = 1;
+DECLARE @i INT;
+DECLARE @qty INT;
+DECLARE @import_dt DATE;
+
+WHILE @pid <= 30
+BEGIN
+    SET @i = 1;
+    WHILE @i <= 2
+    BEGIN
+        SET @qty = FLOOR(RAND(CHECKSUM(NEWID())) * 200 + 50); -- 50 đến 249
+        SET @import_dt = DATEADD(DAY, FLOOR(RAND(CHECKSUM(NEWID())) * 180), CAST(GETDATE() AS DATE)); -- trong 180 ngày tới
+
+        INSERT INTO ProductStocks (ProductID, Quantity, ExpirationDate)
+        VALUES (@pid, @qty, @import_dt);
+
+        SET @i = @i + 1;
+    END
+    SET @pid = @pid + 1;
+END
