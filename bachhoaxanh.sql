@@ -158,6 +158,24 @@ CREATE TABLE __EFMigrationsHistory (
     CONSTRAINT PK___EFMigrationsHistory PRIMARY KEY (MigrationId)
 );
 
+CREATE TABLE Promotions (
+    PromotionID INT PRIMARY KEY IDENTITY(1,1),
+    PromotionName NVARCHAR(250) NOT NULL,
+    StartDate DATETIME NOT NULL, 
+    EndDate DATETIME NOT NULL,
+    ImagePath NVARCHAR(255) NOT NULL,
+    ShowOnTop BIT NOT NULL DEFAULT 0 
+);
+
+CREATE TABLE PromotionDetails (
+    PromotionDetailID INT PRIMARY KEY IDENTITY(1,1),
+    PromotionID INT,
+    ProductID INT UNIQUE,
+    NewPrice DECIMAL(18, 2) NOT NULL,
+    FOREIGN KEY (PromotionID) REFERENCES Promotions(PromotionID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
 -- Inserting data for Categories (focused on greens, packaged food, and related essentials)
 INSERT INTO Categories (CategoryName) 
 VALUES 
@@ -383,3 +401,29 @@ BEGIN
     END
     SET @pid = @pid + 1;
 END
+
+INSERT INTO Promotions (PromotionName, StartDate, EndDate, ImagePath, ShowOnTop)
+VALUES 
+('Summer Blast', '2025-06-01 00:00:00', '2025-06-30 23:59:59', 'promotions/summer-blast.jpg', 1),
+('Healthy Week', '2025-06-03 00:00:00', '2025-06-10 23:59:59', 'promotions/healthy-week.jpg', 1),
+('Fresh Deals', '2025-06-01 00:00:00', '2025-06-15 23:59:59', 'promotions/fresh-deals.jpg', 0),
+('Meat Lovers Sale', '2025-05-28 00:00:00', '2025-06-14 23:59:59', 'promotions/meat-sale.jpg', 0),
+('Veggie Boost', '2025-06-02 00:00:00', '2025-06-20 23:59:59', 'promotions/veggie-boost.jpg', 0);
+
+
+INSERT INTO PromotionDetails (PromotionID, ProductID, NewPrice)
+VALUES 
+(3, 5, 20000),
+(3, 10, 90000),
+(3, 18, 50000),
+(3, 17, 30000),
+
+(4, 3, 499000),
+(4, 14, 140000),
+(4, 12, 10000000),
+(4, 15, 30000),
+
+(5, 6, 130000),
+(5, 9, 10000),
+(5, 16, 25000),
+(5, 4, 1100000);

@@ -23,13 +23,10 @@ public class HomeController : Controller
     {
 
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
-        Console.WriteLine($"Home UserID: {userId}");
 
         int pageSize = 8;
         var categories = _context.CategoryList.Include(c => c.SubCategories).ToList();
-        var productsQuery = _context.ProductList
-                            .Where(p => p.Status != ProductStatus.NgungKinhDoanh)
-                            .AsQueryable();
+        var productsQuery = _context.ProductList.AsQueryable();
 
         if (!string.IsNullOrEmpty(search))
         {
@@ -57,23 +54,61 @@ public class HomeController : Controller
             page = totalPages;
         }
 
+
         var products = productsQuery
-            .Include(p => p.Stocks)
             .Include(p => p.SubCategory)
             .ThenInclude(sc => sc.Category)
             .Include(p => p.Images)
-            .Skip((page - 1) * pageSize) 
+            .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();
-        foreach(var product in products)
+
+
+        foreach (var product in products)
         {
             var isFavorite = _context.FavoriteProductList
                 .Any(f => f.UserID == userId && f.ProductID == product.ProductID);
             product.isFav = isFavorite;
         }
+
+
+        var now = DateTime.Now;
+
+        var activePromotions = _context.Promotions
+            .Where(p => p.StartDate <= now && p.EndDate >= now)
+            .Include(p => p.PromotionDetails)
+                .ThenInclude(pd => pd.Product)
+            .ToList();
+
+        Console.WriteLine($"Found {activePromotions.Count} active promotions.");
+
+        var productDict = products.ToDictionary(p => p.ProductID);
+        Console.WriteLine($"Created product dictionary with {productDict.Count} products.");
+
+        foreach (var promotion in activePromotions)
+        {
+            Console.WriteLine($"Promotion ID: {promotion.PromotionID} has {promotion.PromotionDetails?.Count ?? 0} promotion details.");
+
+            foreach (var promoDetail in promotion.PromotionDetails!)
+            {
+                Console.WriteLine($"Checking product ID: {promoDetail.ProductID} with new price: {promoDetail.NewPrice}");
+
+                if (productDict.TryGetValue(promoDetail.ProductID, out var product))
+                {
+                    product.PromotionPrice = promoDetail.NewPrice;
+                    Console.WriteLine($"Updated product ID: {product.ProductID} with PromotionPrice: {product.PromotionPrice}");
+                }
+                else
+                {
+                    Console.WriteLine($"Product ID: {promoDetail.ProductID} not found in product dictionary.");
+                }
+            }
+        }
+
         var productViewModel = new ProductViewModel
         {
             Products = products,
+            Promotions = activePromotions,
             Categories = categories,
             CurrentPage = page,
             TotalPages = totalPages,
@@ -84,7 +119,6 @@ public class HomeController : Controller
 
         return View(productViewModel);
     }
-
     [Route("san-pham/{id}")]
     public IActionResult Detail(int id)
     {
