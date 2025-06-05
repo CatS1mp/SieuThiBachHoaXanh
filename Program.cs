@@ -7,7 +7,43 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
+<<<<<<< Updated upstream
 
+=======
+// Đặt Runtime.PythonDLL trước khi khởi tạo runtime
+Runtime.PythonDLL = @"C:\Users\DELL\AppData\Local\Programs\Python\Python39\python39.dll";
+
+// Cấu hình PythonHome và PythonPath
+PythonEngine.PythonHome = @"C:\Users\DELL\AppData\Local\Programs\Python\Python39";
+PythonEngine.PythonPath = string.Join(Path.PathSeparator, new[]
+{
+    @"C:\Users\DELL\AppData\Local\Programs\Python\Python39\Lib",
+    @"C:\Users\DELL\AppData\Local\Programs\Python\Python39\Lib\site-packages",
+    @"C:\Users\DELL\AppData\Local\Programs\Python\Python39\DLLs",
+    Directory.GetCurrentDirectory()
+});
+
+try
+{
+    PythonEngine.Initialize();
+    using (Py.GIL())
+    {
+        dynamic sys = Py.Import("sys");
+        Console.WriteLine($"sys.executable: {sys.executable}");
+        Console.WriteLine($"sys.prefix: {sys.prefix}");
+        dynamic encodings = Py.Import("encodings");
+        Console.WriteLine("Đã import encodings thành công");
+        dynamic face_recognition = Py.Import("face_recognition");
+        Console.WriteLine("Đã import face_recognition thành công");
+    }
+    Console.WriteLine("Python runtime khởi tạo thành công.");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Lỗi khởi tạo Python runtime: {ex.Message}\nStackTrace: {ex.StackTrace}");
+    throw;
+}
+>>>>>>> Stashed changes
 builder.Services.AddControllers();
 // Bind OtpSettings from appsettings.json
 builder.Services.Configure<OtpSettings>(builder.Configuration.GetSection("OtpSettings"));

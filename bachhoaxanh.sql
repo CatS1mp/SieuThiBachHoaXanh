@@ -4,12 +4,22 @@ GO
 DROP TABLE IF EXISTS OrderDetails;
 DROP TABLE IF EXISTS Orders;
 DROP TABLE IF EXISTS ProductImages;
+DROP TABLE IF EXISTS FavoriteProducts;
+DROP TABLE IF EXISTS ProductStocks;
+DROP TABLE IF EXISTS PromotionDetails;
+DROP TABLE IF EXISTS Promotions;
 DROP TABLE IF EXISTS Products;
 DROP TABLE IF EXISTS SubCategories;
-DROP TABLE IF EXISTS FavoriteProducts;
+DROP TABLE IF EXISTS Addresses;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS PaymentMethods;
 DROP TABLE IF EXISTS Categories;
+<<<<<<< Updated upstream
+=======
+DROP TABLE IF EXISTS FaceData;
+DROP TABLE IF EXISTS FaceAuthHistory;
+DROP TABLE IF EXISTS __EFMigrationsHistory;
+>>>>>>> Stashed changes
 GO
 
 -- Tạo bảng Users để quản lý thông tin người dùng
@@ -102,7 +112,65 @@ CREATE TABLE OrderDetails (
     FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
 );
 
+<<<<<<< Updated upstream
 -- Dữ liệu cho bảng Categories
+=======
+CREATE TABLE Addresses (
+    AddressID INT IDENTITY (1, 1) NOT NULL,
+    UserID INT NOT NULL,
+    Province NVARCHAR (100) NULL,
+    District NVARCHAR (100) NULL,
+    Ward NVARCHAR (100) NULL,
+    Street NVARCHAR (255) NOT NULL,
+    IsDefault BIT DEFAULT ((0)) NULL,
+    PRIMARY KEY CLUSTERED (AddressID ASC),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
+CREATE TABLE Promotions (
+    PromotionID INT PRIMARY KEY IDENTITY(1,1),
+    PromotionName NVARCHAR(250) NOT NULL,
+    StartDate DATETIME NOT NULL, 
+    EndDate DATETIME NOT NULL,
+    ImagePath NVARCHAR(255) NOT NULL,
+    ShowOnTop BIT NOT NULL DEFAULT 0 
+);
+
+CREATE TABLE PromotionDetails (
+    PromotionDetailID INT PRIMARY KEY IDENTITY(1,1),
+    PromotionID INT,
+    ProductID INT UNIQUE,
+    NewPrice DECIMAL(18, 2) NOT NULL,
+    FOREIGN KEY (PromotionID) REFERENCES Promotions(PromotionID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
+CREATE TABLE FaceData (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NOT NULL,
+    FaceEmbedding VARBINARY(MAX) NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+CREATE TABLE FaceAuthHistory (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NOT NULL,
+    AttemptTime DATETIME DEFAULT GETDATE(),
+    Result NVARCHAR(50) NOT NULL, -- 'Success' or 'Failed'
+    FailedImagePath NVARCHAR(255) NULL, -- Ảnh nếu thất bại
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+
+CREATE TABLE __EFMigrationsHistory (
+    MigrationId nvarchar(150) NOT NULL,
+    ProductVersion nvarchar(32) NOT NULL,
+    CONSTRAINT PK___EFMigrationsHistory PRIMARY KEY (MigrationId)
+);
+
+-- Inserting data for Categories (focused on greens, packaged food, and related essentials)
+>>>>>>> Stashed changes
 INSERT INTO Categories (CategoryName) 
 VALUES 
 (N'Điện tử'),
@@ -309,4 +377,39 @@ VALUES
 (15, 17, 2, 35000),
 (16, 18, 1, 60000),
 (17, 19, 1, 45000),
+<<<<<<< Updated upstream
 (18, 20, 3, 30000);
+=======
+(18, 20, 3, 30000);
+
+INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion)
+VALUES ('20250603153716_InitialCreate', '9.0.5');
+
+
+
+INSERT INTO Promotions (PromotionName, StartDate, EndDate, ImagePath, ShowOnTop)
+VALUES 
+('Summer Blast', '2025-06-01 00:00:00', '2025-06-30 23:59:59', 'promotions/summer-blast.jpg', 1),
+('Healthy Week', '2025-06-03 00:00:00', '2025-06-10 23:59:59', 'promotions/healthy-week.jpg', 1),
+('Fresh Deals', '2025-06-01 00:00:00', '2025-06-15 23:59:59', 'promotions/fresh-deals.jpg', 0),
+('Meat Lovers Sale', '2025-05-28 00:00:00', '2025-06-14 23:59:59', 'promotions/meat-sale.jpg', 0),
+('Veggie Boost', '2025-06-02 00:00:00', '2025-06-20 23:59:59', 'promotions/veggie-boost.jpg', 0);
+
+
+INSERT INTO PromotionDetails (PromotionID, ProductID, NewPrice)
+VALUES 
+(3, 5, 20000),
+(3, 10, 90000),
+(3, 18, 50000),
+(3, 17, 30000),
+
+(4, 3, 499000),
+(4, 14, 140000),
+(4, 12, 10000000),
+(4, 15, 30000),
+
+(5, 6, 130000),
+(5, 9, 10000),
+(5, 16, 25000),
+(5, 4, 1100000);
+>>>>>>> Stashed changes

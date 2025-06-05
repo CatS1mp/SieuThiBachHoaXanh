@@ -12,9 +12,15 @@ namespace BachHoaXanh.Models
 
         [Required]
         [StringLength(250)]
+<<<<<<< Updated upstream
         public string ProductName { get; set; }
 
         public string Description { get; set; }
+=======
+        public string? ProductName { get; set; } = "";
+
+        public string? Description { get; set; } = "";
+>>>>>>> Stashed changes
 
         [Required]
         [Range(0, double.MaxValue)]
@@ -37,6 +43,23 @@ namespace BachHoaXanh.Models
         public List<ProductImage> Images { get; set; }
         
 
+<<<<<<< Updated upstream
+=======
+        public List<StockProduct> Stocks { get; set; } = new List<StockProduct>();
+
+        [NotMapped]
+        public int StockQuantity => Stocks?.Where(s => s.ExpirationDate >= DateTime.Now)
+                                 .Sum(s => s.Quantity) ?? 0;
+
+
+        [NotMapped]
+        [Range(0, double.MaxValue)]
+        public decimal PromotionPrice { get; set; } = -1;
+
+
+        // Removed: [ForeignKey("ProductID")]
+        // Removed: public FavoriteProduct? product { get; set; }
+>>>>>>> Stashed changes
     }
 
     [Table("FavoriteProducts")]

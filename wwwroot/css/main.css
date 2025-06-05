@@ -221,15 +221,13 @@ ol {
 
 /* ========== SIDEBAR ========== */
 .sidebar {
-    width: 300px;
+    /* width: 100%; */
     background-color: #f9f9f9;
-    padding: 0 15px 15px 15px;
-    position: fixed;
+    padding: 0 0 0 15px;
     height: calc(100vh - 110px);
     overflow-y: auto;
     scrollbar-color: #a7a7a7 #f9f9f9;
-    clip-path: inset(0 round 0 0 5px 5px);
-    top: 95px;
+    /* clip-path: inset(0 round 0 0 5px 5px); */
     transition: all 0.3s ease-out;
     /* Điều chỉnh vị trí của sidebar khi body có padding-top */
 }
