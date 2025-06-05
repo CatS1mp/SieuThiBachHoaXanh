@@ -215,7 +215,6 @@
     }
     async function toggleFavorite(productId, el) {
         let isFavorited = el.dataset.isFavorited === "true";
-
         const url = isFavorited
             ? '/Home/RemoveFromFavorites'
             : '/Home/AddToFavorites';
@@ -233,9 +232,18 @@
                 'RequestVerificationToken': getAntiForgeryToken()
             }
         });
+        console.log(response);
+        if (response.status === 401 || response.redirected) {
+            window.location.href = '/User/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+            return;
+        }
 
         if (response.ok) {
-            location.reload(); // or redirect manually if needed
+
+            isFavorited = !isFavorited;
+            el.dataset.isFavorited = isFavorited.toString();
+            el.src = `/images/${isFavorited ? "favor.png" : "unfavor.png"}`;
+
         } else {
             alert("Có lỗi xảy ra khi gửi yêu cầu.");
         }

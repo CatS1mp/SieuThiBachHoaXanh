@@ -295,7 +295,9 @@ VALUES
 (N'nguyen_quang_p', N'Nguyễn Quang P', N'nguyen.p@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345692', N'Customer'),
 (N'le_thi_q', N'Lê Thị Q', N'le.q@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345693', N'Customer'),
 (N'tran_thi_r', N'Trần Thị R', N'tran.r@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345694', N'Customer'),
-(N'ho_nguyen_s', N'Hồ Nguyễn S', N'ho.s@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345695', N'Customer');
+(N'ho_nguyen_s', N'Hồ Nguyễn S', N'ho.s@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345695', N'Customer'),
+(N'Lam', N'Nguyễn Ngọc Thanh Lâm', N'nguyenngocthanhlamk16@siu.edu.vn', N'4297f44b13955235245b2497399d7a93', N'0123456789', N'Admin');
+
 
 UPDATE Users SET Address = N'123 Đường ABC, Phường 1, Quận 1, TP.HCM' WHERE UserName = N'admin';
 UPDATE Users SET Address = N'456 Đường XYZ, Phường 2, Quận 2, TP.HCM' WHERE UserName = N'tranvanminh';
@@ -315,6 +317,7 @@ UPDATE Users SET Address = N'303 Đường NOP, Phường 15, Quận 3, TP.HCM' 
 UPDATE Users SET Address = N'404 Đường QRS, Phường 16, Quận 4, TP.HCM' WHERE UserName = N'nguyen_quang_p';
 UPDATE Users SET Address = N'505 Đường TUV, Phường 17, Quận 5, TP.HCM' WHERE UserName = N'le_thi_q';
 UPDATE Users SET Address = N'606 Đường WXY, Phường 18, Quận 6, TP.HCM' WHERE UserName = N'tran_thi_r';
+UPDATE Users SET Address = N'707 Đường ZAB, Phường 19, Quận 7, TP.HCM' WHERE UserName = N'ho_nguyen_s';
 UPDATE Users SET Address = N'707 Đường ZAB, Phường 19, Quận 7, TP.HCM' WHERE UserName = N'ho_nguyen_s';
 
 -- Dữ liệu cho bảng PaymentMethods

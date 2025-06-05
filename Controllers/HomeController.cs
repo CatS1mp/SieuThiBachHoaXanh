@@ -8,6 +8,8 @@ using Microsoft.Extensions.Configuration.UserSecrets;
 using System;
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+
 
 public class HomeController : Controller
 {
@@ -144,16 +146,15 @@ public class HomeController : Controller
 
         return View(product);
     }
-    [Authorize]
+
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddToFavorites(int productId, string returnUrl = null)
     {
-
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
-        Console.WriteLine($"Use1rID: {userId}");
         if (userId == -1)
         {
-            return RedirectToAction("Login", "User");
+            return Unauthorized();
         }
         var favorite = await _context.FavoriteProductList
             .FirstOrDefaultAsync(f => f.UserID == userId && f.ProductID == productId);
@@ -172,13 +173,7 @@ public class HomeController : Controller
         if (product != null)
             product.isFav = true;
 
-        // Optional: return status or redirect
-        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-        {
-            return Redirect(returnUrl); // if returning a full view
-        }
-
-        return Ok(); // if calling from JavaScript and only expect status
+        return Ok();
     }
 
     [HttpPost]
@@ -186,7 +181,6 @@ public class HomeController : Controller
     public async Task<IActionResult> RemoveFromFavorites(int productId, string returnUrl = null)
     {
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
-        Console.WriteLine($"Use2rID: {userId}");
 
         var favorite = await _context.FavoriteProductList
             .FirstOrDefaultAsync(f => f.UserID == userId && f.ProductID == productId);
@@ -200,12 +194,6 @@ public class HomeController : Controller
         var product = await _context.ProductList.FirstOrDefaultAsync(p => p.ProductID == productId);
         if (product != null)
             product.isFav = false;
-
-        // Optional: return status or redirect
-        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-        {
-            return Redirect(returnUrl); // if returning a full view
-        }
 
         return Ok(); // if calling from JavaScript and only expect status
     }
