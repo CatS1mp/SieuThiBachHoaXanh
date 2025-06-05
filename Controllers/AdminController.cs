@@ -487,9 +487,10 @@ namespace BachHoaXanh.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProductCreate(Product product, List<IFormFile> imageFiles)
+        public async Task<IActionResult> ProductCreate(Product product, List<IFormFile> imageFiles, List<int> newStockQuantities, List<DateTime> newStockExpirationDates)
         {
             product.CreatedAt = DateTime.Now;
+            product.Status = ProductStatus.KinhDoanh;
             _context.Add(product);
             await _context.SaveChangesAsync();
 
@@ -498,8 +499,22 @@ namespace BachHoaXanh.Controllers
                 ModelState.AddModelError("", "Failed to save the product.");
                 return View(product);
             }
-
-            string imagePath = Path.Combine(_environment.WebRootPath, "images");
+            // Handle stock entries
+            for (int i = 0; i < newStockQuantities.Count; i++)
+            {
+                if (newStockQuantities[i] > 0)
+                {
+                    var stock = new StockProduct
+                    {
+                        ProductID = product.ProductID,
+                        Quantity = newStockQuantities[i],
+                        ExpirationDate = newStockExpirationDates.ElementAtOrDefault(i),
+                        CreatedAt = DateTime.Now
+                    };
+                    _context.Add(stock);
+                }
+            }
+            string imagePath = Path.Combine(_environment.WebRootPath, "images","prods");
 
             if (!Directory.Exists(imagePath))
             {

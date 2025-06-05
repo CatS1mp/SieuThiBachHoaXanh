@@ -39,8 +39,7 @@ namespace BachHoaXanh.Models
         public int StockQuantity => Stocks?.Where(s => s.ExpirationDate >= DateTime.Now)
                                  .Sum(s => s.Quantity) ?? 0;
 
-        // Removed: [ForeignKey("ProductID")]
-        // Removed: public FavoriteProduct? product { get; set; }
+
     }
 
     [Table("FavoriteProducts")]

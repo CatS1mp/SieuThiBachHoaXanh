@@ -1,247 +1,629 @@
 ﻿@model IEnumerable<BachHoaXanh.Models.Product>
 @{
-    ViewData["Title"] = "Danh sách người dùng";
+    ViewData["Title"] = "Danh sách sản phẩm";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <style>
-    .table-container {
-        padding: 20px;
-        width: 90%;
-        margin: 20px auto;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    .admin-container {
+        background: linear-gradient(135deg, #f0f9f0 0%, #e8f5e8 100%);
+        min-height: 100vh;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .main-panel {
+        background: transparent;
+        padding: 0;
+    }
+
+    .admin-navbar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: none;
+        box-shadow: 0 2px 20px rgba(76, 175, 80, 0.1);
+        border-radius: 0 0 15px 15px;
+        margin-bottom: 2rem;
+        border-bottom: 3px solid #4caf50;
+    }
+
+    .navbar-brand {
+        color: #2e7d32 !important;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .navbar-nav a {
+        color: #2e7d32 !important;
+        font-weight: 600;
+    }
+
+    .content-wrapper {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
         background: white;
-        border-radius: 8px;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1);
+        border: 2px solid #e8f5e8;
+        transition: all 0.3s ease;
+        position: relative;
         overflow: hidden;
-        margin-bottom: 200px;
     }
 
-    /* Bảng chung */
-    #productTable {
-        width: 100%;
-        border-collapse: collapse;
-        border: 1px solid #c3c3c3;
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4caf50, #66bb6a);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(76, 175, 80, 0.2);
+            border-color: #4caf50;
+        }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: #4caf50;
     }
 
-        #productTable th {
-            color: #fff;
-            font-weight: bold;
-            background-color: #51835f;
-        }
-
-        #productTable th,
-        #productTable td {
-            padding: 10px;
-            text-align: left;
-            vertical-align: middle;
-            border: none;
-        }
-
-        #productTable .product-name {
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 300px;
-        }
-
-        /* Tùy chỉnh cột sản phẩm */
-        #productTable td:first-child {
-            display: flex;
-            align-items: center;
-        }
-
-        #productTable .product-img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            margin-right: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        #productTable .info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        #productTable .product-category {
-            color: #666;
-            font-size: 0.9em;
-        }
-
-    /* Trạng thái sản phẩm */
-    .text-success {
-        color: green;
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2e7d32;
+        margin-bottom: 0.25rem;
     }
 
-    .text-danger {
-        color: red;
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    .text-warning {
-        color: orange;
+    .table-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1);
+        border: 2px solid #e8f5e8;
     }
 
-    #productTable .btn {
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f1f8e9;
+    }
+
+    .table-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2e7d32;
         margin: 0;
     }
 
-    #productTable .btn {
-        transition: all 0.2s ease-in-out;
+    .btn-add-product {
+        background: #4caf50;
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
     }
 
-    #productTable .btn-success:hover {
-        background-color: #28a745;
-        color: #fff;
-        transform: scale(1.05);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        .btn-add-product:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
     }
 
-    #productTable .btn-danger:hover {
-        background-color: #dc3545;
-        color: #fff;
-        transform: scale(1.05);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        .custom-table thead th {
+            background: #4caf50;
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+            border: none;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .custom-table tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #f1f8e9;
+        }
+
+            .custom-table tbody tr:hover {
+                background: #f8fdf8;
+            }
+
+            .custom-table tbody tr:nth-child(even) {
+                background: #fafffe;
+            }
+
+                .custom-table tbody tr:nth-child(even):hover {
+                    background: #f1f8e9;
+                }
+
+        .custom-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border: none;
+            color: #333;
+        }
+
+    .product-cell {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
-    /* Styling for expired products */
-    .expired-row {
-        background-color: #ffe6e6 !important; /* Light red */
-        border-left: 4px solid #dc3545 !important; /* Red border */
+
+    .product-img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 2px solid #e8f5e8;
+        transition: all 0.3s ease;
     }
-    /* Styling for low stock products */
-    .low-stock-row {
-        background-color: #fff3cd !important; /* Light yellow */
-        border-left: 4px solid #ffc107 !important; /* Yellow border */
+
+        .product-img:hover {
+            border-color: #4caf50;
+            transform: scale(1.05);
+        }
+
+    .product-info {
+        display: flex;
+        flex-direction: column;
     }
-    /* Styling for low stock badge */
+
+    .product-name {
+        font-weight: 600;
+        color: #2e7d32;
+        margin-bottom: 0.25rem;
+    }
+
+    .product-category {
+        color: #666;
+        font-size: 0.85rem;
+    }
+
+    .stock-display {
+        font-weight: 600;
+        color: #4caf50;
+    }
+
+    .low-stock {
+        color: #ff9800;
+    }
+
+    .out-of-stock {
+        color: #f44336;
+    }
+
     .low-stock-badge {
-        background-color: #ffc107;
-        color: #333;
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-size: 0.9em;
-        margin-left: 5px;
+        background: #fff3e0;
+        color: #e65100;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 8px;
+        border: 1px solid #ffcc02;
     }
-    /* Ensure badges are readable */
-    .badge {
-        font-size: 0.9em;
-        padding: 5px 10px;
+
+    .price-display {
+        font-weight: 600;
+        color: #2e7d32;
+        background: #f1f8e9;
+        padding: 4px 8px;
+        border-radius: 6px;
+        display: inline-block;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-active {
+        background: #e8f5e8;
+        color: #2e7d32;
+        border: 2px solid #4caf50;
+    }
+
+    .status-waiting {
+        background: #ffebee;
+        color: #F4B400;
+        border: 2px solid #FDE079;
+    }
+
+    .status-inactive {
+        background: #ffebee;
+        color: #c62828;
+        border: 2px solid #f44336;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-edit {
+        background: #4caf50;
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .btn-edit:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+
+    .btn-delete {
+        background: #f44336;
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-delete:hover {
+            background: #d32f2f;
+            transform: translateY(-1px);
+        }
+
+    .expired-row {
+        background: #ffebee !important;
+        border-left: 4px solid #f44336 !important;
+    }
+
+    .low-stock-row {
+        background: #fff8e1 !important;
+        border-left: 4px solid #ff9800 !important;
+    }
+
+    .dataTables_wrapper {
+        margin-top: 1rem;
+    }
+
+    .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+        .dataTables_filter label {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .dataTables_filter input {
+            border: 2px solid #e8f5e8;
+            border-radius: 8px;
+            padding: 8px 16px;
+            margin-left: 8px;
+            transition: border-color 0.3s ease;
+        }
+
+            .dataTables_filter input:focus {
+                border-color: #4caf50;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+            }
+
+    .dataTables_info {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .dataTables_paginate .paginate_button {
+        border-radius: 6px !important;
+        margin: 0 2px !important;
+        border: 2px solid #e8f5e8 !important;
+        background: white !important;
+        color: #4caf50 !important;
+        font-weight: 600 !important;
+    }
+
+        .dataTables_paginate .paginate_button:hover {
+            background: #4caf50 !important;
+            color: white !important;
+            border-color: #4caf50 !important;
+        }
+
+        .dataTables_paginate .paginate_button.current {
+            background: #4caf50 !important;
+            color: white !important;
+            border-color: #4caf50 !important;
+        }
+
+    @@media (max-width: 768px) {
+        .content-wrapper
+
+    {
+        padding: 1rem;
+    }
+
+    .table-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .custom-table {
+        font-size: 0.8rem;
+    }
+
+        .custom-table thead th,
+        .custom-table tbody td {
+            padding: 0.5rem;
+        }
+
+    .product-cell {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
     }
 </style>
-<div class="main-panel">
-    <nav class="navbar navbar-default navbar-fixed">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="#">Quản lý sản phẩm</a>
+
+<div class="admin-container">
+    <div class="main-panel">
+        <nav class="navbar admin-navbar">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">
+                        <i class="fas fa-box"></i> Quản lý sản phẩm
+                    </a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="@Url.Action("Logout","User")">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất tài khoản
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a href="@Url.Action("Logout","User")">
-                            <p>Đăng xuất tài khoản</p>
-                        </a>
-                    </li>
-                    <li class="separator hidden-lg"></li>
-                </ul>
+        </nav>
+
+        <div class="content-wrapper">
+            <!-- Stats Cards -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-number" id="totalProducts">0</div>
+                    <div class="stat-label">Tổng sản phẩm</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-number" id="activeProducts">0</div>
+                    <div class="stat-label">Đang kinh doanh</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-number" id="lowStockProducts">0</div>
+                    <div class="stat-label">Sắp hết hàng</div>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3 class="table-title">
+                        <i class="fas fa-table"></i> Danh sách sản phẩm
+                    </h3>
+                    <a href="@Url.Action("ProductCreate","Admin")" class="btn-add-product">
+                        <i class="fas fa-plus"></i>
+                        Thêm sản phẩm
+                    </a>
+                </div>
+
+                <table id="productTable" class="custom-table" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-image"></i> Sản phẩm</th>
+                            <th><i class="fas fa-warehouse"></i> Số lượng SP</th>
+                            <th><i class="fas fa-tag"></i> Giá</th>
+                            <th><i class="fas fa-info-circle"></i> Trạng thái</th>
+                            <th><i class="fas fa-cogs"></i> Hoạt động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
         </div>
-    </nav>
-    <div class="table-container">
-        <a href="@Url.Action("ProductCreate","Admin")" type="submit" class="btn btn-info btn-fill pull-left" style="margin-bottom: 10px;">Thêm sản phẩm</a>
-
-        <table id="productTable" class="table mt-3" style="width:100%">
-            <thead>
-                <tr>
-                    <th>Sản phẩm</th>
-                    <th>Số lượng SP</th>
-                    <th>Giá</th>
-                    <th>Trạng thái</th>
-                    <th>Hoạt động</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
     </div>
 </div>
 
 @section scripts {
     <script>
         $(document).ready(function () {
-            $('#productTable').DataTable({
+            const table = $('#productTable').DataTable({
                 ajax: {
                     url: '/api/products',
-                    dataSrc: 'data'
+                    dataSrc: 'data',
+                    complete: function(data) {
+                        updateStats(data.responseJSON.data);
+                    }
                 },
                 columns: [
                     {
                         data: 'productImageUrl',
                         render: function (data, type, row) {
-                            let imageUrl = data;
-                            return `<img src="${imageUrl}" alt="${row.productName}" class="product-img">
-                                            <div class="info">
-                                                <div class="product-name">${row.productName}</div>
-                                                <div class="product-category">${row.subCategoryName}</div>
-                                            </div>`;
+                            let imageUrl = data || '/placeholder.svg?height=60&width=60';
+                            return `<div class="product-cell">
+                                        <img src="${imageUrl}" alt="${row.productName}" class="product-img">
+                                        <div class="product-info">
+                                            <div class="product-name">${row.productName}</div>
+                                            <div class="product-category">${row.subCategoryName || 'Chưa phân loại'}</div>
+                                        </div>
+                                    </div>`;
                         }
                     },
                     {
                         data: 'stock',
-                        render: function (data) {
-                            let stockDisplay = data;
-                            let lowStockTag = data < 10 ? '<span class="low-stock-badge">Low Stock</span>' : '';
-                            return `${stockDisplay} ${lowStockTag}`;
+                        render: function (data, type, row) {
+                            let stockClass = 'stock-display';
+                            if (data === 0) stockClass += ' out-of-stock';
+                            else if (data < 10) stockClass += ' low-stock';
+
+                            let lowStockBadge = data < 10 && data > 0 ? '<span class="low-stock-badge">Sắp hết</span>' : '';
+                            let outOfStockBadge = data === 0 ? '<span class="low-stock-badge" style="background: #ffebee; color: #c62828; border-color: #f44336;">Hết hàng</span>' : '';
+
+                            return `<span class="${stockClass}">${data}</span> ${lowStockBadge}${outOfStockBadge}`;
                         }
                     },
-                    { data: 'price' },
+                    {
+                        data: 'price',
+                        render: function (data) {
+                            return `<span class="price-display">${data}</span>`;
+                        }
+                    },
                     {
                         data: 'status',
                         render: function (data) {
-                            let badgeClass = data === "Kinh doanh" ? "bg-success" : "bg-danger";
-                            return `<span class="badge badge-sm ${badgeClass}">${data}</span>`;
+                            let statusClass = data === "Kinh doanh" ? "status-active"
+                                            : data === "Tạm hết hàng" ? "status-waiting"
+                                            : "status-inactive";
+                            let statusText = data === "Kinh doanh" ? "Đang bán"
+                                            : data === "Tạm hết hàng" ? "Đợi nhập thêm"
+                                            : "Ngừng bán";
+                            return `<span class="status-badge ${statusClass}">${statusText}</span>`;
                         }
                     },
                     {
                         data: 'productID',
                         render: function (data) {
-                            return `<a href="/admin/ProductEdit/${data}" class="btn btn-success btn-xs dt-edit" style="margin-right:16px;">
-                                                <i class="fa-regular fa-pen-to-square"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-danger btn-xs dt-delete" onclick="deleteProduct('${data}')">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>`;
+                            return `<div class="action-buttons">
+                                        <a href="/admin/ProductEdit/${data}" class="btn-edit" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn-delete" onclick="deleteProduct('${data}')" title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>`;
                         }
                     }
                 ],
                 language: {
                     emptyTable: "Không có dữ liệu nào trong bảng",
-                    search: "Tìm kiếm:",
+                    search: "🔍 Tìm kiếm:",
                     lengthMenu: "Hiển thị <b>_MENU_</b> mục",
-                    info: "Hiển thị <b>_START_</b> đến <b>_END_</b> của <b>_TOTAL_ sản phẩm</b>",
+                    info: "Hiển thị <b>_START_</b> đến <b>_END_</b> của <b>_TOTAL_</b> sản phẩm",
                     infoEmpty: "Hiển thị <b>0</b> đến <b>0</b> của <b>0</b> sản phẩm",
                     infoFiltered: "(được lọc từ <b>_MAX_</b> sản phẩm)",
                     zeroRecords: "Không tìm thấy kết quả nào phù hợp",
                     paginate: {
-                        first: "Đầu",
-                        last: "Cuối",
-                        next: "Tiếp",
-                        previous: "Trước"
+                        first: "⏮️ Đầu",
+                        last: "⏭️ Cuối",
+                        next: "▶️ Tiếp",
+                        previous: "◀️ Trước"
+                    }
+                },
+                createdRow: function(row, data, dataIndex) {
+                    if (data.stock === 0) {
+                        $(row).addClass('expired-row');
+                    } else if (data.stock < 10) {
+                        $(row).addClass('low-stock-row');
                     }
                 }
             });
         });
 
+        function updateStats(products) {
+            const totalProducts = products.length;
+            const activeProducts = products.filter(p => p.status === "Kinh doanh").length;
+            const lowStockProducts = products.filter(p => p.stock < 10).length;
+
+            $('#totalProducts').text(totalProducts);
+            $('#activeProducts').text(activeProducts);
+            $('#lowStockProducts').text(lowStockProducts);
+        }
+
         function deleteProduct(productID) {
-            if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
+            if (confirm("🗑️ Bạn có chắc chắn muốn xóa sản phẩm này?\n\nHành động này không thể hoàn tác!")) {
+                const deleteBtn = event.target.closest('button');
+                const originalContent = deleteBtn.innerHTML;
+                deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                deleteBtn.disabled = true;
+
                 $.ajax({
                     url: `/api/products/${productID}`,
                     type: 'DELETE',
                     success: function () {
+                        alert("✅ Xóa sản phẩm thành công!");
                         $('#productTable').DataTable().ajax.reload();
                     },
                     error: function () {
-                        alert("Có lỗi xảy ra, vui lòng thử lại.");
+                        deleteBtn.innerHTML = originalContent;
+                        deleteBtn.disabled = false;
+                        alert("❌ Có lỗi xảy ra, vui lòng thử lại.");
                     }
                 });
             }

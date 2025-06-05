@@ -3,20 +3,307 @@
     ViewData["Title"] = "FaceAuth";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
-<h2>Đăng ký khuôn mặt cho Admin</h2>
-<video id="video" width="320" height="240" autoplay></video>
-<canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
-<br />
-<button id="capture" class="btn btn-primary">Chụp ảnh</button>
-<button id="cancel" class="btn btn-secondary">Hủy</button>
+
+<style>
+    .face-auth-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+        padding: 2rem 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .auth-card {
+        max-width: 500px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(76, 175, 80, 0.1);
+        padding: 2.5rem;
+        text-align: center;
+        border: 2px solid #e8f5e8;
+    }
+
+    .auth-title {
+        color: #2e7d32;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        text-shadow: 0 2px 4px rgba(46, 125, 50, 0.1);
+    }
+
+    .video-container {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(76, 175, 80, 0.2);
+        border: 3px solid #4caf50;
+    }
+
+    #video {
+        display: block;
+        width: 320px;
+        height: 240px;
+        object-fit: cover;
+        background: #f1f8e9;
+    }
+
+    .video-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border: 2px dashed #4caf50;
+        margin: 10px;
+        border-radius: 10px;
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+        .video-overlay::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border: 3px solid #4caf50;
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+
+    #canvas {
+        display: none;
+    }
+
+    .button-container {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+    }
+
+    .btn-custom {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        min-width: 120px;
+    }
+
+    .btn-capture {
+        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+
+        .btn-capture:hover {
+            background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+    .btn-cancel {
+        background: linear-gradient(135deg, #81c784 0%, #66bb6a 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(129, 199, 132, 0.3);
+    }
+
+        .btn-cancel:hover {
+            background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(129, 199, 132, 0.4);
+        }
+
+    .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background: #4caf50;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%
+
+    {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+
+    }
+
+    .instructions {
+        background: #f1f8e9;
+        border-left: 4px solid #4caf50;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 0 8px 8px 0;
+        color: #2e7d32;
+        font-size: 0.9rem;
+        text-align: left;
+    }
+
+    .loading-spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ffffff;
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 8px;
+    }
+
+    @@keyframes spin {
+        0%
+
+    {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+
+    }
+
+    .process-steps {
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: #f1f8e9;
+        border-radius: 10px;
+        display: none;
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        color: #2e7d32;
+        opacity: 0.7;
+    }
+
+        .step.active {
+            opacity: 1;
+            font-weight: 600;
+        }
+
+    .step-icon {
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+
+    @@media (max-width: 768px) {
+        .auth-card
+
+    {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    #video {
+        width: 280px;
+        height: 210px;
+    }
+
+    .button-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn-custom {
+        width: 100%;
+        max-width: 200px;
+    }
+
+    }
+</style>
+
+<div class="face-auth-container">
+    <div class="auth-card">
+        <h2 class="auth-title">
+            <span class="status-indicator"></span>
+            Đăng ký khuôn mặt cho Admin
+        </h2>
+
+        <div class="instructions">
+            <strong>Hướng dẫn:</strong> Đặt khuôn mặt vào khung hình và nhấn "Chụp ảnh" để đăng ký. Đảm bảo ánh sáng đủ và khuôn mặt rõ ràng.
+        </div>
+
+        <div class="video-container">
+            <video id="video" autoplay></video>
+            <div class="video-overlay"></div>
+        </div>
+
+        <canvas id="canvas" width="320" height="240"></canvas>
+
+        <div class="process-steps" id="processSteps">
+            <div class="step" id="step1"><span class="step-icon">📸</span> Đang chụp ảnh từ webcam...</div>
+            <div class="step" id="step2"><span class="step-icon">🧪</span> Đang chuyển ảnh sang định dạng blob...</div>
+            <div class="step" id="step3"><span class="step-icon">📦</span> Chuẩn bị gửi dữ liệu đến server...</div>
+            <div class="step" id="step4"><span class="step-icon">📬</span> Đã gửi xong, đang chờ phản hồi...</div>
+        </div>
+
+        <div class="button-container">
+            <button id="capture" class="btn-custom btn-capture">
+                <span class="loading-spinner"></span>
+                <span class="btn-text">Chụp ảnh</span>
+            </button>
+            <button id="cancel" class="btn-custom btn-cancel">Hủy</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const captureButton = document.getElementById('capture');
     const cancelButton = document.getElementById('cancel');
+    const loadingSpinner = document.querySelector('.loading-spinner');
+    const btnText = document.querySelector('.btn-text');
+    const processSteps = document.getElementById('processSteps');
+    const steps = document.querySelectorAll('.step');
+
+    // Configure toastr
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "timeOut": "3000"
+    };
+
+    // Function to update step status
+    function updateStep(stepNumber) {
+        steps.forEach((step, index) => {
+            if (index + 1 === stepNumber) {
+                step.classList.add('active');
+            } else {
+                step.classList.remove('active');
+            }
+        });
+    }
 
     navigator.mediaDevices.getUserMedia({ video: true })
         .then(stream => {
@@ -25,26 +312,43 @@
         .catch(err => {
             toastr.error('Không truy cập được webcam: ' + err);
         });
-            captureButton.addEventListener('click', async () => {
-        toastr.info('📸 Đang chụp ảnh từ webcam...');
-        canvas.getContext('2d').drawImage(video, 0, 0, 320, 240);
 
-        toastr.info('🧪 Đang chuyển ảnh sang định dạng blob...');
-        const imageData = canvas.toDataURL('image/jpeg');
-        const blob = await (await fetch(imageData)).blob();
-
-        toastr.info('📦 Chuẩn bị gửi dữ liệu đến server...');
-        const formData = new FormData();
-        formData.append('image', blob, 'faceImage.jpg');
-        formData.append('userId', @Model);
+    captureButton.addEventListener('click', async () => {
+        // Show loading state
+        loadingSpinner.style.display = 'inline-block';
+        btnText.textContent = 'Đang xử lý...';
+        captureButton.disabled = true;
+        processSteps.style.display = 'block';
 
         try {
+            // Step 1: Capture image
+            updateStep(1);
+            toastr.info('📸 Đang chụp ảnh từ webcam...');
+            canvas.getContext('2d').drawImage(video, 0, 0, 320, 240);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Small delay for visual feedback
+
+            // Step 2: Convert to blob
+            updateStep(2);
+            toastr.info('🧪 Đang chuyển ảnh sang định dạng blob...');
+            const imageData = canvas.toDataURL('image/jpeg');
+            const blob = await (await fetch(imageData)).blob();
+            await new Promise(resolve => setTimeout(resolve, 500)); // Small delay for visual feedback
+
+            // Step 3: Prepare data
+            updateStep(3);
+            toastr.info('📦 Chuẩn bị gửi dữ liệu đến server...');
+            const formData = new FormData();
+            formData.append('image', blob, 'faceImage.jpg');
+            formData.append('userId', @Model);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Small delay for visual feedback
+
+            // Step 4: Send to server
+            updateStep(4);
+            toastr.info('📬 Đã gửi xong, đang chờ phản hồi...');
             const response = await fetch('/Auth/RegisterFace', {
                 method: 'POST',
                 body: formData
             });
-
-            toastr.info('📬 Đã gửi xong, đang chờ phản hồi...');
 
             const result = await response.json();
 
@@ -54,9 +358,14 @@
             } else {
                 toastr.warning('⚠️ ' + result.message);
             }
-        } catch (err) {
-            toastr.error('❌ Lỗi khi gửi yêu cầu: ' + err);
-            console.error(err);
+        } catch (error) {
+            toastr.error('❌ Lỗi khi gửi yêu cầu: ' + error);
+            console.error(error);
+        } finally {
+            // Reset button state
+            loadingSpinner.style.display = 'none';
+            btnText.textContent = 'Chụp ảnh';
+            captureButton.disabled = false;
         }
     });
 

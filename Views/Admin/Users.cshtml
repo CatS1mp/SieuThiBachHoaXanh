@@ -4,104 +4,526 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="main-panel">
-    <nav class="navbar navbar-default navbar-fixed">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="#">Quản lý người dùng</a>
+<style>
+    .admin-container {
+        background: linear-gradient(135deg, #f0f9f0 0%, #e8f5e8 100%);
+        min-height: 100vh;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .main-panel {
+        background: transparent;
+        padding: 0;
+    }
+
+    .admin-navbar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: none;
+        box-shadow: 0 2px 20px rgba(76, 175, 80, 0.1);
+        border-radius: 0 0 15px 15px;
+        margin-bottom: 2rem;
+        border-bottom: 3px solid #4caf50;
+    }
+
+    .navbar-brand {
+        color: #2e7d32 !important;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .content-wrapper {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1);
+        border: 2px solid #e8f5e8;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4caf50, #66bb6a);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(76, 175, 80, 0.2);
+            border-color: #4caf50;
+        }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: #4caf50;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2e7d32;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1);
+        border: 2px solid #e8f5e8;
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f1f8e9;
+    }
+
+    .table-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2e7d32;
+        margin: 0;
+    }
+
+    .btn-add-user {
+        background: #4caf50;
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+    }
+
+        .btn-add-user:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .custom-table thead th {
+            background: #4caf50;
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+            border: none;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .custom-table tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #f1f8e9;
+        }
+
+            .custom-table tbody tr:hover {
+                background: #f8fdf8;
+            }
+
+            .custom-table tbody tr:nth-child(even) {
+                background: #fafffe;
+            }
+
+                .custom-table tbody tr:nth-child(even):hover {
+                    background: #f1f8e9;
+                }
+
+        .custom-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border: none;
+            color: #333;
+        }
+
+    .role-badge {
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 2px solid;
+    }
+
+    .role-admin {
+        background: #fff3e0;
+        color: #e65100;
+        border-color: #ffcc02;
+    }
+
+    .role-user {
+        background: #e8f5e8;
+        color: #2e7d32;
+        border-color: #4caf50;
+    }
+
+    .role-manager {
+        background: #f3e5f5;
+        color: #7b1fa2;
+        border-color: #9c27b0;
+    }
+
+    .rank-badge {
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: #f1f8e9;
+        color: #2e7d32;
+        border: 2px solid #81c784;
+    }
+
+    .points-display {
+        font-weight: 600;
+        color: #4caf50;
+        background: #f1f8e9;
+        padding: 4px 8px;
+        border-radius: 8px;
+        display: inline-block;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-edit {
+        background: #4caf50;
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .btn-edit:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+
+    .btn-delete {
+        background: #f44336;
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-delete:hover {
+            background: #d32f2f;
+            transform: translateY(-1px);
+        }
+
+    .dataTables_wrapper {
+        margin-top: 1rem;
+    }
+
+    .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+        .dataTables_filter label {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .dataTables_filter input {
+            border: 2px solid #e8f5e8;
+            border-radius: 8px;
+            padding: 8px 16px;
+            margin-left: 8px;
+            transition: border-color 0.3s ease;
+        }
+
+            .dataTables_filter input:focus {
+                border-color: #4caf50;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+            }
+
+    .dataTables_info {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .dataTables_paginate .paginate_button {
+        border-radius: 6px !important;
+        margin: 0 2px !important;
+        border: 2px solid #e8f5e8 !important;
+        background: white !important;
+        color: #4caf50 !important;
+        font-weight: 600 !important;
+    }
+
+        .dataTables_paginate .paginate_button:hover {
+            background: #4caf50 !important;
+            color: white !important;
+            border-color: #4caf50 !important;
+        }
+
+        .dataTables_paginate .paginate_button.current {
+            background: #4caf50 !important;
+            color: white !important;
+            border-color: #4caf50 !important;
+        }
+
+    .user-id {
+        font-weight: 700;
+        color: #2e7d32;
+        background: #f1f8e9;
+        padding: 4px 8px;
+        border-radius: 6px;
+        display: inline-block;
+    }
+
+    @@media (max-width: 768px) {
+        .content-wrapper
+
+    {
+        padding: 1rem;
+    }
+
+    .table-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .custom-table {
+        font-size: 0.8rem;
+    }
+
+        .custom-table thead th,
+        .custom-table tbody td {
+            padding: 0.5rem;
+        }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    }
+</style>
+
+<div class="admin-container">
+    <div class="main-panel">
+        <nav class="navbar admin-navbar navbar">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">
+                        <i class="fas fa-users"></i> Quản lý người dùng
+                    </a>
+                </div>
             </div>
-            <div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a href="@Url.Action("Logout","User")">
-                            <p>Đăng xuất tài khoản</p>
-                        </a>
-                    </li>
-                    <li class="separator hidden-lg"></li>
-                </ul>
+        </nav>
+
+        <div class="content-wrapper">
+            <!-- Stats Cards -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number">@Model.Count()</div>
+                    <div class="stat-label">Tổng người dùng</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="stat-number">@Model.Count(u => u.Role == "Admin")</div>
+                    <div class="stat-label">Quản trị viên</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-number">@Model.Sum(u => u.Points)</div>
+                    <div class="stat-label">Tổng điểm tích lũy</div>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3 class="table-title">
+                        <i class="fas fa-table"></i> Danh sách người dùng
+                    </h3>
+                    <a href="@Url.Action("UserAdd", "Admin")" class="btn-add-user">
+                        <i class="fas fa-plus"></i>
+                        Thêm tài khoản mới
+                    </a>
+                </div>
+
+                <table id="productTable" class="custom-table" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag"></i> ID</th>
+                            <th><i class="fas fa-user"></i> UserName</th>
+                            <th><i class="fas fa-id-card"></i> Họ & Tên</th>
+                            <th><i class="fas fa-envelope"></i> Email</th>
+                            <th><i class="fas fa-phone"></i> Số điện thoại</th>
+                            <th><i class="fas fa-shield-alt"></i> Quyền</th>
+                            <th><i class="fas fa-star"></i> Điểm tích lũy</th>
+                            <th><i class="fas fa-crown"></i> Rank</th>
+                            <th><i class="fas fa-cogs"></i> Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="user-id">#@user.UserID</span>
+                                </td>
+                                <td><strong>@user.UserName</strong></td>
+                                <td>@user.FullName</td>
+                                <td>@user.Email</td>
+                                <td>@user.Phone</td>
+                                <td>
+                                    <span class="role-badge role-@user.Role.ToLower()">
+                                        @user.Role
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="points-display">
+                                        <i class="fas fa-coins"></i> @user.Points
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="rank-badge">
+                                        <i class="fas fa-medal"></i> @user.Rank
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="@Url.Action("UserEdit", "Admin", new { userName = user.UserName })" class="btn-edit" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn-delete" onclick="deleteUser('@user.UserName')" title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
-    </nav>
-    <div class="table-container">
-        <a href="@Url.Action("UserAdd", "Admin")" type="submit" class="btn btn-info btn-fill pull-left" style="margin-bottom: 10px;">Thêm tài khoản mới</a>
-        <table id="productTable" class="table mt-3" style="width:100%">
-            <thead>
-                <tr class="">
-                    <th>#ID</th>
-                    <th>UserName</th>
-                    <th>Họ & Tên</th>
-                    <th>Email</th>
-                    <th>Số điện thoại</th>
-                    <th>Quyền</th>
-                    <th>Điểm tích lũy</th>
-                    <th>Rank</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var user in Model)
-                {
-                    <tr>
-                        <td>@user.UserID</td>
-                        <td>@user.UserName</td>
-                        <td>@user.FullName</td>
-                        <td>@user.Email</td>
-                        <td>@user.Phone</td>
-                        <td>@user.Role</td>
-                        <td>@user.Points</td>
-                        <td>@user.Rank</td>
-                        <td>
-                            <a href="@Url.Action("UserEdit", "Admin", new { userName = user.UserName })" class="btn btn-success btn-xs dt-edit" style="margin-right:16px;">
-                                <i class="fa-regular fa-pen-to-square"></i>
-                            </a>
-                            <button type="button" class="btn btn-danger btn-xs dt-delete" onclick="deleteUser('@user.UserName')">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
     </div>
+</div>
 
-    @section scripts {
-        <script>
-            $(document).ready(function () {
-                $('#productTable').DataTable({
-                    language: {
-                        emptyTable: "Không có dữ liệu nào trong bảng",
-                        search: "Tìm kiếm:",
-                        lengthMenu: "Hiển thị <b>_MENU_</b> mục",
-                        info: "Hiển thị <b>_START_</b> đến <b>_END_</b> của <b>_TOTAL_ sản phẩm</b>",
-                        infoEmpty: "Hiển thị <b>0</b> đến <b>0</b> của <b>0</b> sản phẩm",
-                        infoFiltered: "(được lọc từ <b>_MAX_</b> sản phẩm)",
-                        zeroRecords: "Không tìm thấy kết quả nào phù hợp",
-                        paginate: {
-                            first: "Đầu",
-                            last: "Cuối",
-                            next: "Tiếp",
-                            previous: "Trước"
-                        }
-                    },
-                    paging: true,
-                    pageLength: 10,
-                    lengthChange: false,
-                });
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('#productTable').DataTable({
+                language: {
+                    emptyTable: "Không có dữ liệu nào trong bảng",
+                    search: "🔍 Tìm kiếm:",
+                    lengthMenu: "Hiển thị <b>_MENU_</b> mục",
+                    info: "Hiển thị <b>_START_</b> đến <b>_END_</b> của <b>_TOTAL_</b> người dùng",
+                    infoEmpty: "Hiển thị <b>0</b> đến <b>0</b> của <b>0</b> người dùng",
+                    infoFiltered: "(được lọc từ <b>_MAX_</b> người dùng)",
+                    zeroRecords: "Không tìm thấy kết quả nào phù hợp",
+                    paginate: {
+                        first: "⏮️ Đầu",
+                        last: "⏭️ Cuối",
+                        next: "▶️ Tiếp",
+                        previous: "◀️ Trước"
+                    }
+                },
+                paging: true,
+                pageLength: 10,
+                lengthChange: false,
+                responsive: true,
+                order: [[0, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: -1 }
+                ]
             });
+        });
 
-            function deleteUser(username) {
-                if (confirm("Bạn có chắc chắn muốn xóa tài khoản này?")) {
-                    $.ajax({
-                        url: `/api/user/${username}`,
-                        type: 'DELETE',
-                        success: function () {
-                            location.reload();
-                        },
-                        error: function () {
-                            alert("Có lỗi xảy ra, vui lòng thử lại.");
-                        }
-                    });
-                }
+        function deleteUser(username) {
+            if (confirm("🗑️ Bạn có chắc chắn muốn xóa tài khoản này?\n\nHành động này không thể hoàn tác!")) {
+                const deleteBtn = event.target.closest('button');
+                const originalContent = deleteBtn.innerHTML;
+                deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                deleteBtn.disabled = true;
+
+                $.ajax({
+                    url: `/api/user/${username}`,
+                    type: 'DELETE',
+                    success: function () {
+                        alert("✅ Xóa tài khoản thành công!");
+                        location.reload();
+                    },
+                    error: function () {
+                        deleteBtn.innerHTML = originalContent;
+                        deleteBtn.disabled = false;
+                        alert("❌ Có lỗi xảy ra, vui lòng thử lại.");
+                    }
+                });
             }
-        </script>
-    }
+        }
+    </script>
+}

@@ -5,118 +5,510 @@
 }
 
 <style>
-    .badge {
-        padding: 0.5em;
-        font-size: 1em;
-        border-radius: 0.25em;
+    .admin-container {
+        background: linear-gradient(135deg, #f0f9f0 0%, #e8f5e8 100%);
+        min-height: 100vh;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .main-panel {
+        background: transparent;
+        padding: 0;
+    }
+
+    .admin-navbar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: none;
+        box-shadow: 0 2px 20px rgba(76, 175, 80, 0.1);
+        border-radius: 0 0 15px 15px;
+        margin-bottom: 2rem;
+        border-bottom: 3px solid #4caf50;
+    }
+
+    .navbar-brand {
+        color: #2e7d32 !important;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .navbar-nav a {
+        color: #2e7d32 !important;
+        font-weight: 600;
+    }
+
+    .content-wrapper {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1);
+        border: 2px solid #e8f5e8;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4caf50, #66bb6a);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(76, 175, 80, 0.2);
+            border-color: #4caf50;
+        }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: #4caf50;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2e7d32;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1);
+        border: 2px solid #e8f5e8;
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f1f8e9;
+    }
+
+    .table-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2e7d32;
+        margin: 0;
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .custom-table thead th {
+            background: #4caf50;
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+            border: none;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .custom-table tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #f1f8e9;
+        }
+
+            .custom-table tbody tr:hover {
+                background: #f8fdf8;
+            }
+
+            .custom-table tbody tr:nth-child(even) {
+                background: #fafffe;
+            }
+
+                .custom-table tbody tr:nth-child(even):hover {
+                    background: #f1f8e9;
+                }
+
+        .custom-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border: none;
+            color: #333;
+        }
+
+    .user-id {
+        font-weight: 700;
+        color: #2e7d32;
+        background: #f1f8e9;
+        padding: 4px 8px;
+        border-radius: 6px;
+        display: inline-block;
+    }
+
+    .username {
+        font-weight: 600;
+        color: #2e7d32;
+    }
+
+    .auth-time {
+        font-weight: 500;
+        color: #666;
+        font-family: 'Courier New', monospace;
+        background: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 2px solid;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .status-success {
+        background: #e8f5e8;
+        color: #2e7d32;
+        border-color: #4caf50;
+    }
+
+    .status-failed {
+        background: #ffebee;
+        color: #c62828;
+        border-color: #f44336;
+    }
+
+    .status-unknown {
+        background: #f5f5f5;
+        color: #616161;
+        border-color: #9e9e9e;
+    }
+
+    .btn-view-details {
+        background: #4caf50;
+        border: none;
         color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
     }
 
-    .badge-success {
-        background-color: #28a745;
+        .btn-view-details:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+
+    .dataTables_wrapper {
+        margin-top: 1rem;
     }
 
-    .badge-danger {
-        background-color: #dc3545;
+    .dataTables_filter {
+        margin-bottom: 1rem;
     }
 
-    .badge-secondary {
-        background-color: #6c757d;
+        .dataTables_filter label {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .dataTables_filter input {
+            border: 2px solid #e8f5e8;
+            border-radius: 8px;
+            padding: 8px 16px;
+            margin-left: 8px;
+            transition: border-color 0.3s ease;
+        }
+
+            .dataTables_filter input:focus {
+                border-color: #4caf50;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+            }
+
+    .dataTables_info {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .dataTables_paginate .paginate_button {
+        border-radius: 6px !important;
+        margin: 0 2px !important;
+        border: 2px solid #e8f5e8 !important;
+        background: white !important;
+        color: #4caf50 !important;
+        font-weight: 600 !important;
+    }
+
+        .dataTables_paginate .paginate_button:hover {
+            background: #4caf50 !important;
+            color: white !important;
+            border-color: #4caf50 !important;
+        }
+
+        .dataTables_paginate .paginate_button.current {
+            background: #4caf50 !important;
+            color: white !important;
+            border-color: #4caf50 !important;
+        }
+
+    .success-rate {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #4caf50;
+    }
+
+    .failed-rate {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #f44336;
+    }
+
+    @@media (max-width: 768px) {
+        .content-wrapper
+
+    {
+        padding: 1rem;
+    }
+
+    .table-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .custom-table {
+        font-size: 0.8rem;
+    }
+
+        .custom-table thead th,
+        .custom-table tbody td {
+            padding: 0.5rem;
+        }
+
+    .auth-time {
+        font-size: 0.75rem;
+    }
+
     }
 </style>
 
-<div class="main-panel">
-    <nav class="navbar navbar-default navbar-fixed">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="#">Quản lý xác thực khuôn mặt</a>
+<div class="admin-container">
+    <div class="main-panel">
+        <nav class="navbar admin-navbar">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">
+                        <i class="fas fa-user-shield"></i> Quản lý xác thực khuôn mặt
+                    </a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="@Url.Action("Logout", "User")">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất tài khoản
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a href="@Url.Action("Logout", "User")">
-                            <p>Đăng xuất tài khoản</p>
-                        </a>
-                    </li>
-                    <li class="separator hidden-lg"></li>
-                </ul>
+        </nav>
+
+        <div class="content-wrapper">
+            <!-- Stats Cards -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-number">@Model.Count()</div>
+                    <div class="stat-label">Tổng lần xác thực</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-number">@Model.Count(a => a.Result == "Success")</div>
+                    <div class="stat-label">Thành công</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-number">@Model.Count(a => a.Result == "Failed")</div>
+                    <div class="stat-label">Thất bại</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-number">
+                        @{
+                            var total = Model.Count();
+                            var success = Model.Count(a => a.Result == "Success");
+                            var rate = total > 0 ? Math.Round((double)success / total * 100, 1) : 0;
+                        }
+                        @rate%
+                    </div>
+                    <div class="stat-label">Tỷ lệ thành công</div>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3 class="table-title">
+                        <i class="fas fa-table"></i> Lịch sử xác thực khuôn mặt
+                    </h3>
+                </div>
+
+                <table id="faceAuthTable" class="custom-table" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag"></i> User ID</th>
+                            <th><i class="fas fa-user"></i> Username</th>
+                            <th><i class="fas fa-clock"></i> Thời gian xác thực</th>
+                            <th><i class="fas fa-info-circle"></i> Trạng thái</th>
+                            <th><i class="fas fa-cogs"></i> Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var auth in Model)
+                        {
+                            // Define badge class based on auth status
+                            string badgeClass;
+                            string statusText;
+                            string statusIcon;
+
+                            switch (auth.Result)
+                            {
+                                case "Success":
+                                    badgeClass = "status-success";
+                                    statusText = "Thành công";
+                                    statusIcon = "fas fa-check";
+                                    break;
+                                case "Failed":
+                                    badgeClass = "status-failed";
+                                    statusText = "Thất bại";
+                                    statusIcon = "fas fa-times";
+                                    break;
+                                default:
+                                    badgeClass = "status-unknown";
+                                    statusText = "Không xác định";
+                                    statusIcon = "fas fa-question";
+                                    break;
+                            }
+
+                            <tr>
+                                <td>
+                                    <span class="user-id">#@auth.UserID</span>
+                                </td>
+                                <td>
+                                    <span class="username">@auth.User.UserName</span>
+                                </td>
+                                <td>
+                                    <span class="auth-time">@auth.AttemptTime.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                                </td>
+                                <td>
+                                    <span class="status-badge @badgeClass">
+                                        <i class="@statusIcon"></i>
+                                        @statusText
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="@Url.Action("FaceAuthDetail", "Admin", new { id = auth.Id })" class="btn-view-details">
+                                        <i class="fas fa-eye"></i>
+                                        Xem chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
-    </nav>
-    <div class="table-container">
-        <table id="faceAuthTable" class="table mt-3" style="width:100%">
-            <thead>
-                <tr>
-                    <th>User ID</th>
-                    <th>Username</th>
-                    <th>Thời gian xác thực</th>
-                    <th>Trạng thái</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var auth in Model)
-                {
-                    // Define badge class based on auth status
-                    string badgeClass;
-                    string statusText;
-
-                    switch (auth.Result)
-                    {
-                        case "Success":
-                            badgeClass = "badge-success";
-                            statusText = "Thành công";
-                            break;
-                        case "Failed":
-                            badgeClass = "badge-danger";
-                            statusText = "Thất bại";
-                            break;
-                        default:
-                            badgeClass = "badge-secondary";
-                            statusText = "Không xác định";
-                            break;
-                    }
-
-                    <tr>
-                        <td>@auth.UserID</td>
-                        <td>@auth.User.UserName</td>
-                        <td>@auth.AttemptTime</td>
-                        <td>
-                            <span class="badge @badgeClass">@statusText</span>
-                        </td>
-                        <td>
-                            <a href="@Url.Action("FaceAuthDetail", "Admin", new { id = auth.Id })" class="btn btn-secondary mr-2 view-details-btn">Xem chi tiết</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
     </div>
-
-    @section scripts {
-        <script>
-            $(document).ready(function () {
-                $('#faceAuthTable').DataTable({
-                    language: {
-                        emptyTable: "Không có dữ liệu nào trong bảng",
-                        search: "Tìm kiếm:",
-                        lengthMenu: "Hiển thị <b>_MENU_</b> mục",
-                        info: "Hiển thị <b>_START_</b> đến <b>_END_</b> của <b>_TOTAL_</b> bản ghi",
-                        infoEmpty: "Hiển thị <b>0</b> đến <b>0</b> của <b>0</b> bản ghi",
-                        infoFiltered: "(được lọc từ <b>_MAX_</b> bản ghi)",
-                        zeroRecords: "Không tìm thấy kết quả nào phù hợp",
-                        paginate: {
-                            first: "Đầu",
-                            last: "Cuối",
-                            next: "Tiếp",
-                            previous: "Trước"
-                        }
-                    },
-                    paging: true,
-                    pageLength: 10,
-                    lengthChange: false,
-                });
-            });
-        </script>
-    }
 </div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('#faceAuthTable').DataTable({
+                language: {
+                    emptyTable: "Không có dữ liệu nào trong bảng",
+                    search: "🔍 Tìm kiếm:",
+                    lengthMenu: "Hiển thị <b>_MENU_</b> mục",
+                    info: "Hiển thị <b>_START_</b> đến <b>_END_</b> của <b>_TOTAL_</b> bản ghi",
+                    infoEmpty: "Hiển thị <b>0</b> đến <b>0</b> của <b>0</b> bản ghi",
+                    infoFiltered: "(được lọc từ <b>_MAX_</b> bản ghi)",
+                    zeroRecords: "Không tìm thấy kết quả nào phù hợp",
+                    paginate: {
+                        first: "⏮️ Đầu",
+                        last: "⏭️ Cuối",
+                        next: "▶️ Tiếp",
+                        previous: "◀️ Trước"
+                    }
+                },
+                paging: true,
+                pageLength: 10,
+                lengthChange: false,
+                order: [[2, 'desc']], // Sort by authentication time, newest first
+                columnDefs: [
+                    { orderable: false, targets: -1 }
+                ]
+            });
+
+            // Add some animation to stat cards
+            $('.stat-card').each(function(index) {
+                $(this).css('animation-delay', (index * 0.1) + 's');
+            });
+        });
+    </script>
+}

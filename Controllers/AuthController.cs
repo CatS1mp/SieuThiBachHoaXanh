@@ -111,7 +111,7 @@ namespace BachHoaXanh.Controllers
             var faceData = await _context.FaceData.FirstOrDefaultAsync(f => f.UserID == userId);
             if (faceData == null)
             {
-                await LogAttempt(userId, "Failed", imagePath);
+                await LogAttempt(userId, "Failed", imagePath1);
                 return Json(new { success = false, message = "Chưa đăng ký khuôn mặt!" });
             }
 

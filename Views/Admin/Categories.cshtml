@@ -3,23 +3,298 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 @model IEnumerable<BachHoaXanh.ViewModels.CategoryViewModel>
+
 <style>
-    #subcategoryContainer .subc th {
-        color: #fff !important;
-        font-weight: bold;
+    .admin-container {
+        background: linear-gradient(135deg, #f0f9f0 0%, #e8f5e8 100%);
+        min-height: 100vh;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    .t-container {
-        padding: 20px;
-        width: 90%;
+    .main-panel {
+        background: transparent;
+        padding: 0;
     }
-    /* Custom confirmation dialog styles */
+
+    .admin-navbar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: none;
+        box-shadow: 0 2px 20px rgba(76, 175, 80, 0.1);
+        border-radius: 0 0 15px 15px;
+        margin-bottom: 2rem;
+        border-bottom: 3px solid #4caf50;
+    }
+
+    .navbar-brand {
+        color: #2e7d32 !important;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .content-wrapper {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1);
+        border: 2px solid #e8f5e8;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4caf50, #66bb6a);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(76, 175, 80, 0.2);
+            border-color: #4caf50;
+        }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: #4caf50;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2e7d32;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .action-buttons-container {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-add-category, .btn-add-subcategory {
+        background: #4caf50;
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+    }
+
+    .btn-add-subcategory {
+        background: #66bb6a;
+    }
+
+        .btn-add-category:hover, .btn-add-subcategory:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+    .table-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1);
+        border: 2px solid #e8f5e8;
+        margin-bottom: 2rem;
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f1f8e9;
+    }
+
+    .table-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2e7d32;
+        margin: 0;
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .custom-table thead th {
+            background: #4caf50;
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+            border: none;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .custom-table tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #f1f8e9;
+        }
+
+            .custom-table tbody tr:hover {
+                background: #f8fdf8;
+            }
+
+            .custom-table tbody tr:nth-child(even) {
+                background: #fafffe;
+            }
+
+                .custom-table tbody tr:nth-child(even):hover {
+                    background: #f1f8e9;
+                }
+
+        .custom-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border: none;
+            color: #333;
+        }
+
+    .category-id {
+        font-weight: 700;
+        color: #2e7d32;
+        background: #f1f8e9;
+        padding: 4px 8px;
+        border-radius: 6px;
+        display: inline-block;
+    }
+
+    .category-name {
+        font-weight: 600;
+        color: #2e7d32;
+    }
+
+    .count-badge {
+        background: #f1f8e9;
+        color: #2e7d32;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-edit {
+        background: #4caf50;
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .btn-edit:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+
+    .btn-delete {
+        background: #f44336;
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-delete:hover {
+            background: #d32f2f;
+            transform: translateY(-1px);
+        }
+
+    .btn-view-subcategories {
+        background: #2196f3;
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+    }
+
+        .btn-view-subcategories:hover {
+            background: #1976d2;
+            transform: translateY(-1px);
+        }
+
+    #subcategoryContainer {
+        display: none;
+    }
+
+        #subcategoryContainer .subc th {
+            background: #66bb6a !important;
+            color: white !important;
+            font-weight: 600 !important;
+        }
+
     .custom-confirm-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
-        height: 100%;   
+        height: 100%;
         background: rgba(0, 0, 0, 0.5);
         display: none;
         justify-content: center;
@@ -28,113 +303,296 @@
     }
 
     .custom-confirm-box {
-        background: #fff;
+        background: white;
         top: 50%;
-		left: 50%;
+        left: 50%;
         transform: translate(-50%, -50%);
         position: fixed;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         width: 400px;
         text-align: center;
+        border: 2px solid #e8f5e8;
     }
 
         .custom-confirm-box h4 {
-            color: #333;
-            margin-bottom: 15px;
+            color: #2e7d32;
+            margin-bottom: 1rem;
+            font-weight: 700;
         }
 
         .custom-confirm-box p {
             color: #666;
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
         }
 
-    .custom-confirm-buttons button {
-        padding: 10px 20px;
-        margin: 0 10px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
+    .custom-confirm-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
     }
+
+        .custom-confirm-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
 
     .confirm-yes {
-        background: #d9534f;
-        color: #fff;
+        background: #f44336;
+        color: white;
     }
+
+        .confirm-yes:hover {
+            background: #d32f2f;
+            transform: translateY(-1px);
+        }
 
     .confirm-no {
-        background: #5cb85c;
-        color: #fff;
+        background: #4caf50;
+        color: white;
+    }
+
+        .confirm-no:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+    .dataTables_wrapper {
+        margin-top: 1rem;
+    }
+
+    .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+        .dataTables_filter label {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .dataTables_filter input {
+            border: 2px solid #e8f5e8;
+            border-radius: 8px;
+            padding: 8px 16px;
+            margin-left: 8px;
+            transition: border-color 0.3s ease;
+        }
+
+            .dataTables_filter input:focus {
+                border-color: #4caf50;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+            }
+
+    .dataTables_info {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .dataTables_paginate .paginate_button {
+        border-radius: 6px !important;
+        margin: 0 2px !important;
+        border: 2px solid #e8f5e8 !important;
+        background: white !important;
+        color: #4caf50 !important;
+        font-weight: 600 !important;
+    }
+
+        .dataTables_paginate .paginate_button:hover {
+            background: #4caf50 !important;
+            color: white !important;
+            border-color: #4caf50 !important;
+        }
+
+        .dataTables_paginate .paginate_button.current {
+            background: #4caf50 !important;
+            color: white !important;
+            border-color: #4caf50 !important;
+        }
+
+    @@media (max-width: 768px) {
+        .content-wrapper
+
+    {
+        padding: 1rem;
+    }
+
+    .action-buttons-container {
+        flex-direction: column;
+    }
+
+    .table-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .custom-table {
+        font-size: 0.8rem;
+    }
+
+        .custom-table thead th,
+        .custom-table tbody td {
+            padding: 0.5rem;
+        }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .custom-confirm-box {
+        width: 90%;
+        margin: 0 5%;
+    }
+
     }
 </style>
-<div class="main-panel">
-    <nav class="navbar navbar-default navbar-fixed">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="#">Quản lý danh mục</a>
-            </div>
-        </div>
-    </nav>
-    <div class="t-container">
-        <a href="@Url.Action("CategoryAdd", "Admin")" type="submit" class="btn btn-info btn-fill pull-left" style="margin-bottom: 10px; margin-top: 20px; margin-right: 15px; margin-left: 15px;">Thêm danh mục mới</a>
-        <a href="@Url.Action("SubCategoryAdd", "Admin")" type="submit" class="btn btn-info btn-fill pull-left" style="margin-bottom: 10px; margin-top: 20px; margin-right: 15px;">Thêm danh mục con mới</a>
-    </div>
-    <div class="table-container">
-        <h3>Danh sách danh mục</h3>
-        <table class="table" id="categoryTable">
-            <thead>
-                <tr>
-                    <th>#ID</th>
-                    <th>Tên danh mục</th>
-                    <th>Tổng danh mục con</th>
-                    <th>Tổng sản phẩm</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var cat in Model)
-                {
-                    <tr>
-                        <td>@cat.CategoryID</td>
-                        <td>@cat.CategoryName</td>
-                        <td>@cat.TotalSubCat</td>
-                        <td>@cat.TotalProducts</td>
-                        <td>
-                            <a href="@Url.Action("CategoryEdit", "Admin", new { id = cat.CategoryID })" class="btn btn-success btn-xs">
-                                <i class="fa-regular fa-pen-to-square"></i>
-                            </a>
-                            <form asp-action="CategoryDelete" asp-controller="Admin" method="post" style="display:inline;" class="delete-category-form">
-                                <input type="hidden" name="id" value="@cat.CategoryID" />
-                                <button type="button" class="btn btn-danger btn-xs custom-delete-btn"
-                                        data-name="@cat.CategoryName" data-type="category">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </form>
-                            <button class="btn btn-primary btn-xs view-subcategories" data-category-id="@cat.CategoryID">
-                                Xem danh mục con
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
 
-        <div id="subcategoryContainer" class="mt-4" style="display: none;">
-            <h3>Danh mục con</h3>
-            <table class="table">
-                <thead>
-                    <tr class="subc">
-                        <th>#ID</th>
-                        <th>Tên danh mục con</th>
-                        <th>Tổng sản phẩm</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody id="subcategoryTable">
-                </tbody>
-            </table>
+<div class="admin-container">
+    <div class="main-panel">
+        <nav class="navbar admin-navbar">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">
+                        <i class="fas fa-tags"></i> Quản lý danh mục
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="content-wrapper">
+            <!-- Stats Cards -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="stat-number">@Model.Count()</div>
+                    <div class="stat-label">Tổng danh mục</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                    <div class="stat-number">@Model.Sum(c => c.TotalSubCat)</div>
+                    <div class="stat-label">Tổng danh mục con</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-number">@Model.Sum(c => c.TotalProducts)</div>
+                    <div class="stat-label">Tổng sản phẩm</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-number">
+                        @{
+                            var avgProducts = Model.Count() > 0 ? Math.Round((double)Model.Sum(c => c.TotalProducts) / Model.Count(), 1) : 0;
+                        }
+                        @avgProducts
+                    </div>
+                    <div class="stat-label">TB sản phẩm/danh mục</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons-container">
+                <a href="@Url.Action("CategoryAdd", "Admin")" class="btn-add-category">
+                    <i class="fas fa-plus"></i>
+                    Thêm danh mục mới
+                </a>
+                <a href="@Url.Action("SubCategoryAdd", "Admin")" class="btn-add-subcategory">
+                    <i class="fas fa-plus-circle"></i>
+                    Thêm danh mục con mới
+                </a>
+            </div>
+
+            <!-- Main Categories Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3 class="table-title">
+                        <i class="fas fa-table"></i> Danh sách danh mục
+                    </h3>
+                </div>
+
+                <table class="custom-table" id="categoryTable">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag"></i> ID</th>
+                            <th><i class="fas fa-tag"></i> Tên danh mục</th>
+                            <th><i class="fas fa-sitemap"></i> Tổng danh mục con</th>
+                            <th><i class="fas fa-box"></i> Tổng sản phẩm</th>
+                            <th><i class="fas fa-cogs"></i> Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var cat in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="category-id">#@cat.CategoryID</span>
+                                </td>
+                                <td>
+                                    <span class="category-name">@cat.CategoryName</span>
+                                </td>
+                                <td>
+                                    <span class="count-badge">@cat.TotalSubCat</span>
+                                </td>
+                                <td>
+                                    <span class="count-badge">@cat.TotalProducts</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="@Url.Action("CategoryEdit", "Admin", new { id = cat.CategoryID })" class="btn-edit" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form asp-action="CategoryDelete" asp-controller="Admin" method="post" style="display:inline;" class="delete-category-form">
+                                            <input type="hidden" name="id" value="@cat.CategoryID" />
+                                            <button type="button" class="btn-delete custom-delete-btn"
+                                                    data-name="@cat.CategoryName" data-type="category" title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                        <button class="btn-view-subcategories view-subcategories" data-category-id="@cat.CategoryID" title="Xem danh mục con">
+                                            <i class="fas fa-eye"></i> Xem danh mục con
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Subcategories Table -->
+            <div class="table-card" id="subcategoryContainer">
+                <div class="table-header">
+                    <h3 class="table-title">
+                        <i class="fas fa-sitemap"></i> Danh mục con
+                    </h3>
+                </div>
+
+                <table class="custom-table">
+                    <thead>
+                        <tr class="subc">
+                            <th><i class="fas fa-hashtag"></i> ID</th>
+                            <th><i class="fas fa-tag"></i> Tên danh mục con</th>
+                            <th><i class="fas fa-box"></i> Tổng sản phẩm</th>
+                            <th><i class="fas fa-cogs"></i> Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subcategoryTable">
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -142,11 +600,15 @@
 <!-- Custom Confirmation Dialog -->
 <div class="custom-confirm-overlay" id="customConfirm">
     <div class="custom-confirm-box">
-        <h4>Xác nhận xóa</h4>
+        <h4><i class="fas fa-exclamation-triangle"></i> Xác nhận xóa</h4>
         <p id="confirmMessage"></p>
         <div class="custom-confirm-buttons">
-            <button class="confirm-yes" id="confirmYes">Xóa</button>
-            <button class="confirm-no" id="confirmNo">Hủy</button>
+            <button class="confirm-yes" id="confirmYes">
+                <i class="fas fa-trash"></i> Xóa
+            </button>
+            <button class="confirm-no" id="confirmNo">
+                <i class="fas fa-times"></i> Hủy
+            </button>
         </div>
     </div>
 </div>
@@ -157,23 +619,36 @@
             $('#categoryTable').DataTable({
                 language: {
                     emptyTable: "Không có dữ liệu nào trong bảng",
-                    search: "Tìm kiếm:",
-                    lengthMenu: "Hiển thị _MENU_ mục",
-                    info: "Hiển thị _START_ đến _END_ của _TOTAL_ danh mục",
+                    search: "🔍 Tìm kiếm:",
+                    lengthMenu: "Hiển thị <b>_MENU_</b> mục",
+                    info: "Hiển thị <b>_START_</b> đến <b>_END_</b> của <b>_TOTAL_</b> danh mục",
                     infoEmpty: "Không có danh mục nào",
+                    infoFiltered: "(được lọc từ <b>_MAX_</b> danh mục)",
+                    zeroRecords: "Không tìm thấy kết quả nào phù hợp",
                     paginate: {
-                        first: "Đầu",
-                        last: "Cuối",
-                        next: "Tiếp",
-                        previous: "Trước"
+                        first: "⏮️ Đầu",
+                        last: "⏭️ Cuối",
+                        next: "▶️ Tiếp",
+                        previous: "◀️ Trước"
                     }
                 },
                 paging: true,
-                pageLength: 10
+                pageLength: 10,
+                order: [[0, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: -1 }
+                ]
             });
 
             $('.view-subcategories').on('click', function () {
                 var categoryId = $(this).data('category-id');
+                var button = $(this);
+                var originalText = button.html();
+
+                // Show loading state
+                button.html('<i class="fas fa-spinner fa-spin"></i> Đang tải...');
+                button.prop('disabled', true);
+
                 $.ajax({
                     url: '/Admin/GetSubCategories/' + categoryId,
                     type: 'GET',
@@ -181,31 +656,54 @@
                         $('#subcategoryContainer').show();
                         var tableBody = $('#subcategoryTable');
                         tableBody.empty();
-                        subcategories.forEach(function (sub) {
+
+                        if (subcategories.length === 0) {
                             tableBody.append(`
                                 <tr>
-                                    <td>${sub.subCategoryID}</td>
-                                    <td>${sub.subCategoryName}</td>
-                                    <td>${sub.totalProducts}</td>
-                                    <td>
-                                        <a href="/Admin/SubCategoryEdit/${sub.subCategoryID}" class="btn btn-success btn-xs">
-                                            <i class="fa-regular fa-pen-to-square"></i> Sửa
-                                        </a>
-                                        <form action="/Admin/SubCategoryDelete" method="post" style="display:inline;" class="delete-subcategory-form">
-                                            <input type="hidden" name="id" value="${sub.subCategoryID}" />
-                                            <input type="hidden" name="__RequestVerificationToken" value="${$('input[name="__RequestVerificationToken"]').val()}" />
-                                            <button type="button" class="btn btn-danger btn-xs custom-delete-btn"
-                                                    data-name="${sub.subCategoryName}" data-type="subcategory">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                        </form>
+                                    <td colspan="4" style="text-align: center; color: #666; padding: 2rem;">
+                                        <i class="fas fa-info-circle"></i> Không có danh mục con nào
                                     </td>
                                 </tr>
                             `);
-                        });
+                        } else {
+                            subcategories.forEach(function (sub) {
+                                tableBody.append(`
+                                    <tr>
+                                        <td><span class="category-id">#${sub.subCategoryID}</span></td>
+                                        <td><span class="category-name">${sub.subCategoryName}</span></td>
+                                        <td><span class="count-badge">${sub.totalProducts}</span></td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="/Admin/SubCategoryEdit/${sub.subCategoryID}" class="btn-edit" title="Chỉnh sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="/Admin/SubCategoryDelete" method="post" style="display:inline;" class="delete-subcategory-form">
+                                                    <input type="hidden" name="id" value="${sub.subCategoryID}" />
+                                                    <input type="hidden" name="__RequestVerificationToken" value="${$('input[name="__RequestVerificationToken"]').val()}" />
+                                                    <button type="button" class="btn-delete custom-delete-btn"
+                                                            data-name="${sub.subCategoryName}" data-type="subcategory" title="Xóa">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `);
+                            });
+                        }
+
+                        // Scroll to subcategory table
+                        $('html, body').animate({
+                            scrollTop: $("#subcategoryContainer").offset().top - 100
+                        }, 500);
                     },
                     error: function () {
-                        alert('Không thể tải danh mục con. Vui lòng thử lại.');
+                        alert('❌ Không thể tải danh mục con. Vui lòng thử lại.');
+                    },
+                    complete: function () {
+                        // Restore button state
+                        button.html(originalText);
+                        button.prop('disabled', false);
                     }
                 });
             });
@@ -217,18 +715,27 @@
                 var type = button.data('type');
                 var form = button.closest('form');
                 var message = type === 'category'
-                    ? 'Bạn có chắc chắn muốn xóa danh mục "' + name + '"? Điều này cũng sẽ xóa tất cả danh mục con liên quan.'
-                    : 'Bạn có chắc chắn muốn xóa danh mục con "' + name + '"?';
+                    ? 'Bạn có chắc chắn muốn xóa danh mục "' + name + '"?\n\nĐiều này cũng sẽ xóa tất cả danh mục con và sản phẩm liên quan.'
+                    : 'Bạn có chắc chắn muốn xóa danh mục con "' + name + '"?\n\nĐiều này cũng sẽ xóa tất cả sản phẩm trong danh mục con này.';
 
                 $('#confirmMessage').text(message);
                 $('#customConfirm').show();
 
                 $('#confirmYes').off('click').on('click', function () {
+                    $('#customConfirm').hide();
                     form.submit();
                 });
+
                 $('#confirmNo').off('click').on('click', function () {
                     $('#customConfirm').hide();
                 });
+            });
+
+            // Close modal when clicking outside
+            $('#customConfirm').on('click', function(e) {
+                if (e.target === this) {
+                    $(this).hide();
+                }
             });
         });
     </script>
