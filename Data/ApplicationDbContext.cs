@@ -14,18 +14,22 @@ namespace BachHoaXanh.Data
 
         public DbSet<Category> CategoryList { get; set; }
         public DbSet<SubCategory> SubCategoryList { get; set; }
+
         public DbSet<Product> ProductList { get; set; }
+        public DbSet<Review> ReviewList { get; set; }
         public DbSet<FavoriteProduct> FavoriteProductList { get; set; }
         public DbSet<StockProduct> StockProductList { get; set; }
         public DbSet<ProductImage> ProductImageList { get; set; }
+
         public DbSet<Order> OrderList { get; set; }
         public DbSet<OrderDetail> OrderDetailList { get; set; }
+        public DbSet<OrderStockDetail> OrderStockDetailList { get; set; }
+
         public DbSet<PaymentMethod> PaymentMethodList { get; set; }
         public DbSet<Address> Addresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Cấu hình quan hệ nếu cần
             modelBuilder.Entity<FaceData>()
                 .HasOne(f => f.User)
                 .WithMany()
