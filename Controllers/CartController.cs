@@ -56,7 +56,6 @@ namespace BachHoaXanh.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            quantity = Math.Clamp(quantity, 1, stockQuantity);
 
             var cart = GetCartItems();
             var cartItem = cart.FirstOrDefault(p => p.ProductID == productid);
@@ -267,6 +266,10 @@ namespace BachHoaXanh.Controllers
 
             foreach (var item in cartItems)
             {
+                var product = _context.ProductList
+                    .Include(u => u.Stocks)
+                    .FirstOrDefault(u => u.ProductID == item.ProductID);
+
                 var orderDetail = new OrderDetail
                 {
                     OrderID = order.OrderID,
@@ -274,8 +277,45 @@ namespace BachHoaXanh.Controllers
                     Quantity = item.Quantity,
                     UnitPrice = item.Product.Price
                 };
-
                 _context.OrderDetailList.Add(orderDetail);
+                _context.SaveChanges();
+
+                var sortedStocks = product.Stocks
+                    .Where(s => s.ExpirationDate >= DateTime.Now && s.Quantity > 0)
+                    .OrderBy(s => s.ExpirationDate)
+                    .ToList();
+                int remainingQty = item.Quantity;
+                Console.WriteLine($"ProductID: {product.ProductID}, sortedStocks.Count: {sortedStocks.Count}, initialQty: {item.Quantity}");
+
+                foreach (var stock in sortedStocks)
+                {
+                    if (remainingQty <= 0)
+                        break;
+
+                    int deduct = Math.Min(stock.Quantity, remainingQty);
+
+                    // Trừ kho
+                    stock.Quantity -= deduct;
+                    stock.UpdatedAt = DateTime.Now;
+                    _context.StockProductList.Update(stock);
+
+                    // Ghi nhận chi tiết lô hàng đã dùng
+                    var orderStockDetail = new OrderStockDetail
+                    {
+                        OrderDetailID = orderDetail.OrderDetailID,
+                        StockID = stock.StockID,
+                        Quantity = deduct
+                    };
+                    _context.OrderStockDetailList.Add(orderStockDetail);
+
+                    remainingQty -= deduct;
+                    Console.WriteLine($"quantity: {remainingQty}");
+                }
+                // Nếu vẫn còn số lượng cần trừ mà hết stock
+                if (remainingQty > 0)
+                {
+                    return BadRequest($"Không đủ hàng trong kho cho sản phẩm: {product.ProductName}");
+                }
             }
 
             _context.SaveChanges();

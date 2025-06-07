@@ -29,7 +29,7 @@ namespace BachHoaXanh.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public DateTime? UpdatedAt { get; set; }
-
+        public bool CanCancel { get; set; } = true; // mặc định có thể hủy
         public User? User { get; set; }
         public ICollection<OrderDetail>? OrderDetails { get; set; }
         public PaymentMethod? PaymentMethod { get; set; }

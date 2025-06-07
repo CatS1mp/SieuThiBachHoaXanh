@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace BachHoaXanh.Models
 {
@@ -24,6 +25,26 @@ namespace BachHoaXanh.Models
 
         public DateTime? UpdatedAt { get; set; }
 
-        public Product Product { get; set; }
+    }
+    [Table("OrderStockDetails")]
+
+    public class OrderStockDetail
+    {
+        [Key]
+        public int OrderStockDetailID { get; set; }
+
+        [ForeignKey("OrderDetail")]
+        public int OrderDetailID { get; set; }
+
+        [ForeignKey("StockProduct")]
+        public int StockID { get; set; }
+
+        [Required]
+        [Range(1, int.MaxValue)]
+        public int Quantity { get; set; }
+
+        [JsonIgnore]
+        public OrderDetail OrderDetail { get; set; }
+        public StockProduct StockProduct { get; set; }
     }
 }

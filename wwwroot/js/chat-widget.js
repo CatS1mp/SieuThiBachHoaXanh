@@ -1,4 +1,4 @@
-﻿let isChatOpen = true;
+﻿let isChatOpen = false;
 let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
 
 document.addEventListener('DOMContentLoaded', () => {

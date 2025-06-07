@@ -63,14 +63,34 @@ namespace BachHoaXanh.Controllers
         [Authorize]
         public IActionResult CancelOrder(int id)
         {
-            var order = _context.OrderList.FirstOrDefault(o => o.OrderID == id);
+            var order = _context.OrderList
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.OrderStockDetails)
+                .FirstOrDefault(o => o.OrderID == id);
 
             if (order == null)
             {
                 return Json(new { success = false });
             }
 
+            // Trả lại hàng vào kho
+            foreach (var orderDetail in order.OrderDetails)
+            {
+                foreach (var stockDetail in orderDetail.OrderStockDetails)
+                {
+                    var stock = _context.StockProductList.FirstOrDefault(s => s.StockID == stockDetail.StockID);
+                    if (stock != null)
+                    {
+                        stock.Quantity += stockDetail.Quantity;
+                        stock.UpdatedAt = DateTime.Now;
+                        _context.StockProductList.Update(stock);
+                    }
+                }
+            }
+
+            // Đánh dấu đơn hàng đã hủy
             order.OrderStatus = "Cancelled";
+            _context.OrderList.Update(order);
             _context.SaveChanges();
 
             // Cập nhật lại điểm và xếp hạng sau khi hủy đơn

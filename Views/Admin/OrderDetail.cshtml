@@ -228,7 +228,7 @@
                                 <div class="cart-box">
                                     <div class="cart-item">
                                         <!-- Displaying Product Image -->
-                                        <img class="cart-img" src="@(Url.Content("~/images/" + (productImages.FirstOrDefault(img => img.IsMainImage)?.ImagePath ?? "default-image.png")))" alt="@product.ProductName">
+                                        <img class="cart-img" src="@(Url.Content("~/images/prods/" + (productImages.FirstOrDefault(img => img.IsMainImage)?.ImagePath ?? "default-image.png")))" alt="@product.ProductName">
                                         <p class="cart-name mb-0">@product.ProductName</p>
 
                                         <div class="cart-pqty-controls">

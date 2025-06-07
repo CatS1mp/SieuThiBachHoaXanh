@@ -18,6 +18,11 @@ namespace BachHoaXanh.ViewModels
     public class ProductDetailViewModel
     {
         public Product Product { get; set; }
-        public bool isFav { get; set; }
+        public List<Review> Reviews { get; set; }
+        public int CurrentPage { get; set; }
+        public int TotalPages { get; set; }
+        public Dictionary<int, int> RatingDistribution { get; set; } // Key: Rating (1-5), Value: Số lượng
+        public int TotalReviews { get; set; }
+        public double AverageRating { get; set; } 
     }
 }

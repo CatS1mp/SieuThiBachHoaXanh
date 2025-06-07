@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BachHoaXanh.Data;
-using Python.Runtime;
 using Newtonsoft.Json;
 using System.Text;
 using BachHoaXanh.Models;

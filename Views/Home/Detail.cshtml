@@ -1,15 +1,227 @@
-﻿@model BachHoaXanh.Models.Product
+﻿@model BachHoaXanh.ViewModels.ProductDetailViewModel
 @{
-    ViewData["Title"] = "Sản phẩm " + Model.ProductName;
+    ViewData["Title"] = "Sản phẩm " + Model.Product.ProductName;
 }
 <link rel="stylesheet" href="~/css/product-detail.css">
+<style>
+    /* Additional CSS for rating section */
+    .rating-section {
+        margin-top: 40px;
+        padding: 20px 0;
+    }
+
+    .rating-summary {
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    .rating-overview {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 40px;
+        align-items: center;
+    }
+
+    .average-rating {
+        text-align: center;
+    }
+
+    .average-score {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .stars {
+        display: flex;
+        justify-content: center;
+        gap: 2px;
+        margin-bottom: 10px;
+    }
+
+    .star-rating {
+        display: inline-block;
+        direction: rtl; /* Để hover từ phải sang trái */
+    }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 24px;
+            cursor: pointer;
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+        }
+
+            .star-rating input:checked ~ label,
+            .star-rating label:hover,
+            .star-rating label:hover ~ label {
+                color: #ffd700;
+            }
+
+    .star {
+        width: 20px;
+        height: 20px;
+        color: #ffd700;
+    }
+
+        .star.filled {
+            fill: #ffd700;
+        }
+
+        .star.empty {
+            fill: #e5e5e5;
+        }
+
+    .total-reviews {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .rating-distribution {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .rating-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .rating-label {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        width: 50px;
+        font-size: 14px;
+    }
+
+    .rating-bar {
+        flex: 1;
+        height: 8px;
+        background: #f0f0f0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .rating-fill {
+        height: 100%;
+        background: #ffd700;
+        transition: width 0.3s ease;
+    }
+
+    .rating-count {
+        width: 30px;
+        text-align: right;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .reviews-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .review-item {
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .review-header {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .review-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #666;
+    }
+
+    .review-info {
+        flex: 1;
+    }
+
+    .review-name {
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .review-date {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 8px;
+    }
+
+    .review-stars {
+        display: flex;
+        gap: 2px;
+    }
+
+        .review-stars .star {
+            width: 16px;
+            height: 16px;
+        }
+
+    .review-comment {
+        color: #555;
+        line-height: 1.6;
+    }
+
+    .pagination a {
+        margin: 0 5px;
+        padding: 5px 10px;
+        text-decoration: none;
+        color: #007bff;
+    }
+
+        .pagination a.active {
+            background-color: #007bff;
+            color: white;
+            border-radius: 3px;
+        }
+
+    @@media (max-width: 768px) {
+        .rating-overview
+
+    {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .average-score {
+        font-size: 2.5rem;
+    }
+
+    }
+</style>
+
 <div class="container-wrapper">
     @await Html.PartialAsync("_SidebarOverplay")
     <div class="breadcrumb-container">
         <div class="breadcrumb-icon d-inline-block">
             <i class="fas fa-chevron-left"></i>
         </div>
-        <p>Xem chi tiết sản phẩm <b>#(@Model.ProductID)</b></p>
+        <p>Xem chi tiết sản phẩm <b>#(@Model.Product.ProductID)</b></p>
     </div>
 
     <div class="product-detail-container">
@@ -19,7 +231,7 @@
                 <div class="main-swiper">
                     <div class="swiper mySwiper">
                         <div class="swiper-wrapper">
-                            @foreach (var image in Model.Images)
+                            @foreach (var image in Model.Product.Images)
                             {
                                 <div class="swiper-slide">
                                     <a href="#" data-fancybox="gallery">
@@ -40,10 +252,10 @@
                 <div class="sub-swiper">
                     <div thumbsSlider="" class="swiper mySwiper2">
                         <div class="swiper-wrapper">
-                            @foreach (var image in Model.Images)
+                            @foreach (var image in Model.Product.Images)
                             {
                                 <div class="swiper-slide">
-                                    <img src="~/images/prods/@image.ImagePath"/>
+                                    <img src="~/images/prods/@image.ImagePath" />
                                 </div>
                             }
                         </div>
@@ -55,52 +267,52 @@
                 <p class="label">Thông tin sản phẩm</p>
                 <div class="divine"></div>
                 <br>
-                <p>@Model.Description</p>
+                <p>@Model.Product.Description</p>
             </div>
         </div>
 
         <div class="pdetail-right">
-            <p class="pname">@Model.ProductName</p>
+            <p class="pname">@Model.Product.ProductName</p>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px">
                 <span class="favorite"
-                      onclick="toggleFavorite(@Model.ProductID, this)"
-                      data-is-favorited="@Model.isFav.ToString().ToLower()">
-                    <img class="icon-fav-detail" src="~/images/@(Model.isFav ? "favor.png" : "unfavor.png")" />
-                    @(Model.isFav ? "Đã yêu thích" : "Yêu thích")
+                      onclick="toggleFavorite(@Model.Product.ProductID, this)"
+                      data-is-favorited="@Model.Product.isFav.ToString().ToLower()">
+                    <img class="icon-fav-detail" src="~/images/@(Model.Product.isFav ? "favor.png" : "unfavor.png")" />
+                    @(Model.Product.isFav ? "Đã yêu thích" : "Yêu thích")
                 </span>
                 <div class="pshare" onclick="showShareMessage()"><i class="fa-solid fa-share-from-square pr-1"></i>Chia sẻ</div>
             </div>
 
-            <form id="cartForm" action="@Url.RouteUrl("them-gio-hang", new { productid = Model.ProductID })" method="post">
-                <input type="hidden" name="ProductID" value="@Model.ProductID" />
+            <form id="cartForm" action="@Url.RouteUrl("them-gio-hang", new { productid = Model.Product.ProductID })" method="post">
+                <input type="hidden" name="ProductID" value="@Model.Product.ProductID" />
 
-                @if (Model.StockQuantity > 0)
+                @if (Model.Product.StockQuantity > 0)
                 {
                     <!-- Quantity Controls -->
                     <div class="qty-controls">
                         <p class="label">Số lượng:</p>
                         <div>
                             <button type="button" class="qtyminus" aria-hidden="true">−</button>
-                            <input id="qty" name="quantity" min="1" max="@Model.StockQuantity" step="1" value="1">
+                            <input id="qty" name="quantity" min="1" max="@Model.Product.StockQuantity" step="1" value="1">
                             <button type="button" class="qtyplus" aria-hidden="true">+</button>
                         </div>
                     </div>
 
                     <p class="kho">
-                        Sản phẩm này còn <b><u>@Model.StockQuantity</u></b> sản phẩm trong kho
+                        Sản phẩm này còn <b><u>@Model.Product.StockQuantity</u></b> sản phẩm trong kho
                     </p>
 
                     <!-- Price Display -->
                     <div class="pprice-container">
                         <p class="label">Giá:</p>
                         <div class="price-controlers">
-                            <p class="price main-price"><b>@(Model.Price.ToString("N0"))<sup><u>đ</u></sup></b></p>
+                            <p class="price main-price"><b>@(Model.Product.Price.ToString("N0"))<sup><u>đ</u></sup></b></p>
                         </div>
                     </div>
                     <div class="pprice-container">
                         <p class="label">Tạm tính:</p>
                         <div class="pprice-controllers">
-                            <p id="temporary-price" class="price main-price"><b>@(Model.Price.ToString("N0")) <sup><u>đ</u></sup></b></p>
+                            <p id="temporary-price" class="price main-price"><b>@(Model.Product.Price.ToString("N0")) <sup><u>đ</u></sup></b></p>
                         </div>
                     </div>
 
@@ -116,7 +328,7 @@
                         <div class="pprice-container">
                             <p class="label">Giá:</p>
                             <div class="price-controlers">
-                                <p class="price main-price"><b>@(Model.Price.ToString("N0"))<sup><u>đ</u></sup></b></p>
+                                <p class="price main-price"><b>@(Model.Product.Price.ToString("N0"))<sup><u>đ</u></sup></b></p>
                             </div>
                         </div>
                         <div class="out-of-stock-notification">
@@ -128,196 +340,300 @@
             </form>
         </div>
     </div>
+    <!-- Customer Reviews Section -->
+    <div class="rating-section">
+        <h2 style="font-size: 24px; font-weight: bold; margin-bottom: 30px;">Đánh giá từ khách hàng</h2>
+
+        <!-- Rating Summary -->
+        <div class="rating-summary">
+            <div class="rating-overview">
+                <!-- Average Rating -->
+                <div class="average-rating">
+                    <div class="average-score">@Model.AverageRating.ToString("F1")</div>
+                    <div class="stars">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            var starClass = i <= Math.Floor(Model.AverageRating) ? "star filled" : (i == Math.Ceiling(Model.AverageRating) && Model.AverageRating % 1 >= 0.5 ? "star half-filled" : "star empty");
+                            <svg class="@starClass" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                        }
+                    </div>
+                    <p class="total-reviews">@Model.TotalReviews đánh giá</p>
+                </div>
+
+                <!-- Rating Distribution -->
+                <div class="rating-distribution">
+                    @for (int i = 5; i >= 1; i--)
+                    {
+                        var count = Model.RatingDistribution.ContainsKey(i) ? Model.RatingDistribution[i] : 0;
+                        var percentage = Model.TotalReviews > 0 ? (count * 100.0 / Model.TotalReviews) : 0;
+                        <div class="rating-row">
+                            <div class="rating-label">
+                                <span>@i</span>
+                                <svg class="star filled" viewBox="0 0 24 24" style="width: 12px; height: 12px;">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                            </div>
+                            <div class="rating-bar">
+                                <div class="rating-fill" style="width: @percentage%"></div>
+                            </div>
+                            <span class="rating-count">@count</span>
+                        </div>
+                    }
+                </div>
+                
+            </div>
+            <!-- Form gửi đánh giá -->
+            <form asp-action="AddReview" asp-controller="Home" method="post">
+                <input type="hidden" name="productId" value="@Model.Product.ProductID" />
+                <div>
+                    <label>Đánh giá của bạn:</label>
+                    <div class="star-rating">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <input type="radio" name="rating" value="@i" id="star-@i" required />
+                            <label for="star-@i" class="star"></label>
+                        }
+                    </div>
+                </div>
+                <div>
+                    <label>Bình luận:</label>
+                    <textarea name="comment" rows="4" cols="50" required></textarea>
+                </div>
+                <button type="submit">Gửi đánh giá</button>
+            </form>
+            <!-- Individual Reviews -->
+            <div class="reviews-list">
+                @foreach (var review in Model.Reviews)
+                {
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="review-avatar">@(review.User.UserName?.FirstOrDefault().ToString().ToUpper() ?? "N")</div>
+                            <div class="review-info">
+                                <div class="review-name">@(review.User.UserName ?? $"Người dùng #{review.User.UserID}")</div>
+                                <div class="review-date">@review.ReviewDate.ToString("dd/MM/yyyy")</div>
+                                <div class="review-stars">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        var starClass = i <= review.Rating ? "star filled" : "star empty";
+                                        <svg class="@starClass" viewBox="0 0 24 24">
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                        </svg>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <p class="review-comment">@review.Comment</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <div class="pagination">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <a asp-action="Detail" asp-route-id="@Model.Product.ProductID" asp-route-page="@i" class="@(i == Model.CurrentPage ? "active" : "")">@i</a>
+                }
+            </div>
+        }
+    </div>
 </div>
+
 @section Scripts {
-<script>
-    function showShareMessage() {
-        const pshare = document.querySelector('.pshare');
-        pshare.classList.add('active');
-        const productUrl = `${window.location.origin}/san-pham/${@Model.ProductID}`;
-    
-        navigator.clipboard.writeText(productUrl)
-            .then(() => {
-                console.log("Liên kết sản phẩm đã được sao chép!");
-            })
-            .catch(err => {
-                console.error("Không thể sao chép liên kết: ", err);
-            });
-        setTimeout(() => {
-            pshare.classList.remove('active');
-        }, 3000);
-    }
+    <script>
+        function showShareMessage() {
+            const pshare = document.querySelector('.pshare');
+            pshare.classList.add('active');
+            const productUrl = `${window.location.origin}/san-pham/${@Model.Product.ProductID}`;
 
-    // Quantity control logic
-    var input = document.querySelector('#qty');
-    var btnminus = document.querySelector('.qtyminus');
-    var btnplus = document.querySelector('.qtyplus');
-    var temporaryPriceDisplay = document.querySelector('#temporary-price');
-    var pricePerUnit = @((int)Model.Price);
-
-    if (input !== undefined && btnminus !== undefined && btnplus !== undefined && input !== null && btnminus !== null && btnplus !== null) {
-        var min = Number(input.getAttribute('min'));
-        var max = Number(input.getAttribute('max'));
-        var step = Number(input.getAttribute('step'));
-
-        function updateTemporaryPrice() {
-            var quantity = Number(input.value);
-            var totalPrice = (pricePerUnit * quantity).toLocaleString('vi-VN');
-            temporaryPriceDisplay.innerHTML = `<b>${totalPrice}<sup><u>đ</u></sup></b>`;
+            navigator.clipboard.writeText(productUrl)
+                .then(() => {
+                    console.log("Liên kết sản phẩm đã được sao chép!");
+                })
+                .catch(err => {
+                    console.error("Không thể sao chép liên kết: ", err);
+                });
+            setTimeout(() => {
+                pshare.classList.remove('active');
+            }, 3000);
         }
 
-        function qtyminus(e) {
-            var current = Number(input.value);
-            var newval = (current - step);
-            if (newval < min) {
-                newval = min;
-                Toastify({
-                    text: "Số lượng không thể nhỏ hơn " + min + "!",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "#ff4444",
-                }).showToast();
-            } else if (newval > max) {
-                newval = max;
-                Toastify({
-                    text: "Số lượng không thể vượt quá " + max + "!",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "#ff4444",
-                }).showToast();
+        // Quantity control logic
+        var input = document.querySelector('#qty');
+        var btnminus = document.querySelector('.qtyminus');
+        var btnplus = document.querySelector('.qtyplus');
+        var temporaryPriceDisplay = document.querySelector('#temporary-price');
+        var pricePerUnit = @((int)Model.Product.Price);
+
+        if (input !== undefined && btnminus !== undefined && btnplus !== undefined && input !== null && btnminus !== null && btnplus !== null) {
+            var min = Number(input.getAttribute('min'));
+            var max = Number(input.getAttribute('max'));
+            var step = Number(input.getAttribute('step'));
+
+            function updateTemporaryPrice() {
+                var quantity = Number(input.value);
+                var totalPrice = (pricePerUnit * quantity).toLocaleString('vi-VN');
+                temporaryPriceDisplay.innerHTML = `<b>${totalPrice}<sup><u>đ</u></sup></b>`;
             }
-            input.value = Number(newval);
+
+            function qtyminus(e) {
+                var current = Number(input.value);
+                var newval = (current - step);
+                if (newval < min) {
+                    newval = min;
+                    Toastify({
+                        text: "Số lượng không thể nhỏ hơn " + min + "!",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#ff4444",
+                    }).showToast();
+                } else if (newval > max) {
+                    newval = max;
+                    Toastify({
+                        text: "Số lượng không thể vượt quá " + max + "!",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#ff4444",
+                    }).showToast();
+                }
+                input.value = Number(newval);
+                updateTemporaryPrice();
+                e.preventDefault();
+            }
+
+            function qtyplus(e) {
+                var current = Number(input.value);
+                var newval = (current + step);
+                if (newval > max) newval = max;
+                input.value = Number(newval);
+                updateTemporaryPrice();
+                e.preventDefault();
+            }
+
+            // Initialize the price display
             updateTemporaryPrice();
-            e.preventDefault();
+
+            btnminus.addEventListener('click', qtyminus);
+            btnplus.addEventListener('click', qtyplus);
+
+            // Listen for changes to the quantity input directly
+            input.addEventListener('input', updateTemporaryPrice);
         }
 
-        function qtyplus(e) {
-            var current = Number(input.value);
-            var newval = (current + step);
-            if (newval > max) newval = max;
-            input.value = Number(newval);
-            updateTemporaryPrice();
-            e.preventDefault();
-        }
+        // Category Sidebar Toggle Logic
+        const categoryButton = document.querySelector('.category-button');
+        const overlay = document.getElementById('overlay');
+        const containerWrapper = document.querySelector('.container-wrapper');
+        const sidebar = document.querySelector('.sidebar');
 
-        // Initialize the price display
-        updateTemporaryPrice();
+        categoryButton.addEventListener('click', () => {
+            overlay.classList.add('d-block');
+            sidebar.classList.remove('d-none');
+            containerWrapper.classList.add('blur');
+        });
 
-        btnminus.addEventListener('click', qtyminus);
-        btnplus.addEventListener('click', qtyplus);
-
-        // Listen for changes to the quantity input directly
-        input.addEventListener('input', updateTemporaryPrice);
-    }
-
-    // Category Sidebar Toggle Logic
-    const categoryButton = document.querySelector('.category-button');
-    const overlay = document.getElementById('overlay');
-    const containerWrapper = document.querySelector('.container-wrapper');
-    const sidebar = document.querySelector('.sidebar'); 
-
-    categoryButton.addEventListener('click', () => {
-        overlay.classList.add('d-block');
-        sidebar.classList.remove('d-none');
-        containerWrapper.classList.add('blur');
-    });
-
-    overlay.addEventListener('click', () => {
-        overlay.classList.remove('d-block');
-        sidebar.classList.add('d-none');
-        containerWrapper.classList.remove('blur');
-    });
-
-    overlay.addEventListener('mousemove', (event) => {
-        if (!sidebar.contains(event.target)) {
+        overlay.addEventListener('click', () => {
             overlay.classList.remove('d-block');
             sidebar.classList.add('d-none');
             containerWrapper.classList.remove('blur');
-        }
-    });
+        });
 
-    // Toggle subcategories
-    function toggleCategorySub(categoryMain) {
-        var categorySubs = document.querySelectorAll('.category-sub');
-
-        categorySubs.forEach(function (sub) {
-            if (sub !== categoryMain.nextElementSibling) {
-                sub.style.display = "none";
+        overlay.addEventListener('mousemove', (event) => {
+            if (!sidebar.contains(event.target)) {
+                overlay.classList.remove('d-block');
+                sidebar.classList.add('d-none');
+                containerWrapper.classList.remove('blur');
             }
         });
 
-        var categorySub = categoryMain.nextElementSibling;
+        // Toggle subcategories
+        function toggleCategorySub(categoryMain) {
+            var categorySubs = document.querySelectorAll('.category-sub');
 
-        if (categorySub.style.display === "none" || categorySub.style.display === "") {
-            categorySub.style.display = "block";
-        } else {
-            categorySub.style.display = "none";
-        }
-    }
-    function getAntiForgeryToken() {
-        return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    }
-    async function toggleFavorite(productId, el) {
-        let isFavorited = el.dataset.isFavorited === "true";
+            categorySubs.forEach(function (sub) {
+                if (sub !== categoryMain.nextElementSibling) {
+                    sub.style.display = "none";
+                }
+            });
 
-        const url = isFavorited
-            ? '/Home/RemoveFromFavorites'
-            : '/Home/AddToFavorites';
+            var categorySub = categoryMain.nextElementSibling;
 
-        const formData = new FormData();
-        formData.append("productId", productId);
-
-        // Append the current path as returnUrl
-        formData.append("returnUrl", window.location.pathname + window.location.search);
-
-        const response = await fetch(url, {
-            method: "POST",
-            body: formData,
-            headers: {
-                'RequestVerificationToken': getAntiForgeryToken()
+            if (categorySub.style.display === "none" || categorySub.style.display === "") {
+                categorySub.style.display = "block";
+            } else {
+                categorySub.style.display = "none";
             }
-        });
-
-        if (response.ok) {
-            location.reload(); // or redirect manually if needed
-        } else {
-            alert("Có lỗi xảy ra khi gửi yêu cầu.");
         }
-    }
 
+        function getAntiForgeryToken() {
+            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        }
 
-    const qtyInput = document.getElementById("qty");
-    const maxQty = parseInt(qtyInput.max, 10);
-    const minQty = parseInt(qtyInput.min, 10);
-    qtyInput.addEventListener('input', function () {
-        let value = parseInt(this.value, 10);
-        if (isNaN(value)) return;
+        async function toggleFavorite(productId, el) {
+            let isFavorited = el.dataset.isFavorited === "true";
+
+            const url = isFavorited
+                ? '/Home/RemoveFromFavorites'
+                : '/Home/AddToFavorites';
+
+            const formData = new FormData();
+            formData.append("productId", productId);
+
+            // Append the current path as returnUrl
+            formData.append("returnUrl", window.location.pathname + window.location.search);
+
+            const response = await fetch(url, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': getAntiForgeryToken()
+                }
+            });
+
+            if (response.ok) {
+                location.reload(); // or redirect manually if needed
+            } else {
+                alert("Có lỗi xảy ra khi gửi yêu cầu.");
+            }
+        }
+
+        const qtyInput = document.getElementById("qty");
+        const maxQty = parseInt(qtyInput.max, 10);
+        const minQty = parseInt(qtyInput.min, 10);
+        qtyInput.addEventListener('input', function () {
+            let value = parseInt(this.value, 10);
+            if (isNaN(value)) return;
 
             if (value > maxQty) {
                 this.value = maxQty;
-            Toastify({
+                Toastify({
                     text: "Số lượng không thể vượt quá " + maxQty + "!",
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#ff4444",
-            }).showToast();
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#ff4444",
+                }).showToast();
             } else if (value < minQty) {
                 this.value = minQty;
-            Toastify({
+                Toastify({
                     text: "Số lượng không thể nhỏ hơn " + minQty + "!",
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#ff4444",
-            }).showToast();
-        }
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#ff4444",
+                }).showToast();
+            }
 
-        // Now update the price using the corrected value
-        updateTemporaryPrice();
-    });
+            // Now update the price using the corrected value
+            updateTemporaryPrice();
+        });
 
-</script>
+
+    </script>
 }

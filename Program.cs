@@ -45,6 +45,7 @@ builder.Services.AddControllers();
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddHostedService<StockCheckService>();
+builder.Services.AddHostedService<OrderExpirationService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

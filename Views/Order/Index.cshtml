@@ -56,7 +56,7 @@
 
                             if (mainImagePath != null)
                             {
-                                <img src="~/images/@mainImagePath" alt="@item.Product.ProductName">
+                                <img src="~/images/prods/@mainImagePath" alt="@item.Product.ProductName">
                             }
                             else
                             {
@@ -85,6 +85,10 @@
                     @if (order.OrderStatus == "Cancelled")
                     {
                         <button class="btn btn-cancel" disabled>Đã huỷ</button>
+                    }
+                    else if (!order.CanCancel || order.OrderStatus != "Pending")
+                    {
+                        <button class="btn btn-cancel" disabled>Không thể huỷ</button>
                     }
                     else
                     {
