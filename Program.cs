@@ -10,19 +10,15 @@ using BachHoaXanh.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 // Đặt Runtime.PythonDLL trước khi khởi tạo runtime
-Runtime.PythonDLL = @"C:\Users\ADMIN\AppData\Local\Programs\Python\Python39\python39.dll";
-
-
-// Register the background service
-
-// Cấu hình PythonHome và PythonPath
-PythonEngine.PythonHome = @"C:\Users\ADMIN\AppData\Local\Programs\Python\Python39";
+Runtime.PythonDLL = @"C:\Users\TUAN\AppData\Local\Programs\Python\Python39\python39.dll";
+PythonEngine.PythonHome = @"C:\Users\TUAN\AppData\Local\Programs\Python\Python39";
 PythonEngine.PythonPath = string.Join(Path.PathSeparator, new[]
 {
-    @"C:\Users\ADMIN\AppData\Local\Programs\Python\Python39\Lib",
-    @"C:\Users\ADMIN\AppData\Local\Programs\Python\Python39\Lib\site-packages",
-    @"C:\Users\ADMIN\AppData\Local\Programs\Python\Python39\DLLs",
-    Directory.GetCurrentDirectory()
+    @"C:\Users\TUAN\AppData\Local\Programs\Python\Python39\Lib",
+    @"C:\Users\TUAN\AppData\Local\Programs\Python\Python39\DLLs",
+    @"C:\Users\TUAN\AppData\Local\Programs\Python\Python39\Lib\site-packages",
+
+Directory.GetCurrentDirectory()
 });
 
 try
