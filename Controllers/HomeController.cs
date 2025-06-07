@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using System;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Security.Claims;
 
 public class HomeController : Controller
@@ -86,12 +87,16 @@ public class HomeController : Controller
     }
 
     [Route("san-pham/{id}")]
-    public IActionResult Detail(int id)
+    public IActionResult Detail(int id, int page = 1)
     {
+
+        int pageSize = 5; // Số đánh giá mỗi trang
         foreach (var claim in User.Claims)
         {
             Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
         }
+
+        
 
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
 
@@ -100,15 +105,59 @@ public class HomeController : Controller
             .Include(p => p.SubCategory)
             .ThenInclude(sc => sc.Category)
             .Include(p => p.Images)
-            .FirstOrDefault(p => p.ProductID == id);
+            .FirstOrDefault(p => p.ProductID == id&&p.Stocks.Any(s => s.ExpirationDate > DateTime.Now));
+
+        // Lấy danh sách đánh giá với phân trang
+        var reviews =  _context.ReviewList
+            .Where(r => r.ProductID == id)
+            .Include(r => r.User) 
+            .OrderByDescending(r => r.ReviewDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        // Tính tổng số đánh giá
+        var totalReviews =  _context.ReviewList.Count(r => r.ProductID == id);
+
+        // Tính phân bố số sao
+        var ratingDistribution = new Dictionary<int, int>();
+        for (int i = 1; i <= 5; i++)
+        {
+            ratingDistribution[i] =  _context.ReviewList
+                .Count(r => r.ProductID == id && r.Rating == i);
+        }
+
+        // Tính và cập nhật AverageRating
+        var averageRating = totalReviews > 0
+            ?  _context.ReviewList
+                .Where(r => r.ProductID == id)
+                .Average(r => (decimal)r.Rating)
+            : 0;
+        var view = new ProductDetailViewModel
+        {
+            Product = product,
+            Reviews = reviews,
+            TotalReviews = totalReviews,
+            RatingDistribution = ratingDistribution,
+            CurrentPage = page,
+            TotalPages = (int)Math.Ceiling((double)totalReviews / pageSize),
+            AverageRating = (double)Math.Round(averageRating, 1), // Làm tròn 1 chữ số thập phân
+            
+        };
+
+        
         product.isFav = _context.FavoriteProductList
         .Any(p => p.ProductID == id && p.UserID == userId);
+        _context.Update(product);
+        _context.SaveChanges();
         if (product == null)
         {
             return NotFound();
         }
 
-        return View(product);
+        
+
+        return View(view);
     }
     [Authorize]
     [HttpPost]
@@ -145,6 +194,55 @@ public class HomeController : Controller
         }
 
         return Ok(); // if calling from JavaScript and only expect status
+    }
+    // Xử lý gửi đánh giá
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> AddReview(int productId, int rating, string comment)
+    {
+        if (!User.Identity.IsAuthenticated)
+        {
+            return Unauthorized("Vui lòng đăng nhập để gửi đánh giá.");
+        }
+
+        // Lấy UserId từ người dùng đang đăng nhập (giả định bạn dùng ASP.NET Identity)
+        int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
+
+        // Chống spam: Kiểm tra xem người dùng đã đánh giá sản phẩm này chưa
+        var existingReview = await _context.ReviewList
+            .FirstOrDefaultAsync(r => r.UserID == userId && r.ProductID== productId);
+
+        if (existingReview != null)
+        {
+            return BadRequest("Bạn đã gửi đánh giá cho sản phẩm này rồi.");
+        }
+
+        // Chống spam: Kiểm tra độ dài bình luận
+        if (string.IsNullOrWhiteSpace(comment) || comment.Length < 10)
+        {
+            return BadRequest("Bình luận phải có ít nhất 10 ký tự.");
+        }
+
+        // Kiểm tra rating hợp lệ
+        if (rating < 1 || rating > 5)
+        {
+            return BadRequest("Số sao phải từ 1 đến 5.");
+        }
+
+        var review = new Review
+        {
+            UserID = userId,
+            ProductID = productId,
+            Rating = rating,
+            Comment = comment,
+            ReviewDate = DateTime.Now
+        };
+
+        _context.ReviewList.Add(review);
+        await _context.SaveChangesAsync();
+
+        // Reload trang sau khi gửi đánh giá
+        return RedirectToAction("Detail", new { id = productId });
     }
 
     [HttpPost]

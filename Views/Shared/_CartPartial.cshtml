@@ -26,7 +26,7 @@ else
                         @if (item.Product != null && item.Product.Images != null)
                         {
                             var mainImage = item.Product.Images.FirstOrDefault(img => img.IsMainImage);
-                            <img class="cart-img" src="~/images/@(mainImage?.ImagePath ?? "default.jpg")" alt="@item.Product.ProductName" />
+                            <img class="cart-img" src="~/images/prods/@(mainImage?.ImagePath ?? "default.jpg")" alt="@item.Product.ProductName" />
                         }
                         else
                         {
@@ -91,8 +91,8 @@ else
                             {
 
                                 var paymentMethodID = Model.CartItems.FirstOrDefault()?.PaymentMethodID;
-                            Console.WriteLine("Requets 2" + paymentMethodID);
-                            @if (paymentMethodID == 1)
+                                Console.WriteLine("Request 2 " + paymentMethodID);
+                                @if (paymentMethodID == 1)
                                 {
                                     <option value="1" selected>Tiền mặt khi nhận hàng</option>
                                     <option value="2">Chuyển khoản</option>

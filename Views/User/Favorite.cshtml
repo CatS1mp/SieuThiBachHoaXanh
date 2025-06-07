@@ -29,7 +29,7 @@
                              src="~/images/@(product.isFav ? "favor.png" : "unfavor.png")" />
                         @if (product.Images != null && product.Images.Any())
                         {
-                            <img class="product-image" src="~/images/@product.Images.FirstOrDefault(img => img.IsMainImage)?.ImagePath" alt="@product.ProductName">
+                            <img class="product-image" src="~/images/prods/@product.Images.FirstOrDefault(img => img.IsMainImage)?.ImagePath" alt="@product.ProductName">
                         }
                         else
                         {
