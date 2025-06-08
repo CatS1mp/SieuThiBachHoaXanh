@@ -32,18 +32,33 @@ else
                         {
                             <img class="cart-img" src="~/images/default.jpg" alt="Hình ảnh mặc định" />
                         }
+                        @if (item.Promotion != null)
+                        {
+                            <input type="hidden" class="product-price" value="@item.Promotion.NewPrice" />
 
-                        <input type="hidden" class="product-price" value="@item.Product.Price" />
-
-                        <p class="cart-name">@item.Product.ProductName</p>
-                        <div class="cart-pqty-controls">
-                            <p class="cart-price price-@item.ProductID" id="">@item.Product.Price.ToString("C")</p>
-                            <div>
-                                <button class="qtyminus" onclick="decreaseQuantity('@item.ProductID')">&minus;</button>
-                                <input type="number" name="qty" class = "qty" id="quantity-@item.ProductID" value="@item.Quantity" min="1" max="@(item.Product.StockQuantity)" />
-                                <button class="qtyplus" onclick="increaseQuantity('@item.ProductID')">&plus;</button>
+                            <p class="cart-name">@item.Product.ProductName</p>
+                            <div class="cart-pqty-controls">
+                                <p class="cart-price price-@item.ProductID" id="">@item.Promotion.NewPrice.ToString("C")</p>
+                                <div>
+                                    <button class="qtyminus" onclick="decreaseQuantity('@item.ProductID')">&minus;</button>
+                                    <input type="number" name="qty" class="qty" id="quantity-@item.ProductID" value="@item.Quantity" min="1" max="@(item.Product.StockQuantity)" />
+                                    <button class="qtyplus" onclick="increaseQuantity('@item.ProductID')">&plus;</button>
+                                </div>
                             </div>
-                        </div>
+                        }else{
+                            <input type="hidden" class="product-price" value="@item.Product.Price" />
+
+                            <p class="cart-name">@item.Product.ProductName</p>
+                            <div class="cart-pqty-controls">
+                                <p class="cart-price price-@item.ProductID" id="">@item.Product.Price.ToString("C")</p>
+                                <div>
+                                    <button class="qtyminus" onclick="decreaseQuantity('@item.ProductID')">&minus;</button>
+                                    <input type="number" name="qty" class="qty" id="quantity-@item.ProductID" value="@item.Quantity" min="1" max="@(item.Product.StockQuantity)" />
+                                    <button class="qtyplus" onclick="increaseQuantity('@item.ProductID')">&plus;</button>
+                                </div>
+                            </div>
+                        }
+                        
                     </div>
                 }
 

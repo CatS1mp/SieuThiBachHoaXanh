@@ -288,6 +288,8 @@ namespace BachHoaXanh.Controllers
                     .Include(p => p.Images)
                     .Include(p => p.Stocks)
                     .FirstOrDefault(p => p.ProductID == item.ProductID);
+                item.Promotion = _context.PromotionDetails
+                    .FirstOrDefault(pd => pd.ProductID == item.ProductID);
             }
 
             // Remove items with null products
@@ -395,7 +397,7 @@ namespace BachHoaXanh.Controllers
                     var order = new Order
                     {
                         UserID = u.UserID,
-                        TotalAmount = cartItems.Sum(ci => ci.Quantity * ci.Product.Price),
+                        TotalAmount = cartItems.Sum(ci => ci.Quantity * (ci.Promotion != null ? ci.Promotion.NewPrice : ci.Product.Price)),
                         PaymentMethodID = paymentMethodID,
                         ShippingAddress = fullAddress,
                         CreatedAt = DateTime.Now,

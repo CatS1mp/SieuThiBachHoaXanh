@@ -511,19 +511,49 @@
                         Sản phẩm này còn <b><u>@Model.Product.StockQuantity</u></b> sản phẩm trong kho
                     </p>
 
-                    <!-- Price Display -->
                     <div class="pprice-container">
                         <p class="label">Giá:</p>
                         <div class="price-controlers">
-                            <p class="price main-price"><b>@(Model.Product.Price.ToString("N0"))<sup><u>đ</u></sup></b></p>
+                            <p class="price main-price">
+                                <b>@Model.Product.Price.ToString("N0")<sup><u>đ</u></sup></b>
+                            </p>
                         </div>
                     </div>
-                    <div class="pprice-container">
-                        <p class="label">Tạm tính:</p>
-                        <div class="pprice-controllers">
-                            <p id="temporary-price" class="price main-price"><b>@(Model.Product.Price.ToString("N0")) <sup><u>đ</u></sup></b></p>
+
+                    @if (Model.Promotion != null)
+                    {
+                        <div class="pprice-container">
+                            <p class="label">Giảm giá:</p>
+                            <div class="price-controlers">
+                                @{
+                                    var discount = Model.Product.Price - Model.Promotion.NewPrice;
+                                }
+                                <p class="price text-danger">
+                                    -@discount.ToString("N0") <sup><u>đ</u></sup>
+                                </p>
+                            </div>
                         </div>
-                    </div>
+
+                        <div class="pprice-container">
+                            <p class="label">Tạm tính:</p>
+                            <div class="pprice-controllers">
+                                <p id="temporary-price" class="price main-price text-success">
+                                    <b>@Model.Promotion.NewPrice.ToString("N0") <sup><u>đ</u></sup></b>
+                                </p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="pprice-container">
+                            <p class="label">Tạm tính:</p>
+                            <div class="pprice-controllers">
+                                <p id="temporary-price" class="price main-price">
+                                    <b>@Model.Product.Price.ToString("N0") <sup><u>đ</u></sup></b>
+                                </p>
+                            </div>
+                        </div>
+                    }
 
                     <!-- Submit Button -->
                     <div class="btn-controls">
@@ -714,7 +744,9 @@
         var btnminus = document.querySelector('.qtyminus');
         var btnplus = document.querySelector('.qtyplus');
         var temporaryPriceDisplay = document.querySelector('#temporary-price');
-        var pricePerUnit = @((int)Model.Product.Price);
+        
+        var pricePerUnit = @((int)(Model.Promotion != null ? Model.Promotion.NewPrice : Model.Product.Price));
+
 
         if (input !== undefined && btnminus !== undefined && btnplus !== undefined && input !== null && btnminus !== null && btnplus !== null) {
             var min = Number(input.getAttribute('min'));

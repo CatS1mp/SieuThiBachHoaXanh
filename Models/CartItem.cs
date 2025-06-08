@@ -6,6 +6,8 @@
         public int ProductID { get; set; }
         public string? Note { get; set; } = "";
         public int PaymentMethodID { get; set; } = 1;
+        public PromotionDetail? Promotion { get; set; }
+
         // Not serialized: loaded from DB
         [System.Text.Json.Serialization.JsonIgnore]
         public Product Product { get; set; }

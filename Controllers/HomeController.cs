@@ -138,12 +138,17 @@ public class HomeController : Controller
 
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
 
+        
+
         var product = _context.ProductList
             .Include(p => p.Stocks)
             .Include(p => p.SubCategory)
             .ThenInclude(sc => sc.Category)
             .Include(p => p.Images)
             .FirstOrDefault(p => p.ProductID == id&&p.Stocks.Any(s => s.ExpirationDate > DateTime.Now));
+
+        var promotion = _context.PromotionDetails
+            .FirstOrDefault(p => p.ProductID == id);
 
         var user = _context.UserList.ToList();
         foreach (var u in user)
@@ -184,13 +189,14 @@ public class HomeController : Controller
         var view = new ProductDetailViewModel
         {
             Product = product,
+            Promotion = promotion,
             Reviews = reviews,
             TotalReviews = totalReviews,
             RatingDistribution = ratingDistribution,
             CurrentPage = page,
             TotalPages = (int)Math.Ceiling((double)totalReviews / pageSize),
             AverageRating = (double)Math.Round(averageRating, 1), // Làm tròn 1 chữ số thập phân
-            
+
         };
 
         

@@ -20,6 +20,7 @@ namespace BachHoaXanh.ViewModels
     public class ProductDetailViewModel
     {
         public Product Product { get; set; }
+        public PromotionDetail Promotion { get ; set; } 
         public List<Review> Reviews { get; set; }
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
