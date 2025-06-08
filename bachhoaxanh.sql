@@ -182,6 +182,24 @@ CREATE TABLE __EFMigrationsHistory (
     CONSTRAINT PK___EFMigrationsHistory PRIMARY KEY (MigrationId)
 );
 
+CREATE TABLE Promotions (
+    PromotionID INT PRIMARY KEY IDENTITY(1,1),
+    PromotionName NVARCHAR(250) NOT NULL,
+    StartDate DATETIME NOT NULL, 
+    EndDate DATETIME NOT NULL,
+    ImagePath NVARCHAR(255) NOT NULL,
+    ShowOnTop BIT NOT NULL DEFAULT 0 
+);
+
+CREATE TABLE PromotionDetails (
+    PromotionDetailID INT PRIMARY KEY IDENTITY(1,1),
+    PromotionID INT,
+    ProductID INT UNIQUE,
+    NewPrice DECIMAL(18, 2) NOT NULL,
+    FOREIGN KEY (PromotionID) REFERENCES Promotions(PromotionID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
 -- Inserting data for Categories (focused on greens, packaged food, and related essentials)
 INSERT INTO Categories (CategoryName) 
 VALUES 
@@ -303,7 +321,9 @@ VALUES
 (N'nguyen_quang_p', N'Nguyễn Quang P', N'nguyen.p@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345692', N'Customer'),
 (N'le_thi_q', N'Lê Thị Q', N'le.q@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345693', N'Customer'),
 (N'tran_thi_r', N'Trần Thị R', N'tran.r@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345694', N'Customer'),
-(N'ho_nguyen_s', N'Hồ Nguyễn S', N'ho.s@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345695', N'Customer');
+(N'ho_nguyen_s', N'Hồ Nguyễn S', N'ho.s@email.com', N'4297f44b13955235245b2497399d7a93', N'0912345695', N'Customer'),
+(N'Lam', N'Nguyễn Ngọc Thanh Lâm', N'nguyenngocthanhlamk16@siu.edu.vn', N'4297f44b13955235245b2497399d7a93', N'0123456789', N'Admin');
+
 
 UPDATE Users SET Address = N'123 Đường ABC, Phường 1, Quận 1, TP.HCM' WHERE UserName = N'admin';
 UPDATE Users SET Address = N'456 Đường XYZ, Phường 2, Quận 2, TP.HCM' WHERE UserName = N'tranvanminh';
@@ -323,6 +343,7 @@ UPDATE Users SET Address = N'303 Đường NOP, Phường 15, Quận 3, TP.HCM' 
 UPDATE Users SET Address = N'404 Đường QRS, Phường 16, Quận 4, TP.HCM' WHERE UserName = N'nguyen_quang_p';
 UPDATE Users SET Address = N'505 Đường TUV, Phường 17, Quận 5, TP.HCM' WHERE UserName = N'le_thi_q';
 UPDATE Users SET Address = N'606 Đường WXY, Phường 18, Quận 6, TP.HCM' WHERE UserName = N'tran_thi_r';
+UPDATE Users SET Address = N'707 Đường ZAB, Phường 19, Quận 7, TP.HCM' WHERE UserName = N'ho_nguyen_s';
 UPDATE Users SET Address = N'707 Đường ZAB, Phường 19, Quận 7, TP.HCM' WHERE UserName = N'ho_nguyen_s';
 
 -- Dữ liệu cho bảng PaymentMethods
@@ -759,3 +780,31 @@ END
 UPDATE Orders SET CanCancel = 1 WHERE CanCancel IS NULL;
 ALTER TABLE Orders ALTER COLUMN CanCancel bit NOT NULL;
 ALTER TABLE Orders ADD CONSTRAINT DF_Orders_CanCancel DEFAULT 1 FOR CanCancel;
+
+INSERT INTO Promotions (PromotionName, StartDate, EndDate, ImagePath, ShowOnTop)
+VALUES 
+('Summer Blast', '2025-06-01 00:00:00', '2025-06-30 23:59:59', 'promotions/summer-blast.jpg', 1),
+('Healthy Week', '2025-06-03 00:00:00', '2025-06-10 23:59:59', 'promotions/healthy-week.jpg', 1),
+('Fresh Deals', '2025-06-01 00:00:00', '2025-06-15 23:59:59', 'promotions/fresh-deals.jpg', 0),
+('Meat Lovers Sale', '2025-05-28 00:00:00', '2025-06-14 23:59:59', 'promotions/meat-sale.jpg', 0),
+('Veggie Boost', '2025-06-02 00:00:00', '2025-06-20 23:59:59', 'promotions/veggie-boost.jpg', 0);
+
+
+INSERT INTO PromotionDetails (PromotionID, ProductID, NewPrice)
+VALUES 
+(3, 2, 25000),
+(3, 5, 20000),
+(3, 10, 90000),
+(3, 18, 50000),
+(3, 17, 30000),
+
+(4, 3, 499000),
+(4, 14, 140000),
+(4, 12, 10000000),
+(4, 15, 30000),
+
+(5, 6, 130000),
+(5, 9, 10000),
+(5, 16, 25000),
+(5, 4, 1100000);
+

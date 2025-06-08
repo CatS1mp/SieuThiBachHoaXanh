@@ -18,6 +18,8 @@ namespace BachHoaXanh.Data
         public DbSet<Product> ProductList { get; set; }
         public DbSet<Review> ReviewList { get; set; }
         public DbSet<FavoriteProduct> FavoriteProductList { get; set; }
+        public DbSet<PromotionDetail> PromotionDetails { get; set; }
+        public DbSet<Promotion> Promotions { get; set; }
         public DbSet<StockProduct> StockProductList { get; set; }
         public DbSet<ProductImage> ProductImageList { get; set; }
 

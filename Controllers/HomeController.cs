@@ -9,6 +9,8 @@ using System;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+
 
 public class HomeController : Controller
 {
@@ -24,13 +26,10 @@ public class HomeController : Controller
     {
 
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
-        Console.WriteLine($"Home UserID: {userId}");
 
         int pageSize = 8;
         var categories = _context.CategoryList.Include(c => c.SubCategories).ToList();
-        var productsQuery = _context.ProductList
-                            .Where(p => p.Status != ProductStatus.NgungKinhDoanh)
-                            .AsQueryable();
+        var productsQuery = _context.ProductList.AsQueryable();
 
         if (!string.IsNullOrEmpty(search))
         {
@@ -58,23 +57,61 @@ public class HomeController : Controller
             page = totalPages;
         }
 
+
         var products = productsQuery
-            .Include(p => p.Stocks)
             .Include(p => p.SubCategory)
             .ThenInclude(sc => sc.Category)
             .Include(p => p.Images)
-            .Skip((page - 1) * pageSize) 
+            .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();
-        foreach(var product in products)
+
+
+        foreach (var product in products)
         {
             var isFavorite = _context.FavoriteProductList
                 .Any(f => f.UserID == userId && f.ProductID == product.ProductID);
             product.isFav = isFavorite;
         }
+
+
+        var now = DateTime.Now;
+
+        var activePromotions = _context.Promotions
+            .Where(p => p.StartDate <= now && p.EndDate >= now)
+            .Include(p => p.PromotionDetails)
+                .ThenInclude(pd => pd.Product)
+            .ToList();
+
+        Console.WriteLine($"Found {activePromotions.Count} active promotions.");
+
+        var productDict = products.ToDictionary(p => p.ProductID);
+        Console.WriteLine($"Created product dictionary with {productDict.Count} products.");
+
+        foreach (var promotion in activePromotions)
+        {
+            Console.WriteLine($"Promotion ID: {promotion.PromotionID} has {promotion.PromotionDetails?.Count ?? 0} promotion details.");
+
+            foreach (var promoDetail in promotion.PromotionDetails!)
+            {
+                Console.WriteLine($"Checking product ID: {promoDetail.ProductID} with new price: {promoDetail.NewPrice}");
+
+                if (productDict.TryGetValue(promoDetail.ProductID, out var product))
+                {
+                    product.PromotionPrice = promoDetail.NewPrice;
+                    Console.WriteLine($"Updated product ID: {product.ProductID} with PromotionPrice: {product.PromotionPrice}");
+                }
+                else
+                {
+                    Console.WriteLine($"Product ID: {promoDetail.ProductID} not found in product dictionary.");
+                }
+            }
+        }
+
         var productViewModel = new ProductViewModel
         {
             Products = products,
+            Promotions = activePromotions,
             Categories = categories,
             CurrentPage = page,
             TotalPages = totalPages,
@@ -85,6 +122,7 @@ public class HomeController : Controller
 
         return View(productViewModel);
     }
+
 
     [Route("san-pham/{id}")]
     public IActionResult Detail(int id, int page = 1)
@@ -169,16 +207,15 @@ public class HomeController : Controller
 
         return View(view);
     }
-    [Authorize]
+
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddToFavorites(int productId, string returnUrl = null)
     {
-
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
-        Console.WriteLine($"Use1rID: {userId}");
         if (userId == -1)
         {
-            return RedirectToAction("Login", "User");
+            return Unauthorized();
         }
         var favorite = await _context.FavoriteProductList
             .FirstOrDefaultAsync(f => f.UserID == userId && f.ProductID == productId);
@@ -197,13 +234,7 @@ public class HomeController : Controller
         if (product != null)
             product.isFav = true;
 
-        // Optional: return status or redirect
-        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-        {
-            return Redirect(returnUrl); // if returning a full view
-        }
-
-        return Ok(); // if calling from JavaScript and only expect status
+        return Ok();
     }
     // Xử lý gửi đánh giá
     [Authorize]
@@ -260,7 +291,6 @@ public class HomeController : Controller
     public async Task<IActionResult> RemoveFromFavorites(int productId, string returnUrl = null)
     {
         int userId = int.TryParse(User.FindFirstValue("UserID"), out int parsedId) ? parsedId : -1;
-        Console.WriteLine($"Use2rID: {userId}");
 
         var favorite = await _context.FavoriteProductList
             .FirstOrDefaultAsync(f => f.UserID == userId && f.ProductID == productId);
@@ -274,12 +304,6 @@ public class HomeController : Controller
         var product = await _context.ProductList.FirstOrDefaultAsync(p => p.ProductID == productId);
         if (product != null)
             product.isFav = false;
-
-        // Optional: return status or redirect
-        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-        {
-            return Redirect(returnUrl); // if returning a full view
-        }
 
         return Ok(); // if calling from JavaScript and only expect status
     }
