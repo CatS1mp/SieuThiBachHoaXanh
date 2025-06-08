@@ -44,6 +44,31 @@
         margin-top: 10px;
         display: inline-block;
     }
+
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+
+    .alert-success {
+        color: #155724;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+
+    .alert-danger {
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+
+    .alert-warning {
+        color: #856404;
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+    }
 </style>
 <div class="container-wrapper">
     @await Html.PartialAsync("_SidebarOverplay")
@@ -55,15 +80,38 @@
         <p>Danh sách sản phẩm trong giỏ hàng của bạn</p>
     </div>
 
-    <!-- Address selector with radio buttons -->
-    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (TempData["CartMessage"] != null)
+    {
+        <div class="alert alert-warning">
+            @TempData["CartMessage"]
+        </div>
+    }
 
     @await Html.PartialAsync("_CartPartial", Model)
 </div>
 
 <script>
+    // Payment method handling
     document.getElementById("paymentMethod")?.addEventListener("change", function () {
         const selectedPaymentMethod = parseInt(this.value, 10);
+        updatePaymentMethod(selectedPaymentMethod);
+    });
+
+    function updatePaymentMethod(selectedPaymentMethod) {
         $.ajax({
             url: '@Url.Action("UpdatePaymentMethod", "Cart")',
             contentType: 'application/json; charset=utf-8',
@@ -71,36 +119,48 @@
             type: 'POST',
             success: function (response) {
                 console.log(response.message);
+                updateCartItems(); // Refresh cart after payment method update
             },
             error: function (err) {
                 console.error('Error updating payment method:', err);
+                alert('Không thể cập nhật phương thức thanh toán. Vui lòng thử lại.');
             }
         });
-    });
+    }
 
+    // Clear cart handling
     document.getElementById("clearCartButton")?.addEventListener("click", function () {
         if (confirm("Bạn có chắc chắn muốn xoá hết giỏ hàng?")) {
-            $.ajax({
-                url: '@Url.Action("ClearAllCart", "Cart")',
-                type: 'POST',
-                success: function (response) {
-                    window.location.reload();
-                },
-                error: function (err) {
-                    console.error('Error clearing cart:', err);
-                }
-            });
+            clearCart();
         }
     });
 
+    function clearCart() {
+        $.ajax({
+            url: '@Url.Action("ClearAllCart", "Cart")',
+            type: 'POST',
+            success: function (response) {
+                window.location.reload();
+            },
+            error: function (err) {
+                console.error('Error clearing cart:', err);
+                alert('Không thể xoá giỏ hàng. Vui lòng thử lại.');
+            }
+        });
+    }
+
+    // Order creation handling
     document.querySelector(".order-btn")?.addEventListener("click", function (event) {
+        event.preventDefault();
+        createOrder();
+    });
+
+    function createOrder() {
         const shippingAddressID = document.querySelector('input[name="shippingAddress"]:checked')?.value;
         const note = document.getElementById('orderNote')?.value.trim() || '';
 
-        // Kiểm tra nếu chưa chọn địa chỉ
         if (!shippingAddressID) {
             alert("Vui lòng chọn địa chỉ giao hàng!");
-            event.preventDefault();
             return;
         }
 
@@ -124,7 +184,6 @@
                 error: function (xhr) {
                     const errorMessage = xhr.responseJSON?.message || "Có lỗi xảy ra khi tạo đơn hàng.";
                     alert(errorMessage);
-                    console.error('Error creating order:', xhr);
                 }
             });
         }
@@ -135,65 +194,84 @@
 
     function updateCartItems() {
         let grandTotal = 0;
-        const cartItemsData = Array.from(document.querySelectorAll('.cart-item')).map(item => {
-            const productId = item.dataset.productId;
-            const quantity = parseInt(item.querySelector('.qty').value, 10);
+        const cartItemsData = [];
+        
+        document.querySelectorAll('.cart-item').forEach(item => {
+            const productId = parseInt(item.dataset.productId, 10);
+            const quantityInput = item.querySelector('.qty');
+            const quantity = parseInt(quantityInput.value, 10);
             const price = parseFloat(item.querySelector('.product-price').value);
+            const maxStock = parseInt(quantityInput.getAttribute('max'), 10);
+
+            // Validate quantity
+            if (quantity > maxStock) {
+                alert(`Số lượng vượt quá tồn kho. Tối đa: ${maxStock}`);
+                quantityInput.value = maxStock;
+                return;
+            }
 
             const totalPrice = price * quantity;
             grandTotal += totalPrice;
             item.querySelector('.cart-price').textContent = formatCurrency(totalPrice);
 
-            return { productId, quantity };
+            cartItemsData.push({ 
+                productId: productId, 
+                quantity: quantity 
+            });
         });
 
-        document.querySelector('.grand-total').textContent = formatCurrency(grandTotal);
+        // Update total displays
+        document.querySelectorAll('.grand-total').forEach(el => {
+            el.textContent = formatCurrency(grandTotal);
+        });
 
-        const orderBtnGrandTotal = document.querySelector('.order-btn .grand-total');
-        if (orderBtnGrandTotal) {
-            orderBtnGrandTotal.textContent = formatCurrency(grandTotal);
+        // Update cart in backend
+        if (cartItemsData.length > 0) {
+            $.ajax({
+                url: '@Url.Action("UpdateCart", "Cart")',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(cartItemsData),
+                type: 'POST',
+                success: function (response) {
+                    updateCartCount();
+                },
+                error: function (xhr) {
+                    const errorMessage = xhr.responseJSON?.message || "Có lỗi xảy ra khi cập nhật giỏ hàng.";
+                    alert(errorMessage);
+                }
+            });
         }
-
-        $.ajax({
-            url: '@Url.Action("UpdateCart", "Cart")',
-            contentType: 'application/json; charset=utf-8',
-            data: JSON.stringify(cartItemsData),
-            type: 'POST',
-            success: function (data) {
-                console.log('Cart updated successfully.');
-            },
-            error: function (err) {
-                console.log('Error updating cart:', err);
-            }
-        });
     }
 
     function removeFromCart(productId) {
-        $.ajax({
-            url: '@Url.Action("RemoveCart", "Cart")',
-            type: 'POST',
-            contentType: 'application/json; charset=utf-8',
-            data: JSON.stringify(productId),
-            success: function (data) {
-                updateCartCount();
-                updateCartItems();
-                location.reload();
-            },
-            error: function (err) {
-                console.log('Error removing product:', err);
-            }
-        });
+        if (confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+            $.ajax({
+                url: '@Url.Action("RemoveCart", "Cart")',
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(productId),
+                success: function (response) {
+                    if (response.success) {
+                        updateCartCount();
+                        location.reload();
+                    }
+                },
+                error: function (err) {
+                    console.error('Error removing product:', err);
+                    alert('Không thể xóa sản phẩm. Vui lòng thử lại.');
+                }
+            });
+        }
     }
 
     function updateCartCount() {
         $.ajax({
-            url: '/cart/count',
+            url: '@Url.Action("GetCartItemCount", "Cart")',
             type: 'GET',
-            success: function (data) {
-                $('.cart-amount').text(data);
-            },
-            error: function (err) {
-                console.log('Error fetching cart count:', err);
+            success: function (count) {
+                document.querySelectorAll('.cart-amount').forEach(el => {
+                    el.textContent = count;
+                });
             }
         });
     }
@@ -201,7 +279,9 @@
     function decreaseQuantity(productId) {
         const quantityInput = document.getElementById(`quantity-${productId}`);
         const currentValue = parseInt(quantityInput.value, 10);
-        if (currentValue > parseInt(quantityInput.min, 10)) {
+        const minValue = parseInt(quantityInput.min, 10) || 1;
+        
+        if (currentValue > minValue) {
             quantityInput.value = currentValue - 1;
             updateCartItems();
         }
@@ -210,17 +290,36 @@
     function increaseQuantity(productId) {
         const quantityInput = document.getElementById(`quantity-${productId}`);
         const currentValue = parseInt(quantityInput.value, 10);
-        if (currentValue < parseInt(quantityInput.max, 10)) {
+        const maxValue = parseInt(quantityInput.max, 10);
+        
+        if (currentValue < maxValue) {
             quantityInput.value = currentValue + 1;
             updateCartItems();
+        } else {
+            alert(`Số lượng đã đạt tối đa (${maxValue})`);
         }
     }
 
+    // Initialize cart on page load
     document.addEventListener('DOMContentLoaded', () => {
         updateCartItems();
+        
+        // Add input event listeners to quantity inputs
+        document.querySelectorAll('.qty').forEach(input => {
+            input.addEventListener('change', function() {
+                const value = parseInt(this.value, 10);
+                const min = parseInt(this.min, 10) || 1;
+                const max = parseInt(this.max, 10);
+                
+                if (value < min) {
+                    this.value = min;
+                } else if (value > max) {
+                    this.value = max;
+                    alert(`Số lượng vượt quá tồn kho. Tối đa: ${max}`);
+                }
+                
+                updateCartItems();
+            });
+        });
     });
-
-    function openPaymentMethodModal() {
-        $('#paymentMethodModal').modal('show');
-    }
 </script>

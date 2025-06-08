@@ -17,7 +17,7 @@ function toggleChat(toggle = true) {
         toggleBtn.style.display = isChatOpen ? 'none' : 'block';
     }
     if (isChatOpen) {
-        scrollToBottom();
+        setTimeout(scrollToBottom, 200);
     }
 }
 
@@ -81,7 +81,7 @@ async function sendMessage() {
         saveChatHistory();
     }
 
-    scrollToBottom();
+    setTimeout(scrollToBottom, 200);
 }
 
 function appendMessage(content, className, isHtml = false) {
@@ -122,8 +122,8 @@ function showTypingIndicator(show) {
 }
 
 function scrollToBottom() {
-    const messagesDiv = document.getElementById('chat-messages');
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    var messages = document.getElementById('chat-messages');
+    if (messages) messages.scrollTop = messages.scrollHeight;
 }
 
 function saveChatHistory() {

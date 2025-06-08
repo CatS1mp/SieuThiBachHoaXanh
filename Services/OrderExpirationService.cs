@@ -17,20 +17,32 @@ namespace BachHoaXanh.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                using (var scope = _serviceProvider.CreateScope())
+                try
                 {
-                    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                    var expiredOrders = context.OrderList
-                        .Where(o => o.OrderStatus == "Pending" && o.CreatedAt <= DateTime.Now.AddHours(-1))
-                        .ToList();
-
-                    foreach (var order in expiredOrders)
+                    using (var scope = _serviceProvider.CreateScope())
                     {
-                        order.CanCancel = false;
-                    }
+                        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                    await context.SaveChangesAsync();
+                        var expiredOrders = context.OrderList
+                            .Where(o => o.OrderStatus != null && o.OrderStatus == "Pending" && o.CreatedAt <= DateTime.Now.AddHours(-1))
+                            .ToList();
+
+                        foreach (var order in expiredOrders)
+                        {
+                            if (order != null)
+                            {
+                                order.CanCancel = false;
+                                order.UpdatedAt = DateTime.Now;
+                            }
+                        }
+
+                        await context.SaveChangesAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error but continue running
+                    Console.WriteLine($"Error in OrderExpirationService: {ex.Message}");
                 }
 
                 await Task.Delay(_interval, stoppingToken);

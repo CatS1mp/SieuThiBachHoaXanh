@@ -48,6 +48,13 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
+// Update CanCancel default value
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.UpdateOrderCanCancelDefault();
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");

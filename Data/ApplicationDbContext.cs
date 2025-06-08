@@ -34,6 +34,33 @@ namespace BachHoaXanh.Data
                 .HasOne(f => f.User)
                 .WithMany()
                 .HasForeignKey(f => f.UserID);
+
+            // Configure decimal precision
+            modelBuilder.Entity<Order>()
+                .Property(o => o.TotalAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<OrderDetail>()
+                .Property(od => od.UnitPrice)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Price)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.Points)
+                .HasPrecision(18, 2);
+
+            // Configure CanCancel default value
+            modelBuilder.Entity<Order>()
+                .Property(o => o.CanCancel)
+                .HasDefaultValue(true);
+        }
+
+        public void UpdateOrderCanCancelDefault()
+        {
+            Database.ExecuteSqlRaw("UPDATE Orders SET CanCancel = 1 WHERE CanCancel IS NULL");
         }
     }
 }
