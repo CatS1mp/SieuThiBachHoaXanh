@@ -59,6 +59,7 @@ public class HomeController : Controller
 
 
         var products = productsQuery
+            .Include(p=> p.Stocks)
             .Include(p => p.SubCategory)
             .ThenInclude(sc => sc.Category)
             .Include(p => p.Images)
