@@ -217,21 +217,29 @@
     position: fixed;
     bottom: 30px;
     right: 30px;
-    background: #00a550;
+    background: #00A65A;
     color: #fff;
     border: none;
     border-radius: 50%;
-    width: 56px;
-    height: 56px;
-    font-size: 28px;
+    width: 70px;
+    height: 70px;
+    font-size: 40px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     z-index: 1100;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s;
+    transition: background 0.2s, box-shadow 0.2s;
 }
 .chat-toggle-btn:hover {
-    background: #008c42;
+    background: #008d4c;
+    box-shadow: 0 4px 16px rgba(226,85,163,0.15);
+}
+#chat-heart-icon {
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    margin: auto;
+    display: block;
 }

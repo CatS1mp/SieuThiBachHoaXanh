@@ -3,6 +3,41 @@
 
 @{
     ViewData["Title"] = "Thông tin tài khoản";
+    string rankIcon = "";
+    string rankColor = "";
+    string rankShadow = "";
+    string rankClass = Model.Rank?.ToLower().Replace(" ", "-") ?? "chua-xep-hang";
+
+    string fullName = Model.UserName ?? "Khách hàng";
+
+    switch (Model.Rank)
+    {
+        case "Vàng":
+            rankIcon = @"<svg width='40' height='40' viewBox='0 0 24 24' fill='none' style='filter: drop-shadow(0 0 8px #ffe082);'><defs><radialGradient id='goldGrad' cx='50%' cy='50%' r='50%'><stop offset='0%' stop-color='#fffde7'/><stop offset='100%' stop-color='#FFC107'/></radialGradient></defs><circle cx='12' cy='12' r='12' fill='url(#goldGrad)'/><path d='M12 6l2.09 4.26L19 10.27l-3.45 3.36L16.18 19 12 16.77 7.82 19l.63-5.37L5 10.27l4.91-.01L12 6z' fill='#fff'/></svg>";
+            rankColor = "#FFC107";
+            rankShadow = "0 0 12px #ffe082";
+            break;
+        case "Bạc":
+            rankIcon = @"<svg width='40' height='40' viewBox='0 0 24 24' fill='none' style='filter: drop-shadow(0 0 8px #b0bec5);'><defs><radialGradient id='silverGrad' cx='50%' cy='50%' r='50%'><stop offset='0%' stop-color='#fff'/><stop offset='100%' stop-color='#90CAF9'/></radialGradient></defs><circle cx='12' cy='12' r='12' fill='url(#silverGrad)'/><path d='M12 6l2.09 4.26L19 10.27l-3.45 3.36L16.18 19 12 16.77 7.82 19l.63-5.37L5 10.27l4.91-.01L12 6z' fill='#fff'/></svg>";
+            rankColor = "#90CAF9";
+            rankShadow = "0 0 12px #b0bec5";
+            break;
+        case "Đồng":
+            rankIcon = @"<svg width='40' height='40' viewBox='0 0 24 24' fill='none' style='filter: drop-shadow(0 0 8px #ffab91);'><defs><radialGradient id='bronzeGrad' cx='50%' cy='50%' r='50%'><stop offset='0%' stop-color='#fff3e0'/><stop offset='100%' stop-color='#FF7043'/></radialGradient></defs><circle cx='12' cy='12' r='12' fill='url(#bronzeGrad)'/><path d='M12 6l2.09 4.26L19 10.27l-3.45 3.36L16.18 19 12 16.77 7.82 19l.63-5.37L5 10.27l4.91-.01L12 6z' fill='#fff'/></svg>";
+            rankColor = "#FF7043";
+            rankShadow = "0 0 12px #ffab91";
+            break;
+        case "Kim cương":
+            rankIcon = @"<svg width='40' height='40' viewBox='0 0 24 24' fill='none' style='filter: drop-shadow(0 0 20px #00e5ff);'><defs><radialGradient id='diamondBlackGrad' cx='50%' cy='50%' r='50%'><stop offset='0%' stop-color='#fff'/><stop offset='100%' stop-color='#222'/></radialGradient></defs><circle cx='12' cy='12' r='12' fill='url(#diamondBlackGrad)'/><g><polygon points='12,7 16,14 8,14' fill='#fff'/><polygon points='12,9.5 9.5,14 14.5,14' fill='#222'/></g><g><circle cx='12' cy='12' r='12' fill='url(#diamondBlackGrad)' opacity='0.18'/></g><g><animateTransform attributeName='transform' type='rotate' from='0 12 12' to='360 12 12' dur='2s' repeatCount='indefinite'/><polygon points='12,4 13,8 11,8' fill='#00e5ff' opacity='0.7'/></g></svg>";
+            rankColor = "#222";
+            rankShadow = "0 0 24px #00e5ff, 0 0 48px #b2ebf2";
+            break;
+        default:
+            rankIcon = @"<svg width='40' height='40' viewBox='0 0 24 24' fill='none' style='filter: drop-shadow(0 0 6px #bdbdbd);'><circle cx='12' cy='12' r='12' fill='#E0E0E0'/><text x='12' y='16' text-anchor='middle' font-size='18' fill='#bdbdbd'>?</text></svg>";
+            rankColor = "#E0E0E0";
+            rankShadow = "0 0 8px #bdbdbd";
+            break;
+    }
 }
 
 <style>
@@ -189,7 +224,7 @@
     .current-rank {
         color: #4caf50;
         font-weight: bold;
-    }
+        }
 
     @@media (max-width: 768px) {
         .profile-container
@@ -214,6 +249,146 @@
         text-align: center;
     }
 
+    }
+
+    .membership-card-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 32px 0 24px 0;
+    }
+    .membership-card {
+        width: 480px;
+        height: 210px;
+        border-radius: 28px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 1.5px 8px #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        position: relative;
+        background: linear-gradient(120deg, #fff, #f5f5f5 80%);
+        margin-bottom: 36px;
+        transition: box-shadow 0.3s;
+        overflow: hidden;
+    }
+    .membership-card.vàng { background: linear-gradient(120deg, #fffde7, #ffe082 80%); }
+    .membership-card.bạc { background: linear-gradient(120deg, #f5fafd, #b0bec5 80%); }
+    .membership-card.đồng { background: linear-gradient(120deg, #fff3e0, #ffab91 80%); }
+    .membership-card.kim-cương { background: linear-gradient(120deg, #232526 0%, #00e5ff 100%); }
+    .membership-card.chưa-xếp-hạng { background: linear-gradient(120deg, #f5f5f5, #e0e0e0 80%); }
+    .card-icon {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        box-shadow: 0 0 24px rgba(0,0,0,0.10);
+        background: rgba(255,255,255,0.8);
+        margin-right: 32px;
+        margin-left: 32px;
+        position: relative;
+    }
+    .membership-card.kim-cương .card-icon {
+        animation: diamond-glow 2s infinite alternate;
+        box-shadow: 0 0 32px #00e5ff, 0 0 64px #b2ebf2;
+    }
+    @@keyframes diamond-glow {
+        0% { box-shadow: 0 0 32px #00e5ff, 0 0 64px #b2ebf2; }
+        100% { box-shadow: 0 0 64px #00e5ff, 0 0 120px #b2ebf2; }
+    }
+    .card-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .card-rank {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 6px;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 8px #fff;
+    }
+    .membership-card.vàng .card-rank { color: #FFC107; }
+    .membership-card.bạc .card-rank { color: #90CAF9; }
+    .membership-card.đồng .card-rank { color: #FF7043; }
+    .membership-card.kim-cương .card-rank { color: #00e5ff; }
+    .membership-card.chưa-xếp-hạng .card-rank { color: #BDBDBD; }
+    .card-name {
+        font-size: 20px;
+        color: #222;
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+    .card-points {
+        font-size: 18px;
+        color: #666;
+        font-weight: 400;
+    }
+    .card-logo {
+        position: absolute;
+        bottom: 18px;
+        right: 24px;
+        opacity: 0.13;
+        width: 100px;
+    }
+    .membership-milestones {
+        display: flex;
+        justify-content: center;
+        gap: 36px;
+        margin-bottom: 16px;
+    }
+    .milestone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 14px;
+        color: #888;
+        font-weight: 500;
+    }
+    .milestone-icon {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .milestone.active .milestone-icon {
+        filter: drop-shadow(0 0 10px #ffc107);
+        transform: scale(1.15);
+    }
+    .milestone.gold .milestone-icon { color: #FFC107; }
+    .milestone.silver .milestone-icon { color: #90CAF9; }
+    .milestone.bronze .milestone-icon { color: #FF7043; }
+    .milestone.diamond .milestone-icon { color: #00e5ff; }
+    .milestone.unranked .milestone-icon { color: #BDBDBD; }
+    .progress-bar-modern {
+        width: 480px;
+        margin: 0 auto 18px auto;
+    }
+    .progress-bar-modern .bar-bg {
+        height: 18px;
+        background: #e0e0e0;
+        border-radius: 9px;
+        overflow: hidden;
+        margin-bottom: 8px;
+        box-shadow: 0 2px 8px #eee;
+    }
+    .progress-bar-modern .bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #00e5ff 0%, #4caf50 100%);
+        border-radius: 9px;
+        transition: width 0.5s;
+    }
+    .progress-bar-modern .bar-label {
+        text-align: right;
+        font-size: 15px;
+        color: #666;
+        font-weight: 500;
     }
 </style>
 
@@ -271,70 +446,63 @@
                         <option value="add-new">Thêm địa chỉ mới</option>
                     </select>
                 </div>
-                <div class="membership-section">
-                    <div class="membership-info">
-                        <div>
-                            <label>Điểm tích lũy</label>
-                            <input type="text" value="@Model.Points.ToString("N0")" readonly style="border: none; background: transparent; width: auto; display: inline; font-weight: 600; font-size: 18px;" />
+                <div class="membership-card-container">
+                    <div class="membership-card @rankClass">
+                        <div class="card-icon">
+                            @Html.Raw(rankIcon)
                         </div>
-                        <div class="membership-badge">@Model.Rank</div>
+                        <div class="card-info">
+                            <div class="card-rank">@Model.Rank</div>
+                            <div class="card-name">@fullName</div>
+                            <div class="card-points">@Model.Points.ToString("N0") điểm</div>
+                        </div>
+                        <div class="card-logo">
+                            <img src="/images/logo.png" alt="Logo" style="width:100px;" />
+                        </div>
                     </div>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="height: 12px; background: #e0e0e0; border-radius: 5px; overflow: hidden;">
-                            @{
-                                double progress = 0;
-                                double min = 0, max = 0;
-                                string nextRank = "";
-                                if (Model.Rank == "Kim cương")
-                                {
-                                    min = 10000; max = 10000; progress = 100; nextRank = "";
-                                }
-                                else if (Model.Rank == "Vàng")
-                                {
-                                    min = 1000; max = 10000; progress = ((double)Model.Points - min) / (max - min) * 100; nextRank = "Kim cương";
-                                }
-                                else if (Model.Rank == "Bạc")
-                                {
-                                    min = 500; max = 1000; progress = ((double)Model.Points - min) / (max - min) * 100; nextRank = "Vàng";
-                                }
-                                else if (Model.Rank == "Đồng")
-                                {
-                                    min = 100; max = 500; progress = ((double)Model.Points - min) / (max - min) * 100; nextRank = "Bạc";
-                                }
-                                else // Chưa xếp hạng
-                                {
-                                    min = 0; max = 100; progress = ((double)Model.Points - min) / (max - min) * 100; nextRank = "Đồng";
-                                }
-                                progress = Math.Min(100, Math.Max(0, progress));
-                            }
-                            <div class="progress-fill" style="width: @progress%; height: 100%; background: linear-gradient(90deg, #4caf50, #8bc34a); border-radius: 5px; transition: width 0.5s ease;"></div>
+                    <div class="membership-milestones">
+                        <div class="milestone unranked @(Model.Rank == "Chưa xếp hạng" ? "active" : "")">
+                            <div class="milestone-icon"><svg width="32" height="32" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#E0E0E0"/><text x="12" y="16" text-anchor="middle" font-size="16" fill="#bdbdbd">?</text></svg></div>
+                            <span>Chưa xếp hạng</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: #666;">
-                            @if (Model.Rank == "Chưa xếp hạng")
-                            {
-                                <span class="current-rank">Chưa xếp hạng</span>
-                                <span>Đồng</span>
-                            }
-                            else if (Model.Rank == "Đồng")
-                            {
-                                <span class="current-rank">Đồng</span>
-                                <span>Bạc</span>
-                            }
-                            else if (Model.Rank == "Bạc")
-                            {
-                                <span class="current-rank">Bạc</span>
-                                <span>Vàng</span>
-                            }
-                            else if (Model.Rank == "Vàng")
-                            {
-                                <span class="current-rank">Vàng</span>
-                                <span>Kim cương</span>
-                            }
-                            else if (Model.Rank == "Kim cương")
-                            {
-                                <span class="current-rank">Kim cương</span>
-                            }
+                        <div class="milestone bronze @(Model.Rank == "Đồng" ? "active" : "")">
+                            <div class="milestone-icon"><svg width="32" height="32" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#FF7043"/></svg></div>
+                            <span>Đồng</span>
                         </div>
+                        <div class="milestone silver @(Model.Rank == "Bạc" ? "active" : "")">
+                            <div class="milestone-icon"><svg width="32" height="32" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#90CAF9"/></svg></div>
+                            <span>Bạc</span>
+                        </div>
+                        <div class="milestone gold @(Model.Rank == "Vàng" ? "active" : "")">
+                            <div class="milestone-icon"><svg width="32" height="32" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#FFC107"/></svg></div>
+                            <span>Vàng</span>
+                        </div>
+                        <div class="milestone diamond @(Model.Rank == "Kim cương" ? "active" : "")">
+                            <div class="milestone-icon"><svg width="32" height="32" viewBox="0 0 24 24"><defs><radialGradient id="diamondMilestone" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#00B8D4"/></radialGradient></defs><circle cx="12" cy="12" r="12" fill="url(#diamondMilestone)"/></svg></div>
+                            <span>Kim cương</span>
+                        </div>
+                    </div>
+                    @{
+                        double progress = 0;
+                        double min = 0, max = 0;
+                        string nextRank = "";
+                        double nextRankPoint = 0;
+                        if (Model.Rank == "Kim cương") { min = 10000; max = 10000; progress = 100; nextRank = ""; nextRankPoint = 0; }
+                        else if (Model.Rank == "Vàng") { min = 1000; max = 10000; progress = ((double)Model.Points - min) / (max - min) * 100; nextRank = "Kim cương"; nextRankPoint = 10000; }
+                        else if (Model.Rank == "Bạc") { min = 500; max = 1000; progress = ((double)Model.Points - min) / (max - min) * 100; nextRank = "Vàng"; nextRankPoint = 1000; }
+                        else if (Model.Rank == "Đồng") { min = 100; max = 500; progress = ((double)Model.Points - min) / (max - min) * 100; nextRank = "Bạc"; nextRankPoint = 500; }
+                        else { min = 0; max = 100; progress = ((double)Model.Points - min) / (max - min) * 100; nextRank = "Đồng"; nextRankPoint = 100; }
+                        progress = Math.Min(100, Math.Max(0, progress));
+                        double remain = nextRankPoint - (double)Model.Points;
+                    }
+                    <div class="progress-bar-modern">
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="width: @progress%;"></div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(nextRank) && remain > 0)
+                        {
+                            <div class="bar-label">Cần thêm <b>@remain.ToString("N0")</b> điểm để lên hạng <b>@nextRank</b></div>
+                        }
                     </div>
                 </div>
                 <button type="submit" class="auth-btn">Lưu thay đổi</button>
