@@ -416,7 +416,6 @@ VALUES
 
 INSERT INTO PromotionDetails (PromotionID, ProductID, NewPrice)
 VALUES 
-(3, 2, 25000),
 (3, 5, 20000),
 (3, 10, 90000),
 (3, 18, 50000),

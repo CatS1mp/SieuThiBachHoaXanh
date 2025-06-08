@@ -121,8 +121,6 @@ public class HomeController : Controller
 
         return View(productViewModel);
     }
-
-
     [Route("san-pham/{id}")]
     public IActionResult Detail(int id)
     {
