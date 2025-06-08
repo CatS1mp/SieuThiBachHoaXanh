@@ -130,13 +130,13 @@
             </div>
         </div>
     </div>
-    <div class="row gy-5 justify-content-center mx-5 mt-5">
-        <div class="col-md-3 px-1 py-2">
+    <div class="row g-0 justify-content-center mx-5 mt-5">
+        <div class="col-md-3 px-1">
             @await Html.PartialAsync("_Sidebar")
         </div>
-        <div class="col-md-9 px-1 py-2">
+        <div class="col-md-9 px-1">
             <!-- Product List -->
-            <div class="row gy-2 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+            <div id="product-list-container" class="product-list-container">
                 @foreach (var product in Model.Products)
                 {
                     <div class="col px-1 py-1">
@@ -182,9 +182,8 @@
                                     </span>
                                 </div>
 
-                                <a href="/san-pham/@product.ProductID" class="btn btn-outline-primary product-btn">
-                                    <i class="bi bi-cart-plus"></i> Xem chi tiết
-                                </a>
+                                    <button class="btn btn-outline-primary"><i class="bi bi-cart-plus"></i> Add to
+                                        Cart</button>
 
                                 </div>
                             </div>
@@ -202,7 +201,7 @@
             </div>
 
             <!-- Pagination -->
-            @* <div class="pagination-container">
+            <div class="pagination-container">
                 @if (Model.CurrentPage > 1)
                 {
                     <a href="@Url.Action("Index", "Home", new { page = Model.CurrentPage - 1, search = Model.SearchQuery, danhmuc = Model.SubCategoryId })"
@@ -220,7 +219,7 @@
                         Tiếp tục <i class="fas fa-chevron-right"></i>
                     </a>
                 }
-            </div> *@
+            </div>
 
         </div>
 
