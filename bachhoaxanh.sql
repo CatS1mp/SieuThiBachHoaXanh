@@ -755,6 +755,7 @@ BEGIN
     END
     SET @pid = @pid + 1;
 END
+
 UPDATE Orders SET CanCancel = 1 WHERE CanCancel IS NULL;
 ALTER TABLE Orders ALTER COLUMN CanCancel bit NOT NULL;
 ALTER TABLE Orders ADD CONSTRAINT DF_Orders_CanCancel DEFAULT 1 FOR CanCancel;

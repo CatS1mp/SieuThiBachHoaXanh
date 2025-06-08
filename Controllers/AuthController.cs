@@ -109,7 +109,7 @@ namespace BachHoaXanh.Controllers
             return Json(new { success = true, message = "Đã xóa dữ liệu khuôn mặt thành công." });
         }
 
-        [HttpPost]
+        [HttpPost("VerifyFace")]
         public async Task<IActionResult> VerifyFace(int userId, IFormFile image)
         {
             var user = await _context.UserList.FirstOrDefaultAsync(u => u.UserID == userId && u.Role == "Admin");

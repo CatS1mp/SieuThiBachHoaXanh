@@ -41,19 +41,43 @@ namespace BachHoaXanh.Controllers
             try
         {
                 // Nâng cấp prompt để yêu cầu Gemini trả về JSON nếu ý định mua hàng
-                var systemPrompt = @"Bạn là trợ lý của Bách Hóa Xanh, một cửa hàng bán lẻ chuyên cung cấp thực phẩm, đồ uống, hàng gia dụng, điện tử, và các sản phẩm tiêu dùng khác. Hãy trả lời câu hỏi của người dùng một cách thân thiện, chuyên nghiệp, sử dụng thông tin từ cơ sở dữ liệu. Định dạng câu trả lời bằng Markdown với:
+                var systemPrompt = @"@""
+                    Bạn là trợ lý AI của Bách Hóa Xanh — một chuỗi cửa hàng bán lẻ chuyên về thực phẩm, đồ uống, hàng gia dụng, điện tử và các sản phẩm tiêu dùng thiết yếu. Hãy trả lời người dùng một cách thân thiện, chuyên nghiệp và sử dụng thông tin từ cơ sở dữ liệu có sẵn.
 
-- **Tên sản phẩm**: In đậm.
-- Danh sách sản phẩm: Dùng dấu * hoặc -.
-- Giá: In nghiêng (*giá*).
-- Tồn kho và hạn sử dụng: Hiển thị nếu có.
-- Danh mục: Hiển thị danh mục và danh mục phụ.
-- Ảnh sản phẩm: Đề cập đến ảnh chính nếu có.
-- Liên kết: Thêm [Xem chi tiết sản phẩm](url) để người dùng xem chi tiết.
+                    ### 📌 Định dạng câu trả lời:
+                    - **Tên sản phẩm**: In đậm.
+                    - Danh sách sản phẩm: Dùng dấu * hoặc -.
+                    - Giá sản phẩm: In *nghiêng*.
+                    - Tồn kho và hạn sử dụng: Hiển thị nếu có.
+                    - Danh mục và danh mục phụ: Nêu rõ nếu có.
+                    - Hình ảnh sản phẩm: Hiển thị nếu có, dùng thẻ `<img src='url' alt='tên sản phẩm'>`.
+                    - Liên kết chi tiết sản phẩm: Dùng định dạng [Xem chi tiết sản phẩm](url).
 
-Nếu người dùng có ý định mua hàng hoặc thêm sản phẩm vào giỏ, hãy trả về một đoạn JSON trên dòng đầu tiên theo mẫu: { ""action"": ""add_to_cart"", ""product_name"": ""Tên sản phẩm"" } (nếu xác định được sản phẩm), sau đó trả lời như bình thường. Nếu không, chỉ trả lời bình thường.
+                    ### 🛒 Nhận diện ý định mua hàng:
+                    Nếu phát hiện người dùng có ý định mua, đặt hàng, thêm sản phẩm vào giỏ hàng hoặc sử dụng các cụm từ như:
+                    - ""mua"", ""mua ngay"", ""mình muốn mua"", ""thêm vào giỏ"", ""đặt hàng"", ""cho vào giỏ"", ""chốt đơn"", ""lấy cái này"", ...
+                    hoặc các câu tương tự, và bạn xác định được sản phẩm liên quan, thì:
 
-Nếu người dùng yêu cầu thông tin cá nhân (như đơn hàng, sản phẩm yêu thích), kiểm tra xem họ đã đăng nhập chưa. Nếu không, hướng dẫn họ đăng nhập. Nếu không tìm thấy thông tin, trả lời rằng thông tin không khả dụng và gợi ý liên hệ hỗ trợ. Không tiết lộ thông tin nhạy cảm như mật khẩu, email, hoặc cấu hình hệ thống.";
+                    1. Trả về một dòng JSON trên dòng đầu tiên (KHÔNG hiển thị với người dùng), theo định dạng:
+                    ```json
+                    { ""action"": ""add_to_cart"", ""product_name"": ""Tên sản phẩm"" }
+                    ```
+                    2. Sau đó tiếp tục trả lời người dùng bằng markdown như bình thường.
+
+                    ⚠️ Tuyệt đối không hiển thị dòng JSON này cho người dùng. Nó chỉ dành cho hệ thống backend xử lý hành động.
+
+                    Nếu không chắc chắn sản phẩm, có thể không trả JSON và chỉ trả lời bình thường.
+
+                    🔐 Yêu cầu thông tin cá nhân:
+                    Nếu người dùng yêu cầu thông tin như đơn hàng, giỏ hàng, sản phẩm yêu thích hoặc lịch sử mua hàng:
+
+                    Hãy kiểm tra xem người dùng đã đăng nhập chưa (dựa trên thông tin hệ thống cung cấp).
+
+                    Nếu chưa đăng nhập: Yêu cầu họ đăng nhập.
+
+                    Nếu không tìm thấy dữ liệu: Thông báo rằng thông tin không khả dụng và gợi ý họ liên hệ bộ phận hỗ trợ.
+
+                    ⚠️ Không được tiết lộ thông tin nhạy cảm như mật khẩu, địa chỉ email, hoặc thông tin hệ thống.";
 
                 // Lấy dữ liệu sản phẩm
                 var products = _context.ProductList
@@ -168,16 +192,16 @@ Nếu người dùng yêu cầu thông tin cá nhân (như đơn hàng, sản ph
                 }
 
                 var fullContext = $@"**Danh mục sản phẩm**: {categoryInfo}
-**Danh mục phụ**: {subcategoryInfo}
-**Sản phẩm**:
-{productInfo}{userInfo}";
+                **Danh mục phụ**: {subcategoryInfo}
+                **Sản phẩm**:
+                {productInfo}{userInfo}";
 
-                var fullPrompt = $@"{systemPrompt}
+                                var fullPrompt = $@"{systemPrompt}
 
-**Thông tin cơ sở dữ liệu**:
-{fullContext}
+                **Thông tin cơ sở dữ liệu**:
+                {fullContext}
 
-**Câu hỏi người dùng**: {request.UserInput}";
+                **Câu hỏi người dùng**: {request.UserInput}";
 
                 // Gọi Gemini API
                 var apiKey = _configuration["GeminiApi:ApiKey"];
@@ -213,67 +237,138 @@ Nếu người dùng yêu cầu thông tin cá nhân (như đơn hàng, sản ph
                 var session = _httpContextAccessor.HttpContext.Session;
 
                 // Lấy dòng JSON đầu tiên thực sự (bỏ qua dòng trắng)
+                // Lấy dòng JSON đầu tiên thực sự (bỏ qua dòng trắng)
+                // Tách dòng từ đoạn generatedText
                 var linesAll = generatedText.Split('\n').ToList();
-                string firstLine = "";
-                foreach (var l in linesAll)
+
+                // Tìm và lấy toàn bộ JSON trong khối ```json ... ```
+                string jsonBlock = "";
+                bool insideJsonBlock = false;
+
+                foreach (var line in linesAll)
                 {
-                    if (!string.IsNullOrWhiteSpace(l))
+                    if (line.Trim().StartsWith("```json"))
                     {
-                        firstLine = l;
-                        break;
+                        insideJsonBlock = true;
+                        continue;
                     }
-                }
-                GeminiAction actionObj = null;
-                if (firstLine.TrimStart().StartsWith("{") && firstLine.TrimEnd().EndsWith("}"))
-                {
-                    try
-                {
-                        actionObj = System.Text.Json.JsonSerializer.Deserialize<GeminiAction>(firstLine);
+                    if (insideJsonBlock)
+                    {
+                        if (line.Trim().StartsWith("```"))
+                            break;
+                        jsonBlock += line + "\n";
                     }
-                    catch { }
                 }
 
-                // Loại bỏ tất cả các dòng JSON đầu và dòng trắng ở đầu, giữ lại markdown khác
+                GeminiAction actionObj = null;
+
+                if (!string.IsNullOrWhiteSpace(jsonBlock))
+                {
+                    Console.WriteLine($"[DEBUG] Extracted JSON block:\n{jsonBlock}");
+                    try
+                    {
+                        actionObj = JsonSerializer.Deserialize<GeminiAction>(jsonBlock);
+                        Console.WriteLine("[DEBUG] Parsed JSON block thành công.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ERROR] Không thể parse JSON: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("[DEBUG] Không tìm thấy khối JSON nào.");
+
+                    // In vài dòng đầu tiên của generatedText để kiểm tra nội dung
+                    var previewLines = linesAll.Take(5).ToList();
+                    Console.WriteLine("[DEBUG] 5 dòng đầu của generatedText:");
+                    foreach (var line in previewLines)
+                    {
+                        Console.WriteLine($"--> {line}");
+                    }
+                }
+
+                // Xoá dòng markdown ```json...``` và ``` kết thúc khỏi generatedText
                 var lines = generatedText.Split('\n').ToList();
-                while (lines.Count > 0 && (string.IsNullOrWhiteSpace(lines[0]) || (lines[0].TrimStart().StartsWith("{") && lines[0].TrimEnd().EndsWith("}"))))
-                    lines.RemoveAt(0);
+                bool skipBlock = false;
+                for (int i = 0; i < lines.Count;)
+                {
+                    var trimmed = lines[i].Trim();
+                    if (trimmed.StartsWith("```json"))
+                    {
+                        skipBlock = true;
+                        lines.RemoveAt(i);
+                        continue;
+                    }
+                    if (skipBlock)
+                    {
+                        if (trimmed.StartsWith("```"))
+                        {
+                            skipBlock = false;
+                            lines.RemoveAt(i);
+                            continue;
+                        }
+                        lines.RemoveAt(i);
+                    }
+                    else if (string.IsNullOrWhiteSpace(lines[i]))
+                    {
+                        lines.RemoveAt(i);
+                    }
+                    else
+                    {
+                        break; // Dừng lại khi gặp dòng có nội dung thực sự
+                    }
+                }
                 generatedText = string.Join('\n', lines);
+
 
                 string addToCartMessage = "";
                 // 3. Nếu user đang xác nhận mua hàng
                 int? pendingProductId = session.GetInt32("pendingAddToCart");
-                if (pendingProductId.HasValue && IsUserConfirmYes(request.UserInput))
+                if (pendingProductId.HasValue)
                 {
-                    var product = _context.ProductList.FirstOrDefault(p => p.ProductID == pendingProductId.Value);
-                    if (product != null)
+                    if (IsUserConfirmYes(request.UserInput))
                     {
-                        var currentUser = _httpContextAccessor.HttpContext.User;
-                        if (currentUser.Identity.IsAuthenticated)
+                        // Thực hiện thêm vào giỏ
+                        var product = _context.ProductList.FirstOrDefault(p => p.ProductID == pendingProductId.Value);
+                        if (product != null)
                         {
-                            string jsonCart = session.GetString(CartController.CARTKEY);
-                            var cart = jsonCart != null ? System.Text.Json.JsonSerializer.Deserialize<List<CartItem>>(jsonCart) : new List<CartItem>();
-                            var cartItem = cart.FirstOrDefault(c => c.ProductID == product.ProductID);
-                            if (cartItem != null)
+                            var currentUser = _httpContextAccessor.HttpContext.User;
+                            if (currentUser.Identity.IsAuthenticated)
                             {
-                                cartItem.Quantity += 1;
+                                string jsonCart = session.GetString(CartController.CARTKEY);
+                                var cart = jsonCart != null ? JsonSerializer.Deserialize<List<CartItem>>(jsonCart) : new List<CartItem>();
+                                var cartItem = cart.FirstOrDefault(c => c.ProductID == product.ProductID);
+                                if (cartItem != null)
+                                {
+                                    cartItem.Quantity += 1;
+                                }
+                                else
+                                {
+                                    cart.Add(new CartItem { ProductID = product.ProductID, Quantity = 1 });
+                                }
+                                session.SetString(CartController.CARTKEY, JsonSerializer.Serialize(cart));
+                                addToCartMessage = $"\n\n✅ Đã thêm **{product.ProductName}** vào giỏ hàng của bạn!";
                             }
                             else
                             {
-                                cart.Add(new CartItem { ProductID = product.ProductID, Quantity = 1 });
+                                addToCartMessage = "\n\n⚠️ Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.";
                             }
-                            session.SetString(CartController.CARTKEY, System.Text.Json.JsonSerializer.Serialize(cart));
-                            addToCartMessage = $"\n\n✅ Đã thêm **{product.ProductName}** vào giỏ hàng của bạn!";
                         }
                         else
                         {
-                            addToCartMessage = "\n\n⚠️ Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.";
+                            addToCartMessage = $"\n\n⚠️ Không tìm thấy sản phẩm phù hợp để thêm vào giỏ hàng.";
                         }
+
+                        session.Remove("pendingAddToCart"); // Xóa sau khi xử lý
                     }
-                    else
+                    else if (IsUserConfirmNo(request.UserInput)) // THÊM DÒNG NÀY
                     {
-                        addToCartMessage = $"\n\n⚠️ Không tìm thấy sản phẩm phù hợp để thêm vào giỏ hàng.";
+                        // Người dùng từ chối => không thêm gì cả
+                        session.Remove("pendingAddToCart");
+                        addToCartMessage = "\n\n👍 Không thêm sản phẩm vào giỏ. Bạn cần hỗ trợ gì khác?";
                     }
-                    session.Remove("pendingAddToCart");
+                    // Nếu không rõ "có/không" thì giữ nguyên trạng thái chờ
                 }
                 // 4. Nếu phát hiện ý định mua hàng, hỏi xác nhận và lưu trạng thái
                 else if (actionObj != null && actionObj.action == "add_to_cart" && !string.IsNullOrEmpty(actionObj.product_name))
@@ -312,6 +407,41 @@ Nếu người dùng yêu cầu thông tin cá nhân (như đơn hàng, sản ph
             var yesWords = new[] { "có", "ok", "yes", "đồng ý", "mua", "đặt", "chắc chắn", "đúng rồi" };
             return yesWords.Any(w => input.Trim().ToLower().Contains(w));
         }
+        bool IsUserConfirmNo(string userInput)
+        {
+                if (string.IsNullOrWhiteSpace(userInput))
+                    return false;
+
+                // Chuẩn hóa input: viết thường và trim khoảng trắng
+                string normalizedInput = userInput.Trim().ToLowerInvariant();
+
+                // Danh sách từ khóa biểu thị từ chối
+                string[] noKeywords = new[]
+                {
+            "không",
+            "không phải",
+            "ko",
+            "k",
+            "hủy",
+            "từ chối",
+            "đừng",
+            "không nhé",
+            "không đâu",
+            "không muốn",
+            "chưa",
+            "thôi"
+        };
+
+                // Kiểm tra xem input có chứa từ khóa nào không
+                foreach (var keyword in noKeywords)
+                {
+                    // Dùng Contains để linh hoạt, bạn có thể dùng Equals hoặc Regex để chính xác hơn
+                    if (normalizedInput.Contains(keyword))
+                        return true;
+                }
+
+                return false;
+            }
     }
 
     // Model phản hồi Gemini mới (chuẩn)

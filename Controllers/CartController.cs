@@ -390,78 +390,95 @@ namespace BachHoaXanh.Controllers
 
             string fullAddress = $"{address.Street}, {address.Ward}, {address.District}, {address.Province}";
 
-            var order = new Order
-            {
-                UserID = u.UserID,
-                TotalAmount = cartItems.Sum(ci => ci.Quantity * ci.Product.Price),
-                PaymentMethodID = paymentMethodID,
-                ShippingAddress = fullAddress,
-                CreatedAt = DateTime.Now,
-                OrderStatus = "Pending",
-                Note = note
-            };
 
-                        _context.OrderList.Add(order);
-                        _context.SaveChanges();
 
-                        foreach (var item in cartItems)
-                        {
-                            var product = _context.ProductList
-                                .Include(p => p.Stocks)
-                                .FirstOrDefault(p => p.ProductID == item.ProductID);
-
-                            if (product == null)
-                            {
-                                throw new Exception($"Không tìm thấy sản phẩm: {item.ProductID}");
-                            }
-
-                            var orderDetail = new OrderDetail
-                            {
-                                OrderID = order.OrderID,
-                                ProductID = item.ProductID,
-                                Quantity = item.Quantity,
-                                UnitPrice = item.Product.Price
-                            };
-                            _context.OrderDetailList.Add(orderDetail);
-                            _context.SaveChanges();
-
-                var sortedStocks = product.Stocks
-                    .Where(s => s.ExpirationDate >= DateTime.Now && s.Quantity > 0)
-                    .OrderBy(s => s.ExpirationDate)
-                    .ToList();
-                int remainingQty = item.Quantity;
-
-                            foreach (var stock in availableStocks)
-                            {
-                                if (remainingQty <= 0) break;
-
-                    int deduct = Math.Min(stock.Quantity, remainingQty);
-                    stock.Quantity -= deduct;
-                    stock.UpdatedAt = DateTime.Now;
-                    _context.StockProductList.Update(stock);
-
-                    var orderStockDetail = new OrderStockDetail
+                    var order = new Order
                     {
-                        OrderDetailID = orderDetail.OrderDetailID,
-                        StockID = stock.StockID,
-                        Quantity = deduct
+                        UserID = u.UserID,
+                        TotalAmount = cartItems.Sum(ci => ci.Quantity * ci.Product.Price),
+                        PaymentMethodID = paymentMethodID,
+                        ShippingAddress = fullAddress,
+                        CreatedAt = DateTime.Now,
+                        OrderStatus = "Pending",
+                        Note = note,
+                        CanCancel = true
                     };
-                    _context.OrderStockDetailList.Add(orderStockDetail);
-
-                    remainingQty -= deduct;
-                }
-
-                if (remainingQty > 0)
-                {
-                    return BadRequest(new { message = $"Không đủ hàng trong kho cho sản phẩm: {product.ProductName}" });
-                }
-            }
-
+                    Console.WriteLine("Thuộc tính của Order:");
+                    foreach (var prop in order.GetType().GetProperties())
+                    {
+                        Console.WriteLine($"{prop.Name}: {prop.GetValue(order) ?? "null"}");
+                    }
+                    _context.OrderList.Add(order);
+                    try
+                    {
                         _context.SaveChanges();
-                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Lỗi khi lưu Order: {ex.Message}. Inner: {ex.InnerException?.Message}");
+                        throw;
+                    }
 
-            // Chuyển hướng sang PaymentController thay vì xóa giỏ hàng ngay
-            return Json(new { redirectUrl = Url.Action("Index", "Home", new { orderId = order.OrderID }) });
+            foreach (var item in cartItems)
+                    {
+                        var product = _context.ProductList
+                            .Include(p => p.Stocks)
+                            .FirstOrDefault(p => p.ProductID == item.ProductID);
+
+                        if (product == null)
+                        {
+                            throw new Exception($"Không tìm thấy sản phẩm: {item.ProductID}");
+                        }
+
+                        var orderDetail = new OrderDetail
+                        {
+                            OrderID = order.OrderID,
+                            ProductID = item.ProductID,
+                            Quantity = item.Quantity,
+                            UnitPrice = item.Product.Price
+                        };
+                        _context.OrderDetailList.Add(orderDetail);
+                        _context.SaveChanges();
+
+                        var sortedStocks = product.Stocks
+                            .Where(s => s.ExpirationDate >= DateTime.Now && s.Quantity > 0)
+                            .OrderBy(s => s.ExpirationDate)
+                            .ToList();
+                        int remainingQty = item.Quantity;
+
+                        foreach (var stock in sortedStocks)
+                        {
+                            if (remainingQty <= 0) break;
+
+                            int deduct = Math.Min(stock.Quantity, remainingQty);
+                            stock.Quantity -= deduct;
+                            stock.UpdatedAt = DateTime.Now;
+                            _context.StockProductList.Update(stock);
+
+                            var orderStockDetail = new OrderStockDetail
+                            {
+                                OrderDetailID = orderDetail.OrderDetailID,
+                                StockID = stock.StockID,
+                                Quantity = deduct
+                            };
+                            _context.OrderStockDetailList.Add(orderStockDetail);
+
+                            remainingQty -= deduct;
+                        }
+
+                        if (remainingQty > 0)
+                        {
+                            return BadRequest(new { message = $"Không đủ hàng trong kho cho sản phẩm: {product.ProductName}" });
+                        }
+                    }
+
+                    _context.SaveChanges();
+                    
+
+                    // Chuyển hướng sang PaymentController thay vì xóa giỏ hàng ngay
+                    return Json(new { redirectUrl = Url.Action("Index", "Home", new { orderId = order.OrderID }) });
+               
+            
         }
     }
 }
