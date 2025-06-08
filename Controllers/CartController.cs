@@ -258,7 +258,8 @@ namespace BachHoaXanh.Controllers
                 ShippingAddress = fullAddress,
                 CreatedAt = DateTime.Now,
                 OrderStatus = "Pending",
-                Note = note
+                Note = note,
+                CanCancel = true
             };
 
             _context.OrderList.Add(order);

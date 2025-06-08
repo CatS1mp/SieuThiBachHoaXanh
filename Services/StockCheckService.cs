@@ -40,33 +40,52 @@ namespace BachHoaXanh.Services
 
                         foreach (var product in products)
                         {
+                            if (stoppingToken.IsCancellationRequested)
+                                break;
+
                             int stockQuantity = product.StockQuantity;
 
                             if (stockQuantity == 0 && product.Status != ProductStatus.TamHetHang)
                             {
                                 product.Status = ProductStatus.TamHetHang;
                                 product.UpdatedAt = DateTime.Now;
-                                Console.WriteLine("Product {0} ({1}) set to TamHetHang due to zero stock.",
+                                _logger.LogInformation("Product {0} ({1}) set to TamHetHang due to zero stock.",
                                     product.ProductID, product.ProductName ?? "Unnamed Product");
                             }
                             else if (stockQuantity > 0 && product.Status == ProductStatus.TamHetHang)
                             {
                                 product.Status = ProductStatus.KinhDoanh;
                                 product.UpdatedAt = DateTime.Now;
-                                Console.WriteLine("Product {0} ({1}) set to KinhDoanh due to available stock.",
+                                _logger.LogInformation("Product {0} ({1}) set to KinhDoanh due to available stock.",
                                     product.ProductID, product.ProductName ?? "Unnamed Product");
                             }
                         }
 
-                        await context.SaveChangesAsync(stoppingToken);
+                        if (!stoppingToken.IsCancellationRequested)
+                        {
+                            await context.SaveChangesAsync(stoppingToken);
+                        }
                     }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Service is stopping, exit gracefully
+                    break;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "An error occurred while checking stock quantities.");
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                try
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Service is stopping, exit gracefully
+                    break;
+                }
             }
         }
     }

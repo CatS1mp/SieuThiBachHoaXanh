@@ -25,18 +25,27 @@ namespace BachHoaXanh.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var orders = _context.OrderList
-                .Where(o => o.UserID.ToString() == userId)
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
-                        .ThenInclude(p => p.Images)
-                .OrderByDescending(o => o.CreatedAt)
-                .ToList();
+            try
+            {
+                var orders = _context.OrderList
+                    .Where(o => o.UserID.ToString() == userId)
+                    .Include(o => o.OrderDetails)
+                        .ThenInclude(od => od.Product)
+                            .ThenInclude(p => p.Images)
+                    .OrderByDescending(o => o.CreatedAt)
+                    .ToList();
 
-            // Tính điểm và cập nhật xếp hạng cho người dùng
-            UpdateUserPointsAndRank(int.Parse(userId));
+                // Tính điểm và cập nhật xếp hạng cho người dùng
+                UpdateUserPointsAndRank(int.Parse(userId));
 
-            return View(orders);
+                return View(orders);
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi
+                Console.WriteLine($"Error in OrderController.Index: {ex.Message}");
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         [Route("don-hang/{id}")]
