@@ -8,6 +8,7 @@ using System.Diagnostics;
 
 namespace BachHoaXanh.Controllers
 {
+    [Route("Auth")]
     public class AuthController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -17,7 +18,7 @@ namespace BachHoaXanh.Controllers
             _context = context;
         }
 
-        [HttpPost]
+        [HttpPost("RegisterFace")]
         public async Task<IActionResult> RegisterFace(int userId, IFormFile image)
         {
             var user = await _context.UserList.FirstOrDefaultAsync(u => u.UserID == userId && u.Role == "Admin");
@@ -91,6 +92,23 @@ namespace BachHoaXanh.Controllers
 
             return Json(new { success = true, message = "Đăng ký khuôn mặt thành công!" });
         }
+
+
+        [HttpDelete("RemoveFaceData/{id}")]
+        public async Task<IActionResult> RemoveFaceData(int id)
+        {
+            var faceData = await _context.FaceData.FirstOrDefaultAsync(f => f.UserID == id);
+            if (faceData == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy dữ liệu khuôn mặt để xóa." });
+            }
+
+            _context.FaceData.Remove(faceData);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Đã xóa dữ liệu khuôn mặt thành công." });
+        }
+
         [HttpPost]
         public async Task<IActionResult> VerifyFace(int userId, IFormFile image)
         {
@@ -155,7 +173,7 @@ namespace BachHoaXanh.Controllers
                     }
 
                     await LogAttempt(userId, "Success", imagePath1);
-                    return Json(new { success = true, message = "Xác thực thành công!", redirectUrl = "/Admin/Index" });
+                    return Json(new { success = true, message = "Xác thực thành công!", redirectUrl = "/Admin/Auth" });
                 }
             }
             catch (Exception ex)
@@ -172,7 +190,7 @@ namespace BachHoaXanh.Controllers
             if (user == null) return Unauthorized("Không phải Admin");
             return View(userId);
         }
-        [HttpGet]
+        [HttpGet("RegisterFace")]
         public IActionResult RegisterFace(int userId)
         {
             var user = _context.UserList.FirstOrDefault(u => u.UserID == userId && u.Role == "Admin");

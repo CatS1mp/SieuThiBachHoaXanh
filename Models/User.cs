@@ -36,6 +36,12 @@ namespace BachHoaXanh.Models
 
         [StringLength(50)]
         public string? Rank { get; set; } = "Chưa xếp hạng";
+        [NotMapped]
+        public int TotalReviews { get; set; }
+        [NotMapped]
+        public int TotalOrders { get; set; }
+        [NotMapped]
+        public int TotalProducts { get; set; }
 
         public ICollection<Address> Addresses { get; set; } = new List<Address>();
     }

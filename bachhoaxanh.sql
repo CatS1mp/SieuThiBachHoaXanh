@@ -172,7 +172,7 @@ CREATE TABLE FaceAuthHistory (
     AttemptTime DATETIME DEFAULT GETDATE(),
     Result NVARCHAR(50) NOT NULL, -- 'Success' or 'Failed'
     FailedImagePath NVARCHAR(255) NULL, -- Ảnh nếu thất bại
-    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
 );
 
 
@@ -338,29 +338,6 @@ VALUES
 (N'Trả qua VNPay'),
 (N'Trả qua PayPal'),
 (N'Trả qua thanh toán COD');
-
--- Dữ liệu cho bảng Orders
-INSERT INTO Orders (UserID, TotalAmount, PaymentMethodID, OrderStatus, ShippingAddress)
-VALUES 
-(1, 5000000, 1, 'Pending', N'123 Đường ABC, Quận 1, TP.HCM'),
-(2, 350000, 2, 'Confirmed', N'456 Đường XYZ, Quận 2, TP.HCM'),
-(3, 1200000, 3, 'Cancelled', N'789 Đường DEF, Quận 3, TP.HCM'),
-(4, 1500000, 4, 'Pending', N'101 Đường GHI, Quận 4, TP.HCM'),
-(5, 700000, 5, 'Confirmed', N'202 Đường JKL, Quận 5, TP.HCM'),
-(6, 950000, 6, 'Pending', N'303 Đường MNO, Quận 6, TP.HCM'),
-(7, 800000, 7, 'Confirmed', N'404 Đường PQR, Quận 7, TP.HCM'),
-(8, 2200000, 8, 'Pending', N'505 Đường STU, Quận 8, TP.HCM'),
-(9, 50000, 9, 'Cancelled', N'606 Đường VWX, Quận 9, TP.HCM'),
-(10, 600000, 10, 'Pending', N'707 Đường YZA, Quận 10, TP.HCM'),
-(11, 1300000, 1, 'Confirmed', N'808 Đường BCD, Quận 11, TP.HCM'),
-(12, 800000, 2, 'Pending', N'909 Đường EFG, Quận 12, TP.HCM'),
-(13, 450000, 3, 'Cancelled', N'111 Đường HIJ, Quận 1, TP.HCM'),
-(14, 320000, 4, 'Confirmed', N'222 Đường KLM, Quận 2, TP.HCM'),
-(15, 700000, 5, 'Pending', N'333 Đường NOP, Quận 3, TP.HCM'),
-(16, 200000, 6, 'Confirmed', N'444 Đường QRS, Quận 4, TP.HCM'),
-(17, 900000, 7, 'Pending', N'555 Đường TUV, Quận 5, TP.HCM'),
-(18, 400000, 8, 'Cancelled', N'666 Đường WXY, Quận 6, TP.HCM'),
-(19, 1100000, 9, 'Pending', N'777 Đường ZAB, Quận 7, TP.HCM');
 
 
 -- Rau muống (ProductId = 1)
@@ -754,29 +731,6 @@ INSERT INTO Reviews (UserId, ProductId, Rating, Comment, ReviewDate) VALUES
 (2, 30, 3, N'Bình thường, không đặc biệt.', '2025-05-31 16:30:00'),
 (1, 30, 5, N'Kem đánh răng Colgate rất tốt, sẽ mua lại.', '2025-06-03 18:40:00');
 
--- Dữ liệu cho bảng OrderDetails
-INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice)
-VALUES 
-(1, 1, 2, 20000000),
-(1, 2, 1, 15000000),
-(2, 5, 5, 50000),
-(2, 3, 2, 800000),
-(3, 4, 1, 1200000),
-(4, 6, 10, 150000),
-(5, 7, 3, 350000),
-(6, 8, 1, 70000),
-(7, 9, 2, 15000),
-(8, 10, 1, 95000),
-(9, 11, 1, 25000),
-(10, 12, 1, 12000000),
-(11, 13, 1, 500000),
-(12, 14, 2, 150000),
-(13, 15, 3, 50000),
-(14, 16, 4, 30000),
-(15, 17, 2, 35000),
-(16, 18, 1, 60000),
-(17, 19, 1, 45000),
-(18, 20, 3, 30000);
 
 INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion)
 VALUES ('20250603153716_InitialCreate', '9.0.5');

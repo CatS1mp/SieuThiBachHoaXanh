@@ -1,7 +1,7 @@
-﻿@model int
+﻿    @model int
 @{
     ViewData["Title"] = "FaceAuth";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = null;
 }
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
@@ -9,12 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
 
 <style>
-    .face-auth-container {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-        padding: 2rem 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+
 
     .auth-card {
         max-width: 500px;
@@ -25,6 +20,7 @@
         padding: 2.5rem;
         text-align: center;
         border: 2px solid #e8f5e8;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .auth-title {
@@ -215,31 +211,29 @@
     }
 </style>
 
-<div class="face-auth-container">
-    <div class="auth-card">
-        <h2 class="auth-title">
-            <span class="status-indicator"></span>
-            Xác thực khuôn mặt cho Admin
-        </h2>
+<div class="auth-card">
+    <h2 class="auth-title">
+        <span class="status-indicator"></span>
+        Xác thực khuôn mặt cho Admin
+    </h2>
 
-        <div class="instructions">
-            <strong>Hướng dẫn:</strong> Đặt khuôn mặt vào khung hình và nhấn "Chụp ảnh" để xác thực. Đảm bảo ánh sáng đủ và khuôn mặt rõ ràng.
-        </div>
+    <div class="instructions">
+        <strong>Hướng dẫn:</strong> Đặt khuôn mặt vào khung hình và nhấn "Chụp ảnh" để xác thực. Đảm bảo ánh sáng đủ và khuôn mặt rõ ràng.
+    </div>
 
-        <div class="video-container">
-            <video id="video" autoplay></video>
-            <div class="video-overlay"></div>
-        </div>
+    <div class="video-container">
+        <video id="video" autoplay></video>
+        <div class="video-overlay"></div>
+    </div>
 
-        <canvas id="canvas" width="320" height="240"></canvas>
+    <canvas id="canvas" width="320" height="240"></canvas>
 
-        <div class="button-container">
-            <button id="capture" class="btn-custom btn-capture">
-                <span class="loading-spinner"></span>
-                <span class="btn-text">Chụp ảnh</span>
-            </button>
-            <button id="cancel" class="btn-custom btn-cancel">Hủy</button>
-        </div>
+    <div class="button-container">
+        <button id="capture" class="btn-custom btn-capture">
+            <span class="loading-spinner"></span>
+            <span class="btn-text">Chụp ảnh</span>
+        </button>
+        <button id="cancel" class="btn-custom btn-cancel">Hủy</button>
     </div>
 </div>
 
@@ -303,7 +297,5 @@
         }
     });
 
-    cancelButton.addEventListener('click', () => {
-        window.location.href = '/Home';
-    });
+
 </script>

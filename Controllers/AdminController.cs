@@ -807,7 +807,19 @@ namespace BachHoaXanh.Controllers
             var history = _context.FaceAuthHistory
             .Include(a => a.User)
             .ToList();
-                return View(history);
+            var faceData = _context.FaceData
+                .Include(f => f.User)
+                .ToList();
+            var user = _context.UserList
+                .Where(u => u.Role == "Admin")
+                .ToList();
+            var viewModel = new FaceAuthienticationView
+            {
+                FaceData = faceData,
+                FaceAuthHistory = history,
+                User = user
+            };
+            return View(viewModel);
         }
         public IActionResult FaceAuthDetail(int id)
         {

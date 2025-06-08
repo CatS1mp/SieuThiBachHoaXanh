@@ -218,36 +218,34 @@ namespace BachHoaXanh.Controllers
             var cartItems = GetCartItems();
             if (!cartItems.Any())
             {
-                return BadRequest("Giỏ hàng trống!");
+                return BadRequest(new { message = "Giỏ hàng trống!" });
             }
 
             var userN = User.Identity.Name;
             if (userN == null)
             {
-                return Unauthorized("Người dùng chưa đăng nhập.");
+                return Unauthorized(new { message = "Người dùng chưa đăng nhập." });
             }
 
             User u = _context.UserList.FirstOrDefault(u => u.UserName == userN);
             if (u == null)
             {
-                return NotFound("Người dùng không tồn tại.");
+                return NotFound(new { message = "Người dùng không tồn tại." });
             }
 
-            // Lấy địa chỉ từ shippingAddressID
             var address = _context.Addresses
                 .FirstOrDefault(a => a.AddressID == shippingAddressID && a.UserID == u.UserID);
             if (address == null)
             {
-                return BadRequest("Địa chỉ giao hàng không hợp lệ.");
+                return BadRequest(new { message = "Địa chỉ giao hàng không hợp lệ." });
             }
 
             var paymentMethodID = cartItems.FirstOrDefault()?.PaymentMethodID ?? 1;
             if (paymentMethodID == 0)
             {
-                return BadRequest("Phương thức thanh toán không hợp lệ.");
+                return BadRequest(new { message = "Phương thức thanh toán không hợp lệ." });
             }
 
-            // Tạo chuỗi địa chỉ đầy đủ từ Address
             string fullAddress = $"{address.Street}, {address.Ward}, {address.District}, {address.Province}";
 
             var order = new Order
@@ -285,7 +283,6 @@ namespace BachHoaXanh.Controllers
                     .OrderBy(s => s.ExpirationDate)
                     .ToList();
                 int remainingQty = item.Quantity;
-                Console.WriteLine($"ProductID: {product.ProductID}, sortedStocks.Count: {sortedStocks.Count}, initialQty: {item.Quantity}");
 
                 foreach (var stock in sortedStocks)
                 {
@@ -293,13 +290,10 @@ namespace BachHoaXanh.Controllers
                         break;
 
                     int deduct = Math.Min(stock.Quantity, remainingQty);
-
-                    // Trừ kho
                     stock.Quantity -= deduct;
                     stock.UpdatedAt = DateTime.Now;
                     _context.StockProductList.Update(stock);
 
-                    // Ghi nhận chi tiết lô hàng đã dùng
                     var orderStockDetail = new OrderStockDetail
                     {
                         OrderDetailID = orderDetail.OrderDetailID,
@@ -309,20 +303,18 @@ namespace BachHoaXanh.Controllers
                     _context.OrderStockDetailList.Add(orderStockDetail);
 
                     remainingQty -= deduct;
-                    Console.WriteLine($"quantity: {remainingQty}");
                 }
-                // Nếu vẫn còn số lượng cần trừ mà hết stock
+
                 if (remainingQty > 0)
                 {
-                    return BadRequest($"Không đủ hàng trong kho cho sản phẩm: {product.ProductName}");
+                    return BadRequest(new { message = $"Không đủ hàng trong kho cho sản phẩm: {product.ProductName}" });
                 }
             }
 
             _context.SaveChanges();
 
-            ClearCart();
-
-            return Ok(new { message = "Đơn hàng đã được tạo thành công", orderID = order.OrderID });
+            // Chuyển hướng sang PaymentController thay vì xóa giỏ hàng ngay
+            return Json(new { redirectUrl = Url.Action("Index", "Home", new { orderId = order.OrderID }) });
         }
     }
 }

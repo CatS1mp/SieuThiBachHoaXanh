@@ -1,0 +1,5 @@
+﻿@model dynamic
+<h2>Thanh toán thành công!</h2>
+<p>@Model.Message</p>
+<p>Mã đơn hàng: @Model.OrderId</p>
+<a href="@Url.Action("Index", "Home")">Quay về trang chủ</a>

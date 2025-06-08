@@ -113,8 +113,13 @@
                     note: note
                 },
                 success: function (response) {
-                    alert(response.message || "Đơn hàng đã được tạo thành công!");
-                    window.location.reload();
+                    if (response.redirectUrl) {
+                        // Chuyển hướng đến trang thanh toán VNPay
+                        window.location.href = response.redirectUrl;
+                    } else {
+                        alert(response.message || "Đơn hàng đã được tạo thành công!");
+                        window.location.reload();
+                    }
                 },
                 error: function (xhr) {
                     const errorMessage = xhr.responseJSON?.message || "Có lỗi xảy ra khi tạo đơn hàng.";
@@ -124,7 +129,6 @@
             });
         }
     });
-
     function formatCurrency(value) {
         return new Intl.NumberFormat('vi-VN').format(value) + 'đ';
     }

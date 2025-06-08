@@ -6,6 +6,31 @@
 }
 
 <style>
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5); /* lớp mờ */
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .popup-content {
+        left: 500px;
+        padding: 30px;
+        justify-content: center; /* căn giữa theo chiều ngang */
+        align-items: center; /* căn giữa theo chiều dọc nếu cần */
+        border-radius: 8px;
+        max-width: 600px;
+        width: 100%;
+        position: relative;
+    }
+
     .profile-container {
         background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
         border-radius: 10px;
@@ -170,6 +195,11 @@
 </div>
 <div class="container-wrapper">
     @await Html.PartialAsync("UserSidebarPartial")
+    <div id="popup-wrapper" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            @await Html.PartialAsync("~/Views/Auth/FaceAuth.cshtml", Model.UserId)
+        </div>
+    </div>
     <div class="content flex-1 pl-[280px]">
         <div class="profile-container">
             <div class="breadcrumb-icon d-inline-block">
@@ -231,7 +261,7 @@
                     var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
                     if (role == "Admin")
                     {
-                        <a href="@Url.Action("FaceAuth", "Auth",new{userId = Model.UserId})" class="logout-btn">Đăng nhập vào trang quản lý</a>
+                        <a id="show-partial-btn" class="logout-btn">Đăng nhập vào trang quản lý</a>
                     }
                 }
                 <a href="@Url.Action("Logout", "User")" class="logout-btn">Đăng xuất tài khoản</a>
@@ -289,5 +319,17 @@
                 window.location.href = '@Url.Action("AddAddress", "User")';
             }
         }
+        const container = document.getElementById('popup-wrapper');
+        document.getElementById('show-partial-btn').addEventListener('click', function () {
+            
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        });
+            
+
+        cancelButton.addEventListener('click', () => {
+            container.style.display = container.style.display === 'block' ? 'none' : 'block';
+        });
+
+
     </script>
 }

@@ -4,6 +4,91 @@
 }
 <link rel="stylesheet" href="~/css/product-detail.css">
 <style>
+    .review-form {
+        background: #f9f9f9;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        border: 1px solid #e0e0e0;
+    }
+
+    .rating-field, .comment-field {
+        margin-bottom: 15px;
+    }
+
+        .rating-field label, .comment-field label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+    .star-rating {
+        display: inline-flex;
+        flex-direction: row-reverse;
+        margin-bottom: 10px;
+    }
+
+        .star-rating input {
+            display: none;
+        }
+
+    .star-label {
+        font-size: 28px;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.2s ease;
+        margin-right: 5px;
+    }
+
+    .star-rating input:checked ~ label,
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+        color: #ffd700;
+    }
+
+    .star-rating input:checked + label {
+        color: #ffd700;
+    }
+
+    textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        resize: vertical;
+        font-family: inherit;
+        font-size: 14px;
+        transition: border-color 0.3s;
+    }
+
+        textarea:focus {
+            border-color: #4caf50;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+    .submit-review {
+        background: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+        margin-top: 10px;
+    }
+
+        .submit-review:hover {
+            background: #45a049;
+        }
+
+    @@media (max-width: 768px) {
+        .star-label {
+            font-size: 24px;
+        }
+    }
     /* Additional CSS for rating section */
     .rating-section {
         margin-top: 40px;
@@ -164,6 +249,9 @@
     .review-name {
         font-weight: 600;
         margin-bottom: 4px;
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
     }
 
     .review-date {
@@ -200,6 +288,117 @@
             border-radius: 3px;
         }
 
+    /* User Info Tooltip Styles */
+    .user-info-tooltip {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        width: 280px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        padding: 15px;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.3s, visibility 0.3s;
+        pointer-events: none;
+        border: 1px solid #e5e5e5;
+        margin-top: 10px;
+    }
+
+    .review-name:hover .user-info-tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .user-info-tooltip::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 15px;
+        width: 16px;
+        height: 16px;
+        background: white;
+        transform: rotate(45deg);
+        border-left: 1px solid #e5e5e5;
+        border-top: 1px solid #e5e5e5;
+    }
+
+    .user-info-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .user-info-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 20px;
+        color: #666;
+    }
+
+    .user-info-name {
+        font-weight: 600;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .user-info-details {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .user-info-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+    }
+
+    .user-info-label {
+        color: #666;
+        width: 100px;
+    }
+
+    .user-info-value {
+        color: #333;
+        font-weight: 500;
+    }
+
+    .user-info-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .user-stat {
+        text-align: center;
+    }
+
+    .user-stat-value {
+        font-weight: 600;
+        color: #333;
+        font-size: 16px;
+    }
+
+    .user-stat-label {
+        font-size: 12px;
+        color: #666;
+    }
+
     @@media (max-width: 768px) {
         .rating-overview
 
@@ -211,6 +410,16 @@
     .average-score {
         font-size: 2.5rem;
     }
+
+    .user-info-tooltip {
+        width: 250px;
+        left: -50px;
+    }
+
+        .user-info-tooltip::before {
+            left: 60px;
+        }
+
 
     }
 </style>
@@ -372,7 +581,7 @@
                             <div class="rating-label">
                                 <span>@i</span>
                                 <svg class="star filled" viewBox="0 0 24 24" style="width: 12px; height: 12px;">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
                             </div>
                             <div class="rating-bar">
@@ -382,27 +591,28 @@
                         </div>
                     }
                 </div>
-                
+
             </div>
             <!-- Form gửi đánh giá -->
-            <form asp-action="AddReview" asp-controller="Home" method="post">
+            <form asp-action="AddReview" asp-controller="Home" method="post" class="review-form">
                 <input type="hidden" name="productId" value="@Model.Product.ProductID" />
-                <div>
+                <div class="rating-field">
                     <label>Đánh giá của bạn:</label>
                     <div class="star-rating">
                         @for (int i = 1; i <= 5; i++)
                         {
                             <input type="radio" name="rating" value="@i" id="star-@i" required />
-                            <label for="star-@i" class="star"></label>
+                            <label for="star-@i" class="star-label">★</label>
                         }
                     </div>
                 </div>
-                <div>
+                <div class="comment-field">
                     <label>Bình luận:</label>
-                    <textarea name="comment" rows="4" cols="50" required></textarea>
+                    <textarea name="comment" rows="4" required placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."></textarea>
                 </div>
-                <button type="submit">Gửi đánh giá</button>
+                <button type="submit" class="submit-review">Gửi đánh giá</button>
             </form>
+
             <!-- Individual Reviews -->
             <div class="reviews-list">
                 @foreach (var review in Model.Reviews)
@@ -411,7 +621,44 @@
                         <div class="review-header">
                             <div class="review-avatar">@(review.User.UserName?.FirstOrDefault().ToString().ToUpper() ?? "N")</div>
                             <div class="review-info">
-                                <div class="review-name">@(review.User.UserName ?? $"Người dùng #{review.User.UserID}")</div>
+                                <div class="review-name" data-user-id="@review.User.UserID">
+                                    @(review.User.UserName ?? $"Người dùng #{review.User.UserID}")
+                                    <!-- User Info Tooltip -->
+                                    <div class="user-info-tooltip">
+                                        <div class="user-info-header">
+                                            <div class="user-info-avatar">@(review.User.UserName?.FirstOrDefault().ToString().ToUpper() ?? "N")</div>
+                                            <div class="user-info-name">@(review.User.UserName ?? $"Người dùng #{review.User.UserID}")</div>
+                                        </div>
+                                        <div class="user-info-details">
+                                            <div class="user-info-row">
+                                                <div class="user-info-label">Ngày tham gia:</div>
+                                                <div class="user-info-value">@review.User.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                            </div>
+                                            <div class="user-info-row">
+                                                <div class="user-info-label">Cấp độ:</div>
+                                                <div class="user-info-value">@review.User.Rank</div>
+                                            </div>
+                                            <div class="user-info-row">
+                                                <div class="user-info-label">Điểm tích lũy:</div>
+                                                <div class="user-info-value">@review.User.Points</div>
+                                            </div>
+                                        </div>
+                                        <div class="user-info-stats">
+                                            <div class="user-stat">
+                                                <div class="user-stat-value">@review.User.TotalReviews</div>
+                                                <div class="user-stat-label">Đánh giá</div>
+                                            </div>
+                                            <div class="user-stat">
+                                                <div class="user-stat-value">@review.User.TotalOrders</div>
+                                                <div class="user-stat-label">Đơn hàng</div>
+                                            </div>
+                                            <div class="user-stat">
+                                                <div class="user-stat-value">@review.User.TotalProducts</div>
+                                                <div class="user-stat-label">Sản phẩm đã mua</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="review-date">@review.ReviewDate.ToString("dd/MM/yyyy")</div>
                                 <div class="review-stars">
                                     @for (int i = 1; i <= 5; i++)
@@ -634,6 +881,28 @@
             updateTemporaryPrice();
         });
 
+        // Load user information via AJAX when needed
+        document.querySelectorAll('.review-name').forEach(nameElement => {
+            const userId = nameElement.getAttribute('data-user-id');
 
+            // Optional: Load user data via AJAX for more up-to-date information
+            // This is commented out since we're using the data already in the model
+            /*
+            nameElement.addEventListener('mouseenter', function() {
+                // Only fetch if we haven't already
+                if (!this.dataset.loaded) {
+                    fetch(`/api/users/${userId}/info`)
+                        .then(response => response.json())
+                        .then(userData => {
+                            // Update tooltip with fetched data
+                            const tooltip = this.querySelector('.user-info-tooltip');
+                            // Update tooltip content with userData
+                            this.dataset.loaded = 'true';
+                        })
+                        .catch(error => console.error('Error fetching user data:', error));
+                }
+            });
+            */
+        });
     </script>
 }

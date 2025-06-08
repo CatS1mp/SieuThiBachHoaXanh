@@ -23,5 +23,6 @@ namespace BachHoaXanh.Models
         public Product? Product { get; set; }
 
 
+
     }
 }

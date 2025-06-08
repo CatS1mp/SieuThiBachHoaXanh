@@ -1,10 +1,46 @@
-﻿@model IEnumerable<BachHoaXanh.Models.FaceAuthHistory>
+﻿@model BachHoaXanh.ViewModels.FaceAuthienticationView
 @{
     ViewData["Title"] = "Danh sách xác thực khuôn mặt";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
-
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
 <style>
+    .auth-card {
+        max-width: 500px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(76, 175, 80, 0.1);
+        padding: 2.5rem;
+        text-align: center;
+        border: 2px solid #e8f5e8;
+    }
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5); /* lớp mờ */
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .popup-content {
+        left: 500px;
+        padding: 30px;
+        justify-content: center; /* căn giữa theo chiều ngang */
+        align-items: center; /* căn giữa theo chiều dọc nếu cần */
+        border-radius: 8px;
+        max-width: 600px;
+        width: 100%;
+        position: relative;
+    }
+
     .admin-container {
         background: linear-gradient(135deg, #f0f9f0 0%, #e8f5e8 100%);
         min-height: 100vh;
@@ -98,6 +134,52 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
+
+    /* Tab Navigation Styles */
+    .tab-navigation {
+        background: white;
+        border-radius: 15px;
+        padding: 1rem;
+        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1);
+        border: 2px solid #e8f5e8;
+        margin-bottom: 2rem;
+    }
+
+    .nav-tabs {
+        border: none;
+        display: flex;
+        gap: 1rem;
+    }
+
+        .nav-tabs .nav-item {
+            margin-bottom: 0;
+        }
+
+        .nav-tabs .nav-link {
+            background: #f1f8e9;
+            color: #2e7d32;
+            border: 2px solid #e8f5e8;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .nav-tabs .nav-link:hover {
+                background: #e8f5e8;
+                border-color: #4caf50;
+                color: #2e7d32;
+            }
+
+            .nav-tabs .nav-link.active {
+                background: #4caf50;
+                color: white;
+                border-color: #4caf50;
+            }
 
     .table-card {
         background: white;
@@ -247,6 +329,73 @@
             text-decoration: none;
         }
 
+    /* Face Data Specific Styles */
+    .face-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        border: 2px solid #e8f5e8;
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
+
+        .face-image:hover {
+            border-color: #4caf50;
+            transform: scale(1.1);
+        }
+
+    .btn-add-face {
+        background: #4caf50;
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+    }
+
+        .btn-add-face:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+
+    .btn-remove-face {
+        background: #f44336;
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+    }
+
+        .btn-remove-face:hover {
+            background: #d32f2f;
+            transform: translateY(-1px);
+        }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+        .tab-content.active {
+            display: block;
+        }
+
     .dataTables_wrapper {
         margin-top: 1rem;
     }
@@ -300,18 +449,6 @@
             border-color: #4caf50 !important;
         }
 
-    .success-rate {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #4caf50;
-    }
-
-    .failed-rate {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #f44336;
-    }
-
     @@media (max-width: 768px) {
         .content-wrapper
 
@@ -335,6 +472,14 @@
 
     .auth-time {
         font-size: 0.75rem;
+    }
+
+    .nav-tabs {
+        flex-direction: column;
+    }
+
+    .action-buttons {
+        flex-direction: column;
     }
 
     }
@@ -368,21 +513,21 @@
                     <div class="stat-icon">
                         <i class="fas fa-user-check"></i>
                     </div>
-                    <div class="stat-number">@Model.Count()</div>
+                    <div class="stat-number">@Model.FaceAuthHistory.Count()</div>
                     <div class="stat-label">Tổng lần xác thực</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">
                         <i class="fas fa-check-circle"></i>
                     </div>
-                    <div class="stat-number">@Model.Count(a => a.Result == "Success")</div>
+                    <div class="stat-number">@Model.FaceAuthHistory.Count(a => a.Result == "Success")</div>
                     <div class="stat-label">Thành công</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">
                         <i class="fas fa-times-circle"></i>
                     </div>
-                    <div class="stat-number">@Model.Count(a => a.Result == "Failed")</div>
+                    <div class="stat-number">@Model.FaceAuthHistory.Count(a => a.Result == "Failed")</div>
                     <div class="stat-label">Thất bại</div>
                 </div>
                 <div class="stat-card">
@@ -391,8 +536,8 @@
                     </div>
                     <div class="stat-number">
                         @{
-                            var total = Model.Count();
-                            var success = Model.Count(a => a.Result == "Success");
+                            var total = Model.FaceAuthHistory.Count();
+                            var success = Model.FaceAuthHistory.Count(a => a.Result == "Success");
                             var rate = total > 0 ? Math.Round((double)success / total * 100, 1) : 0;
                         }
                         @rate%
@@ -401,77 +546,188 @@
                 </div>
             </div>
 
-            <!-- Table Card -->
-            <div class="table-card">
-                <div class="table-header">
-                    <h3 class="table-title">
-                        <i class="fas fa-table"></i> Lịch sử xác thực khuôn mặt
-                    </h3>
-                </div>
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="auth-history-tab" data-toggle="tab" href="#auth-history" role="tab">
+                            <i class="fas fa-history"></i>
+                            Lịch sử xác thực
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="face-data-tab" data-toggle="tab" href="#face-data" role="tab">
+                            <i class="fas fa-images"></i>
+                            Dữ liệu khuôn mặt
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
-                <table id="faceAuthTable" class="custom-table" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th><i class="fas fa-hashtag"></i> User ID</th>
-                            <th><i class="fas fa-user"></i> Username</th>
-                            <th><i class="fas fa-clock"></i> Thời gian xác thực</th>
-                            <th><i class="fas fa-info-circle"></i> Trạng thái</th>
-                            <th><i class="fas fa-cogs"></i> Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var auth in Model)
-                        {
-                            // Define badge class based on auth status
-                            string badgeClass;
-                            string statusText;
-                            string statusIcon;
+            <!-- Authentication History Tab -->
+            <div class="tab-content active" id="auth-history">
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3 class="table-title">
+                            <i class="fas fa-table"></i> Lịch sử xác thực khuôn mặt
+                        </h3>
+                    </div>
 
-                            switch (auth.Result)
+                    <table id="faceAuthTable" class="custom-table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i> User ID</th>
+                                <th><i class="fas fa-user"></i> Username</th>
+                                <th><i class="fas fa-clock"></i> Thời gian xác thực</th>
+                                <th><i class="fas fa-info-circle"></i> Trạng thái</th>
+                                <th><i class="fas fa-cogs"></i> Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var auth in Model.FaceAuthHistory)
                             {
-                                case "Success":
-                                    badgeClass = "status-success";
-                                    statusText = "Thành công";
-                                    statusIcon = "fas fa-check";
-                                    break;
-                                case "Failed":
-                                    badgeClass = "status-failed";
-                                    statusText = "Thất bại";
-                                    statusIcon = "fas fa-times";
-                                    break;
-                                default:
-                                    badgeClass = "status-unknown";
-                                    statusText = "Không xác định";
-                                    statusIcon = "fas fa-question";
-                                    break;
-                            }
+                                // Define badge class based on auth status
+                                string badgeClass;
+                                string statusText;
+                                string statusIcon;
 
+                                switch (auth.Result)
+                                {
+                                    case "Success":
+                                        badgeClass = "status-success";
+                                        statusText = "Thành công";
+                                        statusIcon = "fas fa-check";
+                                        break;
+                                    case "Failed":
+                                        badgeClass = "status-failed";
+                                        statusText = "Thất bại";
+                                        statusIcon = "fas fa-times";
+                                        break;
+                                    default:
+                                        badgeClass = "status-unknown";
+                                        statusText = "Không xác định";
+                                        statusIcon = "fas fa-question";
+                                        break;
+                                }
+
+                                <tr>
+                                    <td>
+                                        <span class="user-id">#@auth.UserID</span>
+                                    </td>
+                                    <td>
+                                        <span class="username">@auth.User.UserName</span>
+                                    </td>
+                                    <td>
+                                        <span class="auth-time">@auth.AttemptTime.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge @badgeClass">
+                                            <i class="@statusIcon"></i>
+                                            @statusText
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="@Url.Action("FaceAuthDetail", "Admin", new { id = auth.Id })" class="btn-view-details">
+                                            <i class="fas fa-eye"></i>
+                                            Xem chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Face Data Tab -->
+            <div class="tab-content" id="face-data">
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3 class="table-title">
+                            <i class="fas fa-images"></i> Dữ liệu khuôn mặt
+                        </h3>
+                        <a id="add-face-btn" class="btn-add-face">
+                            <i class="fas fa-plus"></i>
+                            Thêm dữ liệu khuôn mặt
+                        </a>
+                    </div>
+                    <div id="popup-wrapper1" class="popup-overlay" style="display: none;">
+                        <div id="popup-content" class="popup-content">
+                            <div class="auth-card" id="input-select">
+                                <select name="name" id="userId" class="form-select">
+                                    <option value="">-- Chọn tên --</option>
+                                    @foreach (var user in Model.User)
+                                    {
+                                        <option value="@user.UserID">@user.UserName</option>
+                                    }
+                                </select>
+                                <button id="success" class="btn btn-secondary">Xác nhận</button>
+                            </div>
+                            <div id="inner-wrapper">
+
+                            </div>
+                        </div>
+                    </div>
+                    <table id="faceDataTable" class="custom-table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i> ID</th>
+                                <th><i class="fas fa-user"></i> Tên người dùng</th>
+                                <th><i class="fas fa-calendar"></i> Ngày tạo</th>
+                                <th><i class="fas fa-cogs"></i> Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="faceDataTableBody">
+                            @foreach(var face in Model.FaceData ){
                             <tr>
                                 <td>
-                                    <span class="user-id">#@auth.UserID</span>
+                                    <span class="user-id">#@face.Id</span>
+                                    <input id="userId1" type="hidden" class="face-image-src" value="@face.UserID" />
                                 </td>
                                 <td>
-                                    <span class="username">@auth.User.UserName</span>
+                                    <span class="username">@face.User.UserName</span>
                                 </td>
                                 <td>
-                                    <span class="auth-time">@auth.AttemptTime.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                                    <span class="auth-time">@face.CreatedAt</span>
                                 </td>
                                 <td>
-                                    <span class="status-badge @badgeClass">
-                                        <i class="@statusIcon"></i>
-                                        @statusText
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="@Url.Action("FaceAuthDetail", "Admin", new { id = auth.Id })" class="btn-view-details">
-                                        <i class="fas fa-eye"></i>
-                                        Xem chi tiết
-                                    </a>
+                                    <div class="action-buttons">
+                                        <a onclick="RegisterFace()" class="btn-view-details">
+                                            <i class="fa-solid fa-camera"></i>
+                                            Chụp lại
+                                        </a>
+                                        <button type="button" class="btn-remove-face" onclick="removeFaceData(@face.UserID)">
+                                            <i class="fas fa-trash"></i>
+                                            Xóa
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #4caf50; color: white;">
+                <h5 class="modal-title">
+                    <i class="fas fa-image"></i> Xem ảnh khuôn mặt
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" style="color: white;">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="/placeholder.svg" alt="Face Image" style="max-width: 100%; height: auto; border-radius: 8px;">
             </div>
         </div>
     </div>
@@ -480,6 +736,7 @@
 @section scripts {
     <script>
         $(document).ready(function () {
+            // Initialize DataTable for Authentication History
             $('#faceAuthTable').DataTable({
                 language: {
                     emptyTable: "Không có dữ liệu nào trong bảng",
@@ -499,16 +756,136 @@
                 paging: true,
                 pageLength: 10,
                 lengthChange: false,
-                order: [[2, 'desc']], // Sort by authentication time, newest first
-                columnDefs: [
-                    { orderable: false, targets: -1 }
-                ]
+                order: [[2, 'desc']]
             });
 
-            // Add some animation to stat cards
+            // Initialize DataTable for Face Data
+            $('#faceDataTable').DataTable({
+                language: {
+                    emptyTable: "Không có dữ liệu nào trong bảng",
+                    search: "🔍 Tìm kiếm:",
+                    lengthMenu: "Hiển thị <b>_MENU_</b> mục",
+                    info: "Hiển thị <b>_START_</b> đến <b>_END_</b> của <b>_TOTAL_</b> bản ghi",
+                    infoEmpty: "Hiển thị <b>0</b> đến <b>0</b> của <b>0</b> bản ghi",
+                    infoFiltered: "(được lọc từ <b>_MAX_</b> bản ghi)",
+                    zeroRecords: "Không tìm thấy kết quả nào phù hợp",
+                    paginate: {
+                        first: "⏮️ Đầu",
+                        last: "⏭️ Cuối",
+                        next: "▶️ Tiếp",
+                        previous: "◀️ Trước"
+                    }
+                },
+                paging: true,
+                pageLength: 10,
+                lengthChange: false,
+                order: [[3, 'desc']]
+            });
+
+            // Tab switching functionality
+            $('.nav-link').on('click', function(e) {
+                e.preventDefault();
+
+                // Remove active class from all tabs and content
+                $('.nav-link').removeClass('active');
+                $('.tab-content').removeClass('active');
+
+                // Add active class to clicked tab
+                $(this).addClass('active');
+
+                // Show corresponding content
+                var target = $(this).attr('href');
+                $(target).addClass('active');
+            });
+
+            // Add animation to stat cards
             $('.stat-card').each(function(index) {
                 $(this).css('animation-delay', (index * 0.1) + 's');
             });
         });
+
+        // Function to view face image in modal
+        function viewFaceImage(imageSrc) {
+            $('#modalImage').attr('src', imageSrc);
+            $('#imageModal').modal('show');
+        }
+
+        // Function to remove face data
+        function removeFaceData(id) {
+            if (confirm('🗑️ Bạn có chắc chắn muốn xóa dữ liệu khuôn mặt này?\n\nHành động này không thể hoàn tác!')) {
+                $.ajax({
+                    url: '/Auth/RemoveFaceData/' + id,
+                    type: 'DELETE',
+                    success: function(response) {
+                        if (response.success) {
+                            alert('✅ Xóa dữ liệu khuôn mặt thành công!');
+                            $('#faceDataTable').DataTable().ajax.reload();
+                        } else {
+                            alert('❌ ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('❌ Có lỗi xảy ra, vui lòng thử lại.');
+                    }
+                });
+            }
+        }
+        const input = document.getElementById('input-select');
+
+        const container1 = document.getElementById('popup-wrapper1');
+
+        document.getElementById('add-face-btn').addEventListener('click', function () { 
+            input.style.display = 'block';
+            container1.style.display = container1.style.display === 'none' ? 'block' : 'none';
+
+            document.getElementById("inner-wrapper").innerHTML="";
+
+        });
+
+
+
+        document.getElementById("success").addEventListener("click", function () {
+            var selectedId = document.getElementById("userId").value;
+            if (!selectedId) {
+                alert("Vui lòng chọn người dùng.");
+                return;
+            }
+            input.style.display = 'none';
+
+            fetch(`/Auth/RegisterFace?userId=${selectedId}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById("inner-wrapper").innerHTML += html;
+                    if (typeof initRegisterFace === "function") {
+                        initRegisterFace(selectedId);
+                    }
+                })
+                .catch(error => {
+                    console.error("Lỗi khi load partial:", error);
+                });
+        });
+        function RegisterFace(){
+            var selectedId1 = document.getElementById("userId1").value;
+            if (!selectedId1) {
+                alert("Vui lòng chọn người dùng.");
+                return;
+            }
+            container1.style.display = container1.style.display === 'none' ? 'block' : 'none';
+            input.style.display = 'none';
+            fetch(`/Auth/RegisterFace?userId=${selectedId1}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById("inner-wrapper").innerHTML += html;
+                    if (typeof initRegisterFace === "function") {
+                        initRegisterFace(selectedId1);
+                    }
+                })
+                .catch(error => {
+                    console.error("Lỗi khi load partial:", error);
+                });
+        
+        }
+        
     </script>
+	<script src="~/js/auth/faceRegister.js"></script>
 }

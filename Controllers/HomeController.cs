@@ -107,6 +107,16 @@ public class HomeController : Controller
             .Include(p => p.Images)
             .FirstOrDefault(p => p.ProductID == id&&p.Stocks.Any(s => s.ExpirationDate > DateTime.Now));
 
+        var user = _context.UserList.ToList();
+        foreach (var u in user)
+        {
+            u.TotalOrders = _context.OrderList.Count(o => o.UserID == u.UserID);
+            u.TotalReviews = _context.ReviewList.Count(r => r.UserID == u.UserID);
+            u.TotalProducts = _context.OrderList
+                .Where(o => o.UserID == u.UserID)
+                .SelectMany(o => o.OrderDetails) // nối sang chi tiết đơn hàng
+                .Sum(od => od.Quantity);
+        }
         // Lấy danh sách đánh giá với phân trang
         var reviews =  _context.ReviewList
             .Where(r => r.ProductID == id)

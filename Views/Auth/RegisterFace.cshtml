@@ -1,7 +1,7 @@
 ﻿@model int
 @{
     ViewData["Title"] = "FaceAuth";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = null;
 }
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
@@ -9,12 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
 
 <style>
-    .face-auth-container {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-        padding: 2rem 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+
 
     .auth-card {
         max-width: 500px;
@@ -241,135 +236,39 @@
     }
 </style>
 
-<div class="face-auth-container">
-    <div class="auth-card">
-        <h2 class="auth-title">
-            <span class="status-indicator"></span>
-            Đăng ký khuôn mặt cho Admin
-        </h2>
+<div class="auth-card" id="auth-card" data-user-id="@Model">
+    <h2 class="auth-title">
+        <span class="status-indicator"></span>
+		Đăng ký khuôn mặt cho Admin ID: @Model
+    </h2>
 
-        <div class="instructions">
-            <strong>Hướng dẫn:</strong> Đặt khuôn mặt vào khung hình và nhấn "Chụp ảnh" để đăng ký. Đảm bảo ánh sáng đủ và khuôn mặt rõ ràng.
-        </div>
+    <div class="instructions">
+        <strong>Hướng dẫn:</strong> Đặt khuôn mặt vào khung hình và nhấn "Chụp ảnh" để đăng ký. Đảm bảo ánh sáng đủ và khuôn mặt rõ ràng.
+    </div>
 
-        <div class="video-container">
-            <video id="video" autoplay></video>
-            <div class="video-overlay"></div>
-        </div>
+    <div class="video-container">
+        <video id="video" autoplay></video>
+        <div class="video-overlay"></div>
+    </div>
 
-        <canvas id="canvas" width="320" height="240"></canvas>
+    <canvas id="canvas" width="320" height="240"></canvas>
 
-        <div class="process-steps" id="processSteps">
-            <div class="step" id="step1"><span class="step-icon">📸</span> Đang chụp ảnh từ webcam...</div>
-            <div class="step" id="step2"><span class="step-icon">🧪</span> Đang chuyển ảnh sang định dạng blob...</div>
-            <div class="step" id="step3"><span class="step-icon">📦</span> Chuẩn bị gửi dữ liệu đến server...</div>
-            <div class="step" id="step4"><span class="step-icon">📬</span> Đã gửi xong, đang chờ phản hồi...</div>
-        </div>
+    <div class="process-steps" id="processSteps">
+        <div class="step" id="step1"><span class="step-icon">📸</span> Đang chụp ảnh từ webcam...</div>
+        <div class="step" id="step2"><span class="step-icon">🧪</span> Đang chuyển ảnh sang định dạng blob...</div>
+        <div class="step" id="step3"><span class="step-icon">📦</span> Chuẩn bị gửi dữ liệu đến server...</div>
+        <div class="step" id="step4"><span class="step-icon">📬</span> Đã gửi xong, đang chờ phản hồi...</div>
+    </div>
 
-        <div class="button-container">
-            <button id="capture" class="btn-custom btn-capture">
-                <span class="loading-spinner"></span>
-                <span class="btn-text">Chụp ảnh</span>
-            </button>
-            <button id="cancel" class="btn-custom btn-cancel">Hủy</button>
-        </div>
+    <div class="button-container">
+        <button id="capture" class="btn-custom btn-capture">
+            <span class="loading-spinner"></span>
+            <span class="btn-text">Chụp ảnh</span>
+        </button>
+        <button id="cancel" class="btn-custom btn-cancel">Hủy</button>
     </div>
 </div>
 
 <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const captureButton = document.getElementById('capture');
-    const cancelButton = document.getElementById('cancel');
-    const loadingSpinner = document.querySelector('.loading-spinner');
-    const btnText = document.querySelector('.btn-text');
-    const processSteps = document.getElementById('processSteps');
-    const steps = document.querySelectorAll('.step');
 
-    // Configure toastr
-    toastr.options = {
-        "closeButton": true,
-        "progressBar": true,
-        "positionClass": "toast-top-right",
-        "timeOut": "3000"
-    };
-
-    // Function to update step status
-    function updateStep(stepNumber) {
-        steps.forEach((step, index) => {
-            if (index + 1 === stepNumber) {
-                step.classList.add('active');
-            } else {
-                step.classList.remove('active');
-            }
-        });
-    }
-
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-            video.srcObject = stream;
-        })
-        .catch(err => {
-            toastr.error('Không truy cập được webcam: ' + err);
-        });
-
-    captureButton.addEventListener('click', async () => {
-        // Show loading state
-        loadingSpinner.style.display = 'inline-block';
-        btnText.textContent = 'Đang xử lý...';
-        captureButton.disabled = true;
-        processSteps.style.display = 'block';
-
-        try {
-            // Step 1: Capture image
-            updateStep(1);
-            toastr.info('📸 Đang chụp ảnh từ webcam...');
-            canvas.getContext('2d').drawImage(video, 0, 0, 320, 240);
-            await new Promise(resolve => setTimeout(resolve, 500)); // Small delay for visual feedback
-
-            // Step 2: Convert to blob
-            updateStep(2);
-            toastr.info('🧪 Đang chuyển ảnh sang định dạng blob...');
-            const imageData = canvas.toDataURL('image/jpeg');
-            const blob = await (await fetch(imageData)).blob();
-            await new Promise(resolve => setTimeout(resolve, 500)); // Small delay for visual feedback
-
-            // Step 3: Prepare data
-            updateStep(3);
-            toastr.info('📦 Chuẩn bị gửi dữ liệu đến server...');
-            const formData = new FormData();
-            formData.append('image', blob, 'faceImage.jpg');
-            formData.append('userId', @Model);
-            await new Promise(resolve => setTimeout(resolve, 500)); // Small delay for visual feedback
-
-            // Step 4: Send to server
-            updateStep(4);
-            toastr.info('📬 Đã gửi xong, đang chờ phản hồi...');
-            const response = await fetch('/Auth/RegisterFace', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                toastr.success('✅ ' + result.message);
-                setTimeout(() => { window.location.href = '/Admin/Index'; }, 1000);
-            } else {
-                toastr.warning('⚠️ ' + result.message);
-            }
-        } catch (error) {
-            toastr.error('❌ Lỗi khi gửi yêu cầu: ' + error);
-            console.error(error);
-        } finally {
-            // Reset button state
-            loadingSpinner.style.display = 'none';
-            btnText.textContent = 'Chụp ảnh';
-            captureButton.disabled = false;
-        }
-    });
-
-    cancelButton.addEventListener('click', () => {
-        window.location.href = '/Home';
-    });
 </script>
